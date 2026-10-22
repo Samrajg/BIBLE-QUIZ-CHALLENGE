@@ -450,6 +450,7 @@ const DOM = {
   valPillLevels: document.getElementById("val-pill-levels"),
   lblPillQuestions: document.getElementById("lbl-pill-questions"),
   lblPillTime: document.getElementById("lbl-pill-time"),
+  valPillTime: document.getElementById("val-pill-time"),
   lblPillScore: document.getElementById("lbl-pill-score"),
   lblNickname: document.getElementById("lbl-nickname"),
   form: document.getElementById("nickname-form"),
@@ -545,14 +546,18 @@ const DOM = {
 let audioCtx = null;
 
 function getAudioContext() {
-  if (!audioCtx) {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (AudioContext) {
-      audioCtx = new AudioContext();
+  try {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        audioCtx = new AudioContext();
+      }
     }
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+  } catch (err) {
+    console.warn("AudioContext init error:", err);
   }
   return audioCtx;
 }
@@ -929,7 +934,7 @@ function loadQuestion(index) {
 
   DOM.answerButtons.forEach((btn, idx) => {
     btn.disabled = false;
-    btn.className = "answer-card btn-option";
+    btn.classList.remove("is-correct", "is-incorrect", "is-dimmed");
     btn.setAttribute("data-index", idx);
     const optionTextEl = btn.querySelector(".option-text");
     if (optionTextEl) {
@@ -1404,9 +1409,8 @@ document.addEventListener("DOMContentLoaded", () => {
   DOM.langBtnEn.addEventListener("click", () => setLanguage("en"));
   DOM.langBtnTa.addEventListener("click", () => setLanguage("ta"));
 
-  // Welcome Form
-  DOM.form.addEventListener("submit", (e) => {
-    e.preventDefault();
+  // Welcome Form & Start Button
+  function handleStartQuiz() {
     const rawName = DOM.nicknameInput.value;
     const trimmed = rawName.trim();
     const dict = QUIZ_DATA[currentLang];
@@ -1421,6 +1425,25 @@ document.addEventListener("DOMContentLoaded", () => {
     DOM.nicknameError.textContent = "";
     DOM.nicknameInput.classList.remove("input-error");
     startQuiz(trimmed);
+  }
+
+  DOM.form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    handleStartQuiz();
+  });
+
+  if (DOM.startBtn) {
+    DOM.startBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      handleStartQuiz();
+    });
+  }
+
+  DOM.nicknameInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleStartQuiz();
+    }
   });
 
   DOM.nicknameInput.addEventListener("input", () => {
