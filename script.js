@@ -1,276 +1,398 @@
 /**
  * BIBLE QUIZ CHALLENGE - script.js
  * Pure Vanilla JavaScript (ES6+)
- * Fully compliant with master quiz specifications & difficulty levels.
+ * Bilingual Support: English (en) & Tamil (ta)
+ * 15 Progressive Questions across Easy, Medium, and Hard
  */
 
 // ==========================================
-// 1. QUIZ DATA (15 Questions across 3 Difficulty Levels)
+// 1. DATA DICTIONARY & QUESTION BANKS
 // ==========================================
-const QUIZ_SPEC = {
-  quizTitle: "Bible Quiz Challenge",
-  category: "Bible Characters and Basic Bible Knowledge",
-  totalQuestions: 15,
-  timePerQuestion: 20,
-  scoring: {
-    correctAnswerBasePoints: 500,
-    maximumSpeedBonus: 500,
-    maximumPointsPerQuestion: 1000,
-    incorrectAnswerPoints: 0,
-    timeoutPoints: 0
+const QUIZ_DATA = {
+  en: {
+    quizTitle: "Bible Quiz Challenge",
+    brandTitle: 'Bible Quiz <span class="highlight">Challenge</span>',
+    brandBadge: "⚡ Interactive Quiz",
+    brandSubtitle: "Discover Bible characters, test your knowledge, and learn something new.",
+    categoryName: "Characters & Basic Facts",
+    levelsName: "Easy • Medium • Hard",
+    nicknameLabel: "Choose Your Player Nickname",
+    nicknamePlaceholder: "e.g. JoyfulRunner or Noah7",
+    nicknameError: "Please enter a nickname to start the quiz.",
+    startBtn: "Start Quiz 🚀",
+    instructionsTitle: "🎮 How to Play",
+    instructions: [
+      "<strong>15 Progressive Questions:</strong> 5 Easy, 5 Medium, and 5 Hard questions.",
+      "<strong>20 Seconds Per Question:</strong> Answer fast to earn maximum speed bonus!",
+      "<strong>Score Breakdown:</strong> Up to 1,000 pts per question (500 base + up to 500 speed bonus).",
+      "<strong>No Sign-up Needed:</strong> Play immediately, review all answers, and download your card."
+    ],
+    hudQuestion: "Question",
+    hudOf: "of",
+    hudScore: "Score",
+    feedbackCorrect: "Correct!",
+    feedbackIncorrect: "Incorrect",
+    feedbackTimeout: "Time's Up!",
+    nextQuestionBtn: "Next Question ➜",
+    scriptureRef: "Scripture Reference",
+    correctAnswerIs: "The correct answer is",
+    resultsTitle: "Quiz Completed!",
+    resultsExpert: "Bible Expert",
+    resultsExplorer: "Bible Explorer",
+    resultsGrowing: "Growing in Knowledge",
+    resultsLearning: "Keep Learning",
+    encouragementExpert: "Phenomenal! You have an outstanding mastery of Bible characters and stories!",
+    encouragementExplorer: "Wonderful job! You have a strong foundation in Bible knowledge!",
+    encouragementGrowing: "Good effort! Keep reading and growing in your understanding of the Scriptures!",
+    encouragementLearning: "Every expert was once a beginner. Keep exploring the Bible and try again!",
+    cardTitle: "⚡ Bible Quiz Challenge",
+    cardBadge: "Official Result Card",
+    cardPlayer: "Player",
+    cardAttempt: "Attempt ID",
+    cardCorrect: "Correct Answers",
+    cardAccuracy: "Accuracy",
+    cardAvgTime: "Avg Response",
+    cardSpeedBonus: "Speed Bonus",
+    cardCategory: "Category",
+    statCorrect: "Correct",
+    statIncorrect: "Incorrect",
+    statUnanswered: "Unanswered",
+    statTotalTime: "Total Time",
+    btnBackHome: "🏠 Back Home",
+    btnPlayAgain: "🔄 Play Again",
+    btnReview: "📝 Review Answers",
+    btnDownloadCard: "📸 Download Card (PNG)",
+    exportNote: "💡 <strong>Tip for Quiz Organizers:</strong> You can download the result card above or take a screenshot directly and send it to your quiz organizer.",
+    reviewTitle: "Question & Answer Review",
+    reviewSubtitle: "Review each question, your answer, and the Bible references.",
+    btnBackToResults: "⬅ Back to Results",
+    reviewYourAnswer: "Your Answer",
+    reviewCorrectAnswer: "Correct Answer",
+    reviewTimedOut: "Timed Out",
+    difficultyLevels: [
+      {
+        level: "Easy",
+        questions: [
+          {
+            id: 1,
+            question: "How many disciples did Jesus choose?",
+            choices: ["12", "10", "7", "40"],
+            correctAnswer: "12",
+            reference: "Luke 6:13"
+          },
+          {
+            id: 2,
+            question: "In which town was Jesus born?",
+            choices: ["Nazareth", "Bethlehem", "Jerusalem", "Capernaum"],
+            correctAnswer: "Bethlehem",
+            reference: "Matthew 2:1"
+          },
+          {
+            id: 3,
+            question: "Who built the ark?",
+            choices: ["Moses", "Abraham", "Noah", "Jacob"],
+            correctAnswer: "Noah",
+            reference: "Genesis 6:13-22"
+          },
+          {
+            id: 4,
+            question: "Who was thrown into the lions' den but remained safe?",
+            choices: ["Joseph", "Elijah", "Samson", "Daniel"],
+            correctAnswer: "Daniel",
+            reference: "Daniel 6:16-23"
+          },
+          {
+            id: 5,
+            question: "Who was swallowed by a great fish?",
+            choices: ["Jonah", "Job", "John", "Joshua"],
+            correctAnswer: "Jonah",
+            reference: "Jonah 1:17"
+          }
+        ]
+      },
+      {
+        level: "Medium",
+        questions: [
+          {
+            id: 6,
+            question: "Which disciple betrayed Jesus?",
+            choices: ["Simon Peter", "Judas Iscariot", "Thomas", "Judas son of James"],
+            correctAnswer: "Judas Iscariot",
+            reference: "Matthew 26:14-16"
+          },
+          {
+            id: 7,
+            question: "What was Jesus' first recorded miracle?",
+            choices: ["Healing a blind man", "Feeding five thousand people", "Turning water into wine", "Walking on water"],
+            correctAnswer: "Turning water into wine",
+            reference: "John 2:1-11"
+          },
+          {
+            id: 8,
+            question: "Which disciple denied Jesus three times?",
+            choices: ["Andrew", "John", "Matthew", "Peter"],
+            correctAnswer: "Peter",
+            reference: "Luke 22:54-62"
+          },
+          {
+            id: 9,
+            question: "What was the name of Abraham's son born to him in his old age?",
+            choices: ["Isaac", "Ishmael", "Jacob", "Esau"],
+            correctAnswer: "Isaac",
+            reference: "Genesis 21:1-3"
+          },
+          {
+            id: 10,
+            question: "What sign did God give as a promise after the flood?",
+            choices: ["A pillar of fire", "A rainbow", "A burning bush", "A cloud of smoke"],
+            correctAnswer: "A rainbow",
+            reference: "Genesis 9:12-17"
+          }
+        ]
+      },
+      {
+        level: "Hard",
+        questions: [
+          {
+            id: 11,
+            question: "According to Genesis, what did God create on the first day?",
+            choices: ["The sun and the moon", "The land and the seas", "Light", "The stars and the planets"],
+            correctAnswer: "Light",
+            reference: "Genesis 1:3-5"
+          },
+          {
+            id: 12,
+            question: "How many loaves and fish were used when Jesus fed five thousand men?",
+            choices: ["7 loaves and 2 fish", "5 loaves and 5 fish", "12 loaves and 2 fish", "5 loaves and 2 fish"],
+            correctAnswer: "5 loaves and 2 fish",
+            reference: "Matthew 14:17-21"
+          },
+          {
+            id: 13,
+            question: "How many days and nights did the rain fall during the flood?",
+            choices: ["40 days and 40 nights", "7 days and 7 nights", "30 days and 30 nights", "150 days and 150 nights"],
+            correctAnswer: "40 days and 40 nights",
+            reference: "Genesis 7:12"
+          },
+          {
+            id: 14,
+            question: "Which sea did God part so the Israelites could cross?",
+            choices: ["The Dead Sea", "The Red Sea", "The Sea of Galilee", "The Mediterranean Sea"],
+            correctAnswer: "The Red Sea",
+            reference: "Exodus 14:21-22"
+          },
+          {
+            id: 15,
+            question: "Who led the Israelites out of Egypt?",
+            choices: ["Joshua", "Aaron", "Moses", "Abraham"],
+            correctAnswer: "Moses",
+            reference: "Exodus 3:10"
+          }
+        ]
+      }
+    ]
   },
-  difficultyLevels: [
-    {
-      level: "Easy",
-      questions: [
-        {
-          id: 1,
-          question: "How many disciples did Jesus choose?",
-          choices: [
-            "12",
-            "10",
-            "7",
-            "40"
-          ],
-          correctAnswer: "12",
-          correctIndex: 0,
-          difficulty: "easy",
-          reference: "Luke 6:13"
-        },
-        {
-          id: 2,
-          question: "In which town was Jesus born?",
-          choices: [
-            "Nazareth",
-            "Bethlehem",
-            "Jerusalem",
-            "Capernaum"
-          ],
-          correctAnswer: "Bethlehem",
-          correctIndex: 1,
-          difficulty: "easy",
-          reference: "Matthew 2:1"
-        },
-        {
-          id: 3,
-          question: "Who built the ark?",
-          choices: [
-            "Moses",
-            "Abraham",
-            "Noah",
-            "Jacob"
-          ],
-          correctAnswer: "Noah",
-          correctIndex: 2,
-          difficulty: "easy",
-          reference: "Genesis 6:13-22"
-        },
-        {
-          id: 4,
-          question: "Who was thrown into the lions' den but remained safe?",
-          choices: [
-            "Joseph",
-            "Elijah",
-            "Samson",
-            "Daniel"
-          ],
-          correctAnswer: "Daniel",
-          correctIndex: 3,
-          difficulty: "easy",
-          reference: "Daniel 6:16-23"
-        },
-        {
-          id: 5,
-          question: "Who was swallowed by a great fish?",
-          choices: [
-            "Jonah",
-            "Job",
-            "John",
-            "Joshua"
-          ],
-          correctAnswer: "Jonah",
-          correctIndex: 0,
-          difficulty: "easy",
-          reference: "Jonah 1:17"
-        }
-      ]
-    },
-    {
-      level: "Medium",
-      questions: [
-        {
-          id: 6,
-          question: "Which disciple betrayed Jesus?",
-          choices: [
-            "Simon Peter",
-            "Judas Iscariot",
-            "Thomas",
-            "Judas son of James"
-          ],
-          correctAnswer: "Judas Iscariot",
-          correctIndex: 1,
-          difficulty: "medium",
-          reference: "Matthew 26:14-16"
-        },
-        {
-          id: 7,
-          question: "What was Jesus' first recorded miracle?",
-          choices: [
-            "Healing a blind man",
-            "Feeding five thousand people",
-            "Turning water into wine",
-            "Walking on water"
-          ],
-          correctAnswer: "Turning water into wine",
-          correctIndex: 2,
-          difficulty: "medium",
-          reference: "John 2:1-11"
-        },
-        {
-          id: 8,
-          question: "Which disciple denied Jesus three times?",
-          choices: [
-            "Andrew",
-            "John",
-            "Matthew",
-            "Peter"
-          ],
-          correctAnswer: "Peter",
-          correctIndex: 3,
-          difficulty: "medium",
-          reference: "Luke 22:54-62"
-        },
-        {
-          id: 9,
-          question: "What was the name of Abraham's son born to him in his old age?",
-          choices: [
-            "Isaac",
-            "Ishmael",
-            "Jacob",
-            "Esau"
-          ],
-          correctAnswer: "Isaac",
-          correctIndex: 0,
-          difficulty: "medium",
-          reference: "Genesis 21:1-3"
-        },
-        {
-          id: 10,
-          question: "What sign did God give as a promise after the flood?",
-          choices: [
-            "A pillar of fire",
-            "A rainbow",
-            "A burning bush",
-            "A cloud of smoke"
-          ],
-          correctAnswer: "A rainbow",
-          correctIndex: 1,
-          difficulty: "medium",
-          reference: "Genesis 9:12-17"
-        }
-      ]
-    },
-    {
-      level: "Hard",
-      questions: [
-        {
-          id: 11,
-          question: "According to Genesis, what did God create on the first day?",
-          choices: [
-            "The sun and the moon",
-            "The land and the seas",
-            "Light",
-            "The stars and the planets"
-          ],
-          correctAnswer: "Light",
-          correctIndex: 2,
-          difficulty: "hard",
-          reference: "Genesis 1:3-5"
-        },
-        {
-          id: 12,
-          question: "How many loaves and fish were used when Jesus fed five thousand men?",
-          choices: [
-            "7 loaves and 2 fish",
-            "5 loaves and 5 fish",
-            "12 loaves and 2 fish",
-            "5 loaves and 2 fish"
-          ],
-          correctAnswer: "5 loaves and 2 fish",
-          correctIndex: 3,
-          difficulty: "hard",
-          reference: "Matthew 14:17-21"
-        },
-        {
-          id: 13,
-          question: "How many days and nights did the rain fall during the flood?",
-          choices: [
-            "40 days and 40 nights",
-            "7 days and 7 nights",
-            "30 days and 30 nights",
-            "150 days and 150 nights"
-          ],
-          correctAnswer: "40 days and 40 nights",
-          correctIndex: 0,
-          difficulty: "hard",
-          reference: "Genesis 7:12"
-        },
-        {
-          id: 14,
-          question: "Which sea did God part so the Israelites could cross?",
-          choices: [
-            "The Dead Sea",
-            "The Red Sea",
-            "The Sea of Galilee",
-            "The Mediterranean Sea"
-          ],
-          correctAnswer: "The Red Sea",
-          correctIndex: 1,
-          difficulty: "hard",
-          reference: "Exodus 14:21-22"
-        },
-        {
-          id: 15,
-          question: "Who led the Israelites out of Egypt?",
-          choices: [
-            "Joshua",
-            "Aaron",
-            "Moses",
-            "Abraham"
-          ],
-          correctAnswer: "Moses",
-          correctIndex: 2,
-          difficulty: "hard",
-          reference: "Exodus 3:10"
-        }
-      ]
-    }
-  ]
+  ta: {
+    quizTitle: "வேதாகம வினாடி வினா",
+    brandTitle: 'வேதாகம வினாடி <span class="highlight">வினா</span>',
+    brandBadge: "⚡ நேரடி வினாடி வினா",
+    brandSubtitle: "வேதாகம கதாபாத்திரங்களைக் கண்டறிந்து, உங்கள் அறிவைச் சோதித்து புதியவற்றைக் கற்றுக்கொள்ளுங்கள்.",
+    categoryName: "வேதாகம கதாபாத்திரங்கள் & அடிப்படை அறிவு",
+    levelsName: "எளிது • நடுத்தரம் • கடினம்",
+    nicknameLabel: "உங்கள் புனைப்பெயரை உள்ளிடவும்",
+    nicknamePlaceholder: "எ.கா: தாவீது அல்லது யோவான்7",
+    nicknameError: "வினாடி வினாவைத் தொடங்க புனைப்பெயரை உள்ளிடவும்.",
+    startBtn: "வினாடி வினாவைத் தொடங்கு 🚀",
+    instructionsTitle: "🎮 விளையாடுவது எப்படி",
+    instructions: [
+      "<strong>15 படிப்படியான கேள்விகள்:</strong> 5 எளிது, 5 நடுத்தரம், 5 கடினம் கேள்விகள்.",
+      "<strong>கேள்விக்கு 20 வினாடிகள்:</strong> விரைவாகப் பதிலளித்து கூடுதல் வேகப் புள்ளிகளைப் பெறுங்கள்!",
+      "<strong>மதிப்பெண் கணக்கீடு:</strong> ஒரு கேள்விக்கு 1,000 புள்ளிகள் வரை (500 அடிப்படை + 500 வரை வேகப் போனஸ்).",
+      "<strong>கணக்கு தேவையில்லை:</strong> உடனடியாக விளையாடி, விடைகளைச் சரிபார்த்து, உங்கள் கார்டைப் பதிவிறக்குங்கள்."
+    ],
+    hudQuestion: "கேள்வி",
+    hudOf: "/",
+    hudScore: "மதிப்பெண்",
+    feedbackCorrect: "சரியான விடை!",
+    feedbackIncorrect: "தவறான விடை",
+    feedbackTimeout: "நேரம் முடிந்தது!",
+    nextQuestionBtn: "அடுத்த கேள்வி ➜",
+    scriptureRef: "வேதாகம ஆதாரம்",
+    correctAnswerIs: "வேதாகமத்தின்படி சரியான விடை",
+    resultsTitle: "வினாடி வினா நிறைவுற்றது!",
+    resultsExpert: "வேதாகம மேதை",
+    resultsExplorer: "வேதாகம ஆய்வாளர்",
+    resultsGrowing: "அறிவில் வளருபவர்",
+    resultsLearning: "தொடர்ந்து கற்றுக்கொள்ளுங்கள்",
+    encouragementExpert: "அற்புதம்! வேதாகம வரலாற்றிலும் கதாபாத்திரங்களிலும் உங்களுக்கு சிறந்த புலமை உண்டு!",
+    encouragementExplorer: "சிறந்த முயற்சி! வேதாகம அறிவில் உங்களுக்கு பலமான அடிப்படை உள்ளது!",
+    encouragementGrowing: "நல்ல முயற்சி! தொடர்ந்து வேதாகமத்தை வாசித்து அறிவில் வளருங்கள்!",
+    encouragementLearning: "ஒவ்வொரு வல்லுநரும் ஒரு காலத்தில் தொடக்கநிலையாளரே. மீண்டும் முயற்சி செய்யுங்கள்!",
+    cardTitle: "⚡ வேதாகம வினாடி வினா",
+    cardBadge: "அதிகாரப்பூர்வ முடிவு அட்டை",
+    cardPlayer: "வீரர்",
+    cardAttempt: "முயற்சி எண்",
+    cardCorrect: "சரியான விடைகள்",
+    cardAccuracy: "துல்லியம்",
+    cardAvgTime: "சராசரி வேகம்",
+    cardSpeedBonus: "வேக போனஸ்",
+    cardCategory: "பிரிவு",
+    statCorrect: "சரி",
+    statIncorrect: "தவறு",
+    statUnanswered: "பதிலளிக்காதவை",
+    statTotalTime: "மொத்த நேரம்",
+    btnBackHome: "🏠 முகப்புக்குச் செல்",
+    btnPlayAgain: "🔄 மீண்டும் விளையாடு",
+    btnReview: "📝 விடைகளைச் சரிபார்",
+    btnDownloadCard: "📸 கார்டைப் பதிவிறக்கு (PNG)",
+    exportNote: "💡 <strong>ஒருங்கிணைப்பாளர்களுக்கான குறிப்பு:</strong> முடிவு அட்டையைப் பதிவிறக்கி அல்லது ஸ்கிரீன்ஷாட் எடுத்து ஒருங்கிணைப்பாளருக்கு அனுப்பலாம்.",
+    reviewTitle: "வினா & விடை மதிப்பாய்வு",
+    reviewSubtitle: "ஒவ்வொரு கேள்வி, உங்கள் விடை மற்றும் வேதாகம குறிப்புகளை மதிப்பாய்வு செய்யுங்கள்.",
+    btnBackToResults: "⬅ முடிவுகளுக்குத் திரும்பு",
+    reviewYourAnswer: "உங்கள் விடை",
+    reviewCorrectAnswer: "சரியான விடை",
+    reviewTimedOut: "நேரம் கடந்துவிட்டது",
+    difficultyLevels: [
+      {
+        level: "Easy",
+        levelTamil: "எளிது",
+        questions: [
+          {
+            id: 1,
+            question: "இயேசு எத்தனை சீடர்களைத் தேர்ந்தெடுத்தார்?",
+            choices: ["12", "10", "7", "40"],
+            correctAnswer: "12",
+            reference: "லூக்கா 6:13"
+          },
+          {
+            id: 2,
+            question: "இயேசு எந்த ஊரில் பிறந்தார்?",
+            choices: ["நாசரேத்", "பெத்லகேம்", "எருசலேம்", "கப்பர்நகூம்"],
+            correctAnswer: "பெத்லகேம்",
+            reference: "மத்தேயு 2:1"
+          },
+          {
+            id: 3,
+            question: "பேழையைக் கட்டியவர் யார்?",
+            choices: ["மோசே", "ஆபிரகாம்", "நோவா", "யாக்கோபு"],
+            correctAnswer: "நோவா",
+            reference: "ஆதியாகமம் 6:13-22"
+          },
+          {
+            id: 4,
+            question: "சிங்கங்களின் கெபியில் போடப்பட்டும் பாதுகாப்பாக இருந்தவர் யார்?",
+            choices: ["யோசேப்பு", "எலியா", "சிம்சோன்", "தானியேல்"],
+            correctAnswer: "தானியேல்",
+            reference: "தானியேல் 6:16-23"
+          },
+          {
+            id: 5,
+            question: "பெரிய மீனால் விழுங்கப்பட்டவர் யார்?",
+            choices: ["யோனா", "யோபு", "யோவான்", "யோசுவா"],
+            correctAnswer: "யோனா",
+            reference: "யோனா 1:17"
+          }
+        ]
+      },
+      {
+        level: "Medium",
+        levelTamil: "நடுத்தரம்",
+        questions: [
+          {
+            id: 6,
+            question: "இயேசுவைக் காட்டிக்கொடுத்த சீடர் யார்?",
+            choices: ["சீமோன் பேதுரு", "யூதாஸ் காரியோத்து", "தோமா", "யாக்கோபின் மகனான யூதா"],
+            correctAnswer: "யூதாஸ் காரியோத்து",
+            reference: "மத்தேயு 26:14-16"
+          },
+          {
+            id: 7,
+            question: "இயேசு செய்த முதல் அற்புதம் எது?",
+            choices: ["குருடனைக் குணமாக்கியது", "ஐயாயிரம் பேருக்கு உணவளித்தது", "தண்ணீரைத் திராட்சரசமாக மாற்றியது", "தண்ணீரின் மேல் நடந்தது"],
+            correctAnswer: "தண்ணீரைத் திராட்சரசமாக மாற்றியது",
+            reference: "யோவான் 2:1-11"
+          },
+          {
+            id: 8,
+            question: "இயேசுவை மூன்று முறை மறுதலித்த சீடர் யார்?",
+            choices: ["அந்திரேயா", "யோவான்", "மத்தேயு", "பேதுரு"],
+            correctAnswer: "பேதுரு",
+            reference: "லூக்கா 22:54-62"
+          },
+          {
+            id: 9,
+            question: "ஆபிரகாம் முதிர்வயதில் பெற்ற மகனின் பெயர் என்ன?",
+            choices: ["ஈசாக்கு", "இஸ்மவேல்", "யாக்கோபு", "ஏசா"],
+            correctAnswer: "ஈசாக்கு",
+            reference: "ஆதியாகமம் 21:1-3"
+          },
+          {
+            id: 10,
+            question: "பெருவெள்ளத்திற்குப் பிறகு தேவன் தமது உடன்படிக்கையின் அடையாளமாகக் கொடுத்தது எது?",
+            choices: ["அக்கினித் தூண்", "வானவில்", "எரியும் முட்புதர்", "புகை மேகம்"],
+            correctAnswer: "வானவில்",
+            reference: "ஆதியாகமம் 9:12-17"
+          }
+        ]
+      },
+      {
+        level: "Hard",
+        levelTamil: "கடினம்",
+        questions: [
+          {
+            id: 11,
+            question: "ஆதியாகமத்தின்படி, தேவன் முதல் நாளில் எதைப் படைத்தார்?",
+            choices: ["சூரியனையும் சந்திரனையும்", "நிலத்தையும் கடல்களையும்", "ஒளியை", "நட்சத்திரங்களையும் கோள்களையும்"],
+            correctAnswer: "ஒளியை",
+            reference: "ஆதியாகமம் 1:3-5"
+          },
+          {
+            id: 12,
+            question: "ஐயாயிரம் ஆண்களுக்கு உணவளித்தபோது எத்தனை அப்பங்களும் மீன்களும் பயன்படுத்தப்பட்டன?",
+            choices: ["7 அப்பங்களும் 2 மீன்களும்", "5 அப்பங்களும் 5 மீன்களும்", "12 அப்பங்களும் 2 மீன்களும்", "5 அப்பங்களும் 2 மீன்களும்"],
+            correctAnswer: "5 அப்பங்களும் 2 மீன்களும்",
+            reference: "மத்தேயு 14:17-21"
+          },
+          {
+            id: 13,
+            question: "பெருவெள்ளத்தின்போது எத்தனை நாட்களும் இரவுகளும் மழை பெய்தது?",
+            choices: ["40 நாட்களும் 40 இரவுகளும்", "7 நாட்களும் 7 இரவுகளும்", "30 நாட்களும் 30 இரவுகளும்", "150 நாட்களும் 150 இரவுகளும்"],
+            correctAnswer: "40 நாட்களும் 40 இரவுகளும்",
+            reference: "ஆதியாகமம் 7:12"
+          },
+          {
+            id: 14,
+            question: "இஸ்ரவேலர்கள் கடந்து செல்ல தேவன் பிளந்த கடல் எது?",
+            choices: ["சவக்கடல்", "செங்கடல்", "கலிலேயா கடல்", "மத்தியதரைக் கடல்"],
+            correctAnswer: "செங்கடல்",
+            reference: "யாத்திராகமம் 14:21-22"
+          },
+          {
+            id: 15,
+            question: "இஸ்ரவேல் மக்களை எகிப்திலிருந்து வழிநடத்திச் சென்றவர் யார்?",
+            choices: ["யோசுவா", "ஆரோன்", "மோசே", "ஆபிரகாம்"],
+            correctAnswer: "மோசே",
+            reference: "யாத்திராகமம் 3:10"
+          }
+        ]
+      }
+    ]
+  }
 };
 
-// Flatten and order questions progressively: Easy (1-5) -> Medium (6-10) -> Hard (11-15)
-const ALL_QUESTIONS = QUIZ_SPEC.difficultyLevels.flatMap(lvl => 
-  lvl.questions.map(q => ({
-    ...q,
-    levelName: lvl.level,
-    options: [...q.choices]
-  }))
-);
+// ==========================================
+// 2. CONFIGURATION & STATE
+// ==========================================
+let currentLang = "en";
 
-// ==========================================
-// 2. CONSTANTS & CONFIGURATION
-// ==========================================
 const CONFIG = {
-  TOTAL_QUESTIONS: QUIZ_SPEC.totalQuestions,
-  TIME_LIMIT_SECONDS: QUIZ_SPEC.timePerQuestion,
-  BASE_POINTS: QUIZ_SPEC.scoring.correctAnswerBasePoints,
-  SPEED_BONUS_MAX: QUIZ_SPEC.scoring.maximumSpeedBonus,
-  MAX_SCORE_PER_Q: QUIZ_SPEC.scoring.maximumPointsPerQuestion
+  TOTAL_QUESTIONS: 15,
+  TIME_LIMIT_SECONDS: 20,
+  BASE_POINTS: 500,
+  SPEED_BONUS_MAX: 500,
+  MAX_SCORE_PER_Q: 1000
 };
 
-// ==========================================
-// 3. GAME STATE (Single Source of Truth)
-// ==========================================
 const gameState = {
   playerName: "",
   attemptId: "",
@@ -284,81 +406,179 @@ const gameState = {
 };
 
 // ==========================================
-// 4. DOM ELEMENTS CACHE
+// 3. DOM ELEMENTS CACHE
 // ==========================================
 const DOM = {
-  // Screens
   screens: {
     welcome: document.getElementById("welcome-screen"),
     quiz: document.getElementById("quiz-screen"),
     results: document.getElementById("results-screen"),
     review: document.getElementById("review-screen")
   },
-  // Screen A
+  langBtnEn: document.getElementById("lang-btn-en"),
+  langBtnTa: document.getElementById("lang-btn-ta"),
+  // Welcome Elements
+  lblBrandBadge: document.getElementById("lbl-brand-badge"),
+  lblBrandTitle: document.getElementById("lbl-brand-title"),
+  lblBrandSubtitle: document.getElementById("lbl-brand-subtitle"),
+  lblPillCategory: document.getElementById("lbl-pill-category"),
+  valPillCategory: document.getElementById("val-pill-category"),
+  lblPillLevels: document.getElementById("lbl-pill-levels"),
+  valPillLevels: document.getElementById("val-pill-levels"),
+  lblPillQuestions: document.getElementById("lbl-pill-questions"),
+  lblPillTime: document.getElementById("lbl-pill-time"),
+  lblPillScore: document.getElementById("lbl-pill-score"),
+  lblNickname: document.getElementById("lbl-nickname"),
   form: document.getElementById("nickname-form"),
   nicknameInput: document.getElementById("nickname-input"),
   nicknameError: document.getElementById("nickname-error"),
   startBtn: document.getElementById("start-btn"),
-  // Screen B HUD
+  lblInstructionsTitle: document.getElementById("lbl-instructions-title"),
+  instructionsList: document.getElementById("instructions-list"),
+  // Quiz Screen Elements
   hudPlayerName: document.getElementById("hud-player-name"),
+  lblQTracker: document.getElementById("lbl-q-tracker"),
+  lblOfTracker: document.getElementById("lbl-of-tracker"),
   currentQNum: document.getElementById("current-q-num"),
   totalQNum: document.getElementById("total-q-num"),
   timerBox: document.getElementById("timer-box"),
   timerDisplay: document.getElementById("timer-display"),
+  lblScore: document.getElementById("lbl-score"),
   hudScore: document.getElementById("hud-score"),
   progressBar: document.getElementById("progress-bar"),
-  // Screen B Question & Answers
   questionCategoryTag: document.querySelector(".question-category-tag"),
   questionText: document.getElementById("question-text"),
-  answerGrid: document.getElementById("answer-grid"),
   answerButtons: [
     document.getElementById("opt-0"),
     document.getElementById("opt-1"),
     document.getElementById("opt-2"),
     document.getElementById("opt-3")
   ],
-  // Screen C Feedback
+  // Feedback Panel
   feedbackPanel: document.getElementById("feedback-panel"),
   feedbackBanner: document.getElementById("feedback-banner"),
   feedbackIcon: document.getElementById("feedback-icon"),
   feedbackTitle: document.getElementById("feedback-title"),
   feedbackPointsTag: document.getElementById("feedback-points-tag"),
+  lblScriptureRef: document.getElementById("lbl-scripture-ref"),
   feedbackReference: document.getElementById("feedback-reference"),
   feedbackExplanation: document.getElementById("feedback-explanation"),
   nextQuestionBtn: document.getElementById("next-question-btn"),
-  // Screen D & F Results & Card
+  // Results Elements
   resultsRatingBadge: document.getElementById("results-rating-badge"),
+  lblResultsTitle: document.getElementById("lbl-results-title"),
   resultsEncouragement: document.getElementById("results-encouragement"),
+  cardBrandTitle: document.getElementById("card-brand-title"),
+  cardBadgeTag: document.getElementById("card-badge-tag"),
   cardPlayerName: document.getElementById("card-player-name"),
+  lblAttemptId: document.getElementById("lbl-attempt-id"),
   cardAttemptId: document.getElementById("card-attempt-id"),
   cardFinalScore: document.getElementById("card-final-score"),
   cardRatingLabel: document.getElementById("card-rating-label"),
   cardCorrectCount: document.getElementById("card-correct-count"),
+  cardLblCorrect: document.getElementById("card-lbl-correct"),
   cardAccuracy: document.getElementById("card-accuracy"),
+  cardLblAccuracy: document.getElementById("card-lbl-accuracy"),
   cardAvgTime: document.getElementById("card-avg-time"),
+  cardLblAvgTime: document.getElementById("card-lbl-avg-time"),
   cardSpeedBonus: document.getElementById("card-speed-bonus"),
+  cardLblSpeedBonus: document.getElementById("card-lbl-speed-bonus"),
+  cardLblCategory: document.getElementById("card-lbl-category"),
+  cardValCategory: document.getElementById("card-val-category"),
   cardTimestamp: document.getElementById("card-timestamp"),
+  lblStatCorrect: document.getElementById("lbl-stat-correct"),
+  lblStatIncorrect: document.getElementById("lbl-stat-incorrect"),
+  lblStatUnanswered: document.getElementById("lbl-stat-unanswered"),
+  lblStatTotalTime: document.getElementById("lbl-stat-total-time"),
   summaryCorrect: document.getElementById("summary-correct"),
   summaryIncorrect: document.getElementById("summary-incorrect"),
   summaryUnanswered: document.getElementById("summary-unanswered"),
   summaryTotalTime: document.getElementById("summary-total-time"),
   screenshotCard: document.getElementById("screenshot-card"),
   downloadCardBtn: document.getElementById("download-card-btn"),
-  reviewBtn: document.getElementById("review-btn"),
+  backHomeBtn: document.getElementById("back-home-btn"),
   playAgainBtn: document.getElementById("play-again-btn"),
-  // Screen E Review
-  reviewList: document.getElementById("review-list"),
+  reviewBtn: document.getElementById("review-btn"),
+  lblExportNote: document.getElementById("lbl-export-note"),
+  // Review Elements
+  lblReviewTitle: document.getElementById("lbl-review-title"),
+  lblReviewSubtitle: document.getElementById("lbl-review-subtitle"),
   backToResultsBtn: document.getElementById("back-to-results-btn"),
+  reviewList: document.getElementById("review-list"),
+  reviewHomeBtn: document.getElementById("review-home-btn"),
   reviewPlayAgainBtn: document.getElementById("review-play-again-btn")
 };
 
 // ==========================================
+// 4. LANGUAGE SWITCHER LOGIC
+// ==========================================
+function setLanguage(lang) {
+  currentLang = lang;
+  const dict = QUIZ_DATA[lang];
+
+  // Update Buttons
+  DOM.langBtnEn.classList.toggle("active", lang === "en");
+  DOM.langBtnTa.classList.toggle("active", lang === "ta");
+
+  // Update Welcome Screen
+  DOM.lblBrandBadge.textContent = dict.brandBadge;
+  DOM.lblBrandTitle.innerHTML = dict.brandTitle;
+  DOM.lblBrandSubtitle.textContent = dict.brandSubtitle;
+  DOM.lblPillCategory.textContent = lang === "ta" ? "பிரிவு:" : "Category:";
+  DOM.valPillCategory.textContent = dict.categoryName;
+  DOM.lblPillLevels.textContent = lang === "ta" ? "நிலைகள்:" : "Levels:";
+  DOM.valPillLevels.textContent = dict.levelsName;
+  DOM.lblPillQuestions.textContent = lang === "ta" ? "கேள்விகள்:" : "Questions:";
+  DOM.lblPillTime.textContent = lang === "ta" ? "நேரம்:" : "Time:";
+  DOM.lblPillScore.textContent = lang === "ta" ? "அதிகபட்ச மதிப்பெண்:" : "Max Score:";
+  DOM.lblNickname.textContent = dict.nicknameLabel;
+  DOM.nicknameInput.placeholder = dict.nicknamePlaceholder;
+  DOM.startBtn.textContent = dict.startBtn;
+  DOM.lblInstructionsTitle.textContent = dict.instructionsTitle;
+
+  DOM.instructionsList.innerHTML = dict.instructions.map(item => `<li>${item}</li>`).join("");
+
+  // Update Quiz HUD labels
+  DOM.lblQTracker.textContent = dict.hudQuestion;
+  DOM.lblOfTracker.textContent = dict.hudOf;
+  DOM.lblScore.textContent = dict.hudScore;
+  DOM.lblScriptureRef.textContent = `${dict.scriptureRef}:`;
+  DOM.nextQuestionBtn.textContent = dict.nextQuestionBtn;
+
+  // Update Results Labels
+  DOM.lblResultsTitle.textContent = dict.resultsTitle;
+  DOM.cardBrandTitle.textContent = dict.cardTitle;
+  DOM.cardBadgeTag.textContent = dict.cardBadge;
+  DOM.lblAttemptId.textContent = `${dict.cardAttempt}:`;
+  DOM.cardLblCorrect.textContent = dict.cardCorrect;
+  DOM.cardLblAccuracy.textContent = dict.cardAccuracy;
+  DOM.cardLblAvgTime.textContent = dict.cardAvgTime;
+  DOM.cardLblSpeedBonus.textContent = dict.cardSpeedBonus;
+  DOM.cardLblCategory.textContent = `${dict.cardCategory}:`;
+  DOM.cardValCategory.textContent = dict.categoryName;
+
+  DOM.lblStatCorrect.textContent = dict.statCorrect;
+  DOM.lblStatIncorrect.textContent = dict.statIncorrect;
+  DOM.lblStatUnanswered.textContent = dict.statUnanswered;
+  DOM.lblStatTotalTime.textContent = dict.statTotalTime;
+
+  DOM.backHomeBtn.textContent = dict.btnBackHome;
+  DOM.playAgainBtn.textContent = dict.btnPlayAgain;
+  DOM.reviewBtn.textContent = dict.btnReview;
+  DOM.downloadCardBtn.textContent = dict.btnDownloadCard;
+  DOM.lblExportNote.innerHTML = dict.exportNote;
+
+  // Review screen
+  DOM.lblReviewTitle.textContent = dict.reviewTitle;
+  DOM.lblReviewSubtitle.textContent = dict.reviewSubtitle;
+  DOM.backToResultsBtn.textContent = dict.btnBackToResults;
+  DOM.reviewHomeBtn.textContent = dict.btnBackHome;
+  DOM.reviewPlayAgainBtn.textContent = dict.btnPlayAgain;
+}
+
+// ==========================================
 // 5. HELPER UTILITIES
 // ==========================================
-
-/**
- * Fisher-Yates array shuffle algorithm (unbiased)
- */
 function shuffleArray(array) {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -368,17 +588,11 @@ function shuffleArray(array) {
   return shuffled;
 }
 
-/**
- * Generates an 8-character unique alphanumeric Attempt ID
- */
 function generateAttemptId() {
   const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `BQC-${randomPart}`;
 }
 
-/**
- * Switch active visible screen
- */
 function showScreen(screenKey) {
   Object.values(DOM.screens).forEach(screen => screen.classList.remove("active"));
   if (DOM.screens[screenKey]) {
@@ -387,55 +601,30 @@ function showScreen(screenKey) {
   }
 }
 
-/**
- * Calculates score according to the Master Specification:
- * Points = 500 + round(500 * (1 - responseTime / timeLimit))
- * Clamped between 0 and 1,000 pts.
- */
 function calculateQuestionPoints(isCorrect, responseTimeSeconds) {
   if (!isCorrect) return 0;
-  
   const clampedTime = Math.max(0, Math.min(responseTimeSeconds, CONFIG.TIME_LIMIT_SECONDS));
   const speedBonus = Math.round(CONFIG.SPEED_BONUS_MAX * (1 - (clampedTime / CONFIG.TIME_LIMIT_SECONDS)));
   const totalPoints = CONFIG.BASE_POINTS + speedBonus;
-  
   return Math.min(CONFIG.MAX_SCORE_PER_Q, Math.max(CONFIG.BASE_POINTS, totalPoints));
 }
 
-/**
- * Returns performance rating and encouraging message
- */
 function getPerformanceRating(accuracyPercentage) {
+  const dict = QUIZ_DATA[currentLang];
   if (accuracyPercentage >= 90) {
-    return {
-      title: "Bible Expert",
-      message: "Phenomenal! You have an outstanding mastery of Bible characters and stories!"
-    };
+    return { title: dict.resultsExpert, message: dict.encouragementExpert };
   } else if (accuracyPercentage >= 70) {
-    return {
-      title: "Bible Explorer",
-      message: "Wonderful job! You have a strong foundation in Bible knowledge!"
-    };
+    return { title: dict.resultsExplorer, message: dict.encouragementExplorer };
   } else if (accuracyPercentage >= 50) {
-    return {
-      title: "Growing in Knowledge",
-      message: "Good effort! Keep reading and growing in your understanding of the Scriptures!"
-    };
+    return { title: dict.resultsGrowing, message: dict.encouragementGrowing };
   } else {
-    return {
-      title: "Keep Learning",
-      message: "Every expert was once a beginner. Keep exploring the Bible and try again!"
-    };
+    return { title: dict.resultsLearning, message: dict.encouragementLearning };
   }
 }
 
 // ==========================================
 // 6. GAME FLOW CONTROLLER
 // ==========================================
-
-/**
- * Initialize a brand new game session with all 15 questions
- */
 function startQuiz(nickname) {
   gameState.playerName = nickname;
   gameState.attemptId = generateAttemptId();
@@ -444,13 +633,17 @@ function startQuiz(nickname) {
   gameState.userRecords = [];
   gameState.isAnswerSubmitted = false;
 
-  // Prepare questions: Keep progressive difficulty (Easy -> Medium -> Hard), shuffle choices per question
-  gameState.selectedQuestions = ALL_QUESTIONS.map(q => ({
-    ...q,
-    shuffledOptions: shuffleArray(q.choices)
-  }));
+  const dict = QUIZ_DATA[currentLang];
+  const allQuestions = dict.difficultyLevels.flatMap(lvl => 
+    lvl.questions.map(q => ({
+      ...q,
+      levelDisplay: currentLang === "ta" ? lvl.levelTamil : lvl.level,
+      shuffledOptions: shuffleArray(q.choices)
+    }))
+  );
 
-  // Setup HUD
+  gameState.selectedQuestions = allQuestions;
+
   DOM.hudPlayerName.textContent = gameState.playerName;
   DOM.totalQNum.textContent = CONFIG.TOTAL_QUESTIONS;
   DOM.hudScore.textContent = "0";
@@ -459,30 +652,24 @@ function startQuiz(nickname) {
   loadQuestion(0);
 }
 
-/**
- * Loads a question onto Screen B
- */
 function loadQuestion(index) {
   gameState.currentQuestionIndex = index;
   gameState.isAnswerSubmitted = false;
   clearInterval(gameState.timerInterval);
 
   const qData = gameState.selectedQuestions[index];
+  const dict = QUIZ_DATA[currentLang];
 
-  // Update HUD
   DOM.currentQNum.textContent = index + 1;
   const progressPercent = ((index + 1) / CONFIG.TOTAL_QUESTIONS) * 100;
   DOM.progressBar.style.width = `${progressPercent}%`;
 
-  // Update Category / Difficulty Tag
   if (DOM.questionCategoryTag) {
-    DOM.questionCategoryTag.textContent = `${qData.levelName} Level • Question ${index + 1}`;
+    DOM.questionCategoryTag.textContent = `${qData.levelDisplay} • ${dict.hudQuestion} ${index + 1}`;
   }
 
-  // Update Question Content
   DOM.questionText.textContent = qData.question;
 
-  // Reset & Populate Answer Buttons
   DOM.answerButtons.forEach((btn, idx) => {
     btn.disabled = false;
     btn.className = "answer-card btn-option";
@@ -493,15 +680,12 @@ function loadQuestion(index) {
     }
   });
 
-  // Hide feedback panel
   DOM.feedbackPanel.classList.add("hidden");
 
-  // Reset & Start Countdown Timer
   let timeLeft = CONFIG.TIME_LIMIT_SECONDS;
   DOM.timerDisplay.textContent = timeLeft;
   DOM.timerBox.classList.remove("timer-urgent");
 
-  // Monotonic browser start time
   gameState.questionStartTime = performance.now();
 
   gameState.timerInterval = setInterval(() => {
@@ -511,7 +695,6 @@ function loadQuestion(index) {
       handleTimeout();
       return;
     }
-
     DOM.timerDisplay.textContent = timeLeft;
     if (timeLeft <= 5) {
       DOM.timerBox.classList.add("timer-urgent");
@@ -519,15 +702,11 @@ function loadQuestion(index) {
   }, 1000);
 }
 
-/**
- * Handle user option selection
- */
 function handleAnswerSelection(chosenIndex) {
-  if (gameState.isAnswerSubmitted) return; // Prevent duplicate clicks
+  if (gameState.isAnswerSubmitted) return;
   gameState.isAnswerSubmitted = true;
   clearInterval(gameState.timerInterval);
 
-  // Exact elapsed time in seconds using monotonic clock
   const elapsedMs = performance.now() - gameState.questionStartTime;
   const elapsedSec = Math.min(CONFIG.TIME_LIMIT_SECONDS, Math.max(0.1, elapsedMs / 1000));
 
@@ -539,11 +718,10 @@ function handleAnswerSelection(chosenIndex) {
   gameState.cumulativeScore += pointsAwarded;
   DOM.hudScore.textContent = gameState.cumulativeScore.toLocaleString();
 
-  // Save record
   gameState.userRecords.push({
     questionNumber: gameState.currentQuestionIndex + 1,
     questionText: qData.question,
-    levelName: qData.levelName,
+    levelDisplay: qData.levelDisplay,
     options: qData.shuffledOptions,
     userAnswer: chosenAnswer,
     correctAnswer: qData.correctAnswer,
@@ -554,10 +732,8 @@ function handleAnswerSelection(chosenIndex) {
     reference: qData.reference
   });
 
-  // Disable all answer buttons immediately
   DOM.answerButtons.forEach(btn => btn.disabled = true);
 
-  // Apply visual styling
   DOM.answerButtons.forEach((btn, idx) => {
     const text = qData.shuffledOptions[idx];
     if (text === qData.correctAnswer) {
@@ -569,7 +745,6 @@ function handleAnswerSelection(chosenIndex) {
     }
   });
 
-  // Present Screen C Feedback
   showFeedback({
     isCorrect: isCorrect,
     isTimeout: false,
@@ -579,23 +754,20 @@ function handleAnswerSelection(chosenIndex) {
   });
 }
 
-/**
- * Handle question timeout when 20s expires
- */
 function handleTimeout() {
   if (gameState.isAnswerSubmitted) return;
   gameState.isAnswerSubmitted = true;
 
   const qData = gameState.selectedQuestions[gameState.currentQuestionIndex];
   const elapsedSec = CONFIG.TIME_LIMIT_SECONDS;
+  const dict = QUIZ_DATA[currentLang];
 
-  // Record unanswered timeout
   gameState.userRecords.push({
     questionNumber: gameState.currentQuestionIndex + 1,
     questionText: qData.question,
-    levelName: qData.levelName,
+    levelDisplay: qData.levelDisplay,
     options: qData.shuffledOptions,
-    userAnswer: "Unanswered (Time ran out)",
+    userAnswer: dict.reviewTimedOut,
     correctAnswer: qData.correctAnswer,
     isCorrect: false,
     isTimeout: true,
@@ -604,7 +776,6 @@ function handleTimeout() {
     reference: qData.reference
   });
 
-  // Disable buttons and reveal correct answer
   DOM.answerButtons.forEach((btn, idx) => {
     btn.disabled = true;
     const text = qData.shuffledOptions[idx];
@@ -615,7 +786,6 @@ function handleTimeout() {
     }
   });
 
-  // Present Screen C Feedback for Timeout
   showFeedback({
     isCorrect: false,
     isTimeout: true,
@@ -625,39 +795,34 @@ function handleTimeout() {
   });
 }
 
-/**
- * Displays Screen C Feedback panel
- */
 function showFeedback({ isCorrect, isTimeout, points, reference, correctAnswer }) {
+  const dict = QUIZ_DATA[currentLang];
   DOM.feedbackBanner.className = "feedback-banner";
 
   if (isTimeout) {
     DOM.feedbackBanner.classList.add("timeout");
     DOM.feedbackIcon.textContent = "⏱";
-    DOM.feedbackTitle.textContent = "Time's Up!";
+    DOM.feedbackTitle.textContent = dict.feedbackTimeout;
     DOM.feedbackPointsTag.textContent = "+0 Points";
   } else if (isCorrect) {
     DOM.feedbackBanner.classList.add("correct");
     DOM.feedbackIcon.textContent = "✓";
-    DOM.feedbackTitle.textContent = "Correct!";
+    DOM.feedbackTitle.textContent = dict.feedbackCorrect;
     DOM.feedbackPointsTag.textContent = `+${points.toLocaleString()} Points`;
   } else {
     DOM.feedbackBanner.classList.add("incorrect");
     DOM.feedbackIcon.textContent = "✗";
-    DOM.feedbackTitle.textContent = "Incorrect";
+    DOM.feedbackTitle.textContent = dict.feedbackIncorrect;
     DOM.feedbackPointsTag.textContent = "+0 Points";
   }
 
   DOM.feedbackReference.textContent = reference;
-  DOM.feedbackExplanation.textContent = `The correct answer is: "${correctAnswer}" according to scripture.`;
+  DOM.feedbackExplanation.textContent = `${dict.correctAnswerIs}: "${correctAnswer}"`;
 
   DOM.feedbackPanel.classList.remove("hidden");
   DOM.nextQuestionBtn.focus();
 }
 
-/**
- * Advances to the next question or finishes the quiz
- */
 function advanceToNextQuestion() {
   const nextIndex = gameState.currentQuestionIndex + 1;
   if (nextIndex < CONFIG.TOTAL_QUESTIONS) {
@@ -667,9 +832,6 @@ function advanceToNextQuestion() {
   }
 }
 
-/**
- * Calculates final statistics and displays Screen D & F
- */
 function completeQuiz() {
   clearInterval(gameState.timerInterval);
 
@@ -694,7 +856,6 @@ function completeQuiz() {
   const speedBonusTotal = Math.max(0, gameState.cumulativeScore - (CONFIG.BASE_POINTS * correctCount));
   const performance = getPerformanceRating(accuracy);
 
-  // Screen D elements
   DOM.resultsRatingBadge.textContent = performance.title;
   DOM.resultsEncouragement.textContent = performance.message;
 
@@ -703,7 +864,6 @@ function completeQuiz() {
   DOM.summaryUnanswered.textContent = unansweredCount;
   DOM.summaryTotalTime.textContent = `${totalTime.toFixed(1)}s`;
 
-  // Screen F Result Card elements
   const maxPossibleScore = CONFIG.TOTAL_QUESTIONS * CONFIG.MAX_SCORE_PER_Q;
   DOM.cardPlayerName.textContent = gameState.playerName;
   DOM.cardAttemptId.textContent = gameState.attemptId;
@@ -727,54 +887,49 @@ function completeQuiz() {
   showScreen("results");
 }
 
-/**
- * Builds Screen E: Answer Review
- */
 function populateAnswerReview() {
   DOM.reviewList.innerHTML = "";
+  const dict = QUIZ_DATA[currentLang];
 
   gameState.userRecords.forEach(rec => {
     const card = document.createElement("div");
     let statusClass = "review-correct";
-    let statusLabel = "✓ Correct";
+    let statusLabel = `✓ ${dict.statCorrect}`;
 
     if (rec.isTimeout) {
       statusClass = "review-timeout";
-      statusLabel = "⏱ Timed Out";
+      statusLabel = `⏱ ${dict.reviewTimedOut}`;
     } else if (!rec.isCorrect) {
       statusClass = "review-incorrect";
-      statusLabel = "✗ Incorrect";
+      statusLabel = `✗ ${dict.statIncorrect}`;
     }
 
     card.className = `review-card ${statusClass}`;
     card.innerHTML = `
       <div class="review-top-bar">
-        <span class="review-q-num">Question ${rec.questionNumber} of ${CONFIG.TOTAL_QUESTIONS} • <span style="text-transform: capitalize;">${rec.levelName}</span></span>
+        <span class="review-q-num">${dict.hudQuestion} ${rec.questionNumber} ${dict.hudOf} ${CONFIG.TOTAL_QUESTIONS} • ${rec.levelDisplay}</span>
         <span class="review-status-pill">${statusLabel} (+${rec.points} pts in ${rec.responseTimeSec.toFixed(1)}s)</span>
       </div>
       <div class="review-question-text">${rec.questionText}</div>
       <div class="review-answers-box">
-        <div class="review-user-ans"><strong>Your Answer:</strong> ${rec.userAnswer}</div>
-        <div class="review-correct-ans"><strong>Correct Answer:</strong> ${rec.correctAnswer}</div>
+        <div class="review-user-ans"><strong>${dict.reviewYourAnswer}:</strong> ${rec.userAnswer}</div>
+        <div class="review-correct-ans"><strong>${dict.reviewCorrectAnswer}:</strong> ${rec.correctAnswer}</div>
       </div>
       <div class="review-ref-exp">
-        <strong>Scripture Reference:</strong> ${rec.reference}
+        <strong>${dict.scriptureRef}:</strong> ${rec.reference}
       </div>
     `;
-
     DOM.reviewList.appendChild(card);
   });
 
   showScreen("review");
 }
 
-/**
- * Exports Result Card as high-resolution PNG using HTML5 Canvas
- */
 function exportCardAsImage() {
   const cardElement = DOM.screenshotCard;
   if (!cardElement) return;
 
+  const dict = QUIZ_DATA[currentLang];
   const width = 600;
   const height = 440;
   const canvas = document.createElement("canvas");
@@ -782,28 +937,24 @@ function exportCardAsImage() {
   canvas.height = height;
   const ctx = canvas.getContext("2d");
 
-  // Gradient Background
   const gradient = ctx.createLinearGradient(0, 0, width, height);
   gradient.addColorStop(0, "#2e0854");
   gradient.addColorStop(1, "#150630");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
-  // Outer border & shadow effect
   ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
   ctx.lineWidth = 4;
   ctx.strokeRect(10, 10, width - 20, height - 20);
 
-  // Header Banner
   ctx.fillStyle = "#fbbf24";
-  ctx.font = "bold 24px 'Fredoka', 'Segoe UI', Arial, sans-serif";
-  ctx.fillText("⚡ BIBLE QUIZ CHALLENGE", 30, 52);
+  ctx.font = "bold 22px 'Fredoka', 'Noto Sans Tamil', sans-serif";
+  ctx.fillText(dict.cardTitle, 30, 52);
 
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = "14px 'Inter', Arial, sans-serif";
-  ctx.fillText("OFFICIAL RESULT CARD", width - 210, 52);
+  ctx.font = "13px 'Inter', 'Noto Sans Tamil', sans-serif";
+  ctx.fillText(dict.cardBadge, width - 210, 52);
 
-  // Thin line
   ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -811,50 +962,46 @@ function exportCardAsImage() {
   ctx.lineTo(width - 30, 70);
   ctx.stroke();
 
-  // Player Name & Attempt
   ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 28px 'Fredoka', 'Segoe UI', Arial, sans-serif";
-  ctx.fillText(`Player: ${gameState.playerName}`, 30, 115);
+  ctx.font = "bold 26px 'Fredoka', 'Noto Sans Tamil', sans-serif";
+  ctx.fillText(`${dict.cardPlayer}: ${gameState.playerName}`, 30, 115);
 
   ctx.fillStyle = "#fbbf24";
   ctx.font = "14px monospace";
-  ctx.fillText(`ID: ${gameState.attemptId}`, 30, 140);
+  ctx.fillText(`${dict.cardAttempt}: ${gameState.attemptId}`, 30, 140);
 
-  // Big Score Box
   ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
   ctx.fillRect(30, 160, width - 60, 95);
 
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = "bold 13px 'Inter', Arial, sans-serif";
-  ctx.fillText("FINAL SCORE", 50, 188);
+  ctx.font = "bold 13px 'Inter', 'Noto Sans Tamil', sans-serif";
+  ctx.fillText(dict.hudScore.toUpperCase(), 50, 188);
 
   ctx.fillStyle = "#facc15";
-  ctx.font = "bold 44px 'Fredoka', 'Segoe UI', Arial, sans-serif";
+  ctx.font = "bold 44px 'Fredoka', sans-serif";
   ctx.fillText(`${gameState.cumulativeScore.toLocaleString()}`, 50, 235);
 
   const maxPossibleScore = (CONFIG.TOTAL_QUESTIONS * CONFIG.MAX_SCORE_PER_Q).toLocaleString();
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = "18px 'Inter', Arial, sans-serif";
+  ctx.font = "18px 'Inter', sans-serif";
   ctx.fillText(`/ ${maxPossibleScore} pts`, 220, 230);
 
-  // Rating Badge in Box
   const ratingText = DOM.cardRatingLabel.textContent;
   ctx.fillStyle = "#ff8c00";
   ctx.fillRect(width - 240, 185, 190, 42);
   ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 16px 'Fredoka', 'Segoe UI', Arial, sans-serif";
+  ctx.font = "bold 15px 'Fredoka', 'Noto Sans Tamil', sans-serif";
   ctx.textAlign = "center";
   ctx.fillText(ratingText, width - 145, 212);
   ctx.textAlign = "left";
 
-  // 4 Stats columns
   const statY = 280;
   const statBoxWidth = (width - 60 - 30) / 4;
   const stats = [
-    { num: DOM.cardCorrectCount.textContent, label: "Correct" },
-    { num: DOM.cardAccuracy.textContent, label: "Accuracy" },
-    { num: DOM.cardAvgTime.textContent, label: "Avg Time" },
-    { num: DOM.cardSpeedBonus.textContent, label: "Speed Bonus" }
+    { num: DOM.cardCorrectCount.textContent, label: dict.statCorrect },
+    { num: DOM.cardAccuracy.textContent, label: dict.cardAccuracy },
+    { num: DOM.cardAvgTime.textContent, label: dict.cardAvgTime },
+    { num: DOM.cardSpeedBonus.textContent, label: dict.cardSpeedBonus }
   ];
 
   stats.forEach((s, idx) => {
@@ -863,17 +1010,16 @@ function exportCardAsImage() {
     ctx.fillRect(x, statY, statBoxWidth, 75);
 
     ctx.fillStyle = "#38bdf8";
-    ctx.font = "bold 20px 'Fredoka', 'Segoe UI', Arial, sans-serif";
+    ctx.font = "bold 18px 'Fredoka', 'Noto Sans Tamil', sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(s.num, x + (statBoxWidth / 2), statY + 34);
 
     ctx.fillStyle = "#cbd5e1";
-    ctx.font = "11px 'Inter', Arial, sans-serif";
+    ctx.font = "10px 'Inter', 'Noto Sans Tamil', sans-serif";
     ctx.fillText(s.label.toUpperCase(), x + (statBoxWidth / 2), statY + 58);
   });
   ctx.textAlign = "left";
 
-  // Footer Info
   ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -882,11 +1028,10 @@ function exportCardAsImage() {
   ctx.stroke();
 
   ctx.fillStyle = "#94a3b8";
-  ctx.font = "12px 'Inter', Arial, sans-serif";
-  ctx.fillText("Category: Bible Characters & Basic Knowledge", 30, 405);
+  ctx.font = "12px 'Inter', 'Noto Sans Tamil', sans-serif";
+  ctx.fillText(`${dict.cardCategory}: ${dict.categoryName}`, 30, 405);
   ctx.fillText(DOM.cardTimestamp.textContent, width - 240, 405);
 
-  // Trigger download
   try {
     const imageURL = canvas.toDataURL("image/png");
     const downloadLink = document.createElement("a");
@@ -896,7 +1041,7 @@ function exportCardAsImage() {
     downloadLink.click();
     document.body.removeChild(downloadLink);
   } catch (err) {
-    alert("Result card generated! If download doesn't begin automatically, please take a quick screenshot of the card.");
+    alert("Result card generated! Please take a quick screenshot of the card.");
   }
 }
 
@@ -904,14 +1049,22 @@ function exportCardAsImage() {
 // 7. EVENT LISTENERS
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-  // Screen A: Nickname Validation & Start
+  // Initialize default language
+  setLanguage("en");
+
+  // Language switch buttons
+  DOM.langBtnEn.addEventListener("click", () => setLanguage("en"));
+  DOM.langBtnTa.addEventListener("click", () => setLanguage("ta"));
+
+  // Welcome Form
   DOM.form.addEventListener("submit", (e) => {
     e.preventDefault();
     const rawName = DOM.nicknameInput.value;
     const trimmed = rawName.trim();
+    const dict = QUIZ_DATA[currentLang];
 
     if (!trimmed) {
-      DOM.nicknameError.textContent = "Please enter a nickname to start the quiz.";
+      DOM.nicknameError.textContent = dict.nicknameError;
       DOM.nicknameInput.classList.add("input-error");
       DOM.nicknameInput.focus();
       return;
@@ -929,22 +1082,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Screen B: 4 Answer Card Buttons
+  // Answer buttons
   DOM.answerButtons.forEach((btn, idx) => {
     btn.addEventListener("click", () => {
       handleAnswerSelection(idx);
     });
   });
 
-  // Screen C: Next Question Button
+  // Next question
   DOM.nextQuestionBtn.addEventListener("click", () => {
     advanceToNextQuestion();
   });
 
-  // Keyboard navigation for Answer Options (Keys 1-4 or Enter/Space)
+  // Keyboard navigation
   window.addEventListener("keydown", (e) => {
     if (!DOM.screens.quiz.classList.contains("active")) return;
-
     if (!gameState.isAnswerSubmitted) {
       if (e.key === "1") handleAnswerSelection(0);
       else if (e.key === "2") handleAnswerSelection(1);
@@ -957,25 +1109,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Screen D: Export, Review, Play Again
-  DOM.downloadCardBtn.addEventListener("click", exportCardAsImage);
-
-  DOM.reviewBtn.addEventListener("click", populateAnswerReview);
-
-  DOM.playAgainBtn.addEventListener("click", () => {
-    DOM.nicknameInput.value = gameState.playerName;
+  // Result Actions
+  DOM.backHomeBtn.addEventListener("click", () => {
     showScreen("welcome");
-    DOM.nicknameInput.focus();
   });
 
-  // Screen E: Review Screen Back & Play Again
+  DOM.playAgainBtn.addEventListener("click", () => {
+    if (gameState.playerName) {
+      startQuiz(gameState.playerName);
+    } else {
+      showScreen("welcome");
+    }
+  });
+
+  DOM.reviewBtn.addEventListener("click", populateAnswerReview);
+  DOM.downloadCardBtn.addEventListener("click", exportCardAsImage);
+
+  // Review Actions
   DOM.backToResultsBtn.addEventListener("click", () => {
     showScreen("results");
   });
 
-  DOM.reviewPlayAgainBtn.addEventListener("click", () => {
-    DOM.nicknameInput.value = gameState.playerName;
+  DOM.reviewHomeBtn.addEventListener("click", () => {
     showScreen("welcome");
-    DOM.nicknameInput.focus();
+  });
+
+  DOM.reviewPlayAgainBtn.addEventListener("click", () => {
+    if (gameState.playerName) {
+      startQuiz(gameState.playerName);
+    } else {
+      showScreen("welcome");
+    }
   });
 });

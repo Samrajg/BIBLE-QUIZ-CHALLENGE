@@ -3,35 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bible Quiz Challenge</title>
+  <title>Bible Quiz Challenge | வேதாகம வினாடி வினா</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Floating Bible Elements in Background -->
+  <div class="floating-elements-bg" aria-hidden="true">
+    <div class="float-item float-1">🚢</div> <!-- Ark / Ship -->
+    <div class="float-item float-2">🕊️</div> <!-- Dove -->
+    <div class="float-item float-3">🦁</div> <!-- Lion -->
+    <div class="float-item float-4">🌳</div> <!-- Tree / Apple Tree -->
+    <div class="float-item float-5">🍎</div> <!-- Fruit -->
+    <div class="float-item float-6">📖</div> <!-- Bible -->
+    <div class="float-item float-7">🐟</div> <!-- Great Fish -->
+    <div class="float-item float-8">🌈</div> <!-- Rainbow -->
+    <div class="float-item float-9">👑</div> <!-- Crown -->
+    <div class="float-item float-10">✨</div> <!-- Star / Light -->
+  </div>
+
   <div class="app-container">
+
+    <!-- Top Bar with Language Toggle -->
+    <header class="app-topbar">
+      <div class="lang-switch-wrapper">
+        <span class="lang-icon">🌐</span>
+        <button type="button" id="lang-btn-en" class="lang-toggle-btn active" data-lang="en">English</button>
+        <span class="lang-divider">|</span>
+        <button type="button" id="lang-btn-ta" class="lang-toggle-btn" data-lang="ta">தமிழ்</button>
+      </div>
+    </header>
 
     <!-- Screen A: Welcome Screen -->
     <section id="welcome-screen" class="screen active">
       <div class="welcome-card card">
         <div class="brand-header">
-          <div class="brand-badge">⚡ Interactive Quiz</div>
-          <h1 class="brand-title">Bible Quiz <span class="highlight">Challenge</span></h1>
-          <p class="brand-subtitle">Discover Bible characters, test your knowledge, and learn something new.</p>
+          <div class="brand-badge" id="lbl-brand-badge">⚡ Interactive Quiz</div>
+          <h1 class="brand-title" id="lbl-brand-title">Bible Quiz <span class="highlight">Challenge</span></h1>
+          <p class="brand-subtitle" id="lbl-brand-subtitle">Discover Bible characters, test your knowledge, and learn something new.</p>
         </div>
 
         <div class="quiz-info-pills">
-          <div class="info-pill"><span class="pill-label">Category:</span> Characters & Bible Facts</div>
-          <div class="info-pill"><span class="pill-label">Levels:</span> Easy • Medium • Hard</div>
-          <div class="info-pill"><span class="pill-label">Questions:</span> 15</div>
-          <div class="info-pill"><span class="pill-label">Time:</span> 20s/Q</div>
-          <div class="info-pill"><span class="pill-label">Max Score:</span> 15,000 pts</div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-category">Category:</span> <span id="val-pill-category">Characters & Basic Facts</span></div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-levels">Levels:</span> <span id="val-pill-levels">Easy • Medium • Hard</span></div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-questions">Questions:</span> <span id="val-pill-questions">15</span></div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-time">Time:</span> <span id="val-pill-time">20s/Q</span></div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-score">Max Score:</span> <span id="val-pill-score">15,000 pts</span></div>
         </div>
 
         <form id="nickname-form" class="welcome-form" novalidate>
           <div class="input-group">
-            <label for="nickname-input">Choose Your Player Nickname</label>
+            <label for="nickname-input" id="lbl-nickname">Choose Your Player Nickname</label>
             <input 
               type="text" 
               id="nickname-input" 
@@ -49,8 +73,8 @@
         </form>
 
         <div class="instructions-card">
-          <h3>🎮 How to Play</h3>
-          <ul>
+          <h3 id="lbl-instructions-title">🎮 How to Play</h3>
+          <ul id="instructions-list">
             <li><strong>15 Progressive Questions:</strong> 5 Easy, 5 Medium, and 5 Hard questions.</li>
             <li><strong>20 Seconds Per Question:</strong> Answer fast to earn maximum speed bonus!</li>
             <li><strong>Score Breakdown:</strong> Up to 1,000 pts per question (500 base + up to 500 speed bonus).</li>
@@ -70,7 +94,7 @@
             <span id="hud-player-name" class="player-name">Player</span>
           </div>
           <div class="question-tracker">
-            Question <span id="current-q-num">1</span> of <span id="total-q-num">10</span>
+            <span id="lbl-q-tracker">Question</span> <span id="current-q-num">1</span> <span id="lbl-of-tracker">of</span> <span id="total-q-num">15</span>
           </div>
         </div>
 
@@ -83,7 +107,7 @@
 
         <div class="hud-right">
           <div class="score-display">
-            <span class="score-label">Score</span>
+            <span class="score-label" id="lbl-score">Score</span>
             <span id="hud-score" class="score-val">0</span>
           </div>
         </div>
@@ -91,13 +115,13 @@
 
       <!-- Progress Bar -->
       <div class="progress-bar-container">
-        <div id="progress-bar" class="progress-bar-fill" style="width: 10%;"></div>
+        <div id="progress-bar" class="progress-bar-fill" style="width: 6.66%;"></div>
       </div>
 
       <!-- Question Card -->
       <main class="quiz-main card">
         <div class="question-container">
-          <span class="question-category-tag">Bible Character</span>
+          <span class="question-category-tag">Easy Level • Question 1</span>
           <h2 id="question-text" class="question-title">Loading question...</h2>
         </div>
 
@@ -142,10 +166,10 @@
 
           <div class="feedback-details">
             <div class="reference-badge">
-              <strong>Scripture Reference:</strong> <span id="feedback-reference">Genesis 6:13-22</span>
+              <strong id="lbl-scripture-ref">Scripture Reference:</strong> <span id="feedback-reference">Luke 6:13</span>
             </div>
             <p id="feedback-explanation" class="feedback-explanation">
-              Noah obediently built an ark of gopher wood according to God's exact instructions to save his household and the animals.
+              The correct answer is: "12" according to scripture.
             </p>
           </div>
         </div>
@@ -157,7 +181,7 @@
       <div class="results-layout card">
         <div class="results-header">
           <div class="celebration-badge" id="results-rating-badge">Bible Expert</div>
-          <h2 class="results-title">Quiz Completed!</h2>
+          <h2 class="results-title" id="lbl-results-title">Quiz Completed!</h2>
           <p id="results-encouragement" class="results-encouragement">Superb effort! You really know your Bible history!</p>
         </div>
 
@@ -165,15 +189,15 @@
         <div id="screenshot-card" class="result-card-export">
           <div class="card-export-inner">
             <div class="card-brand">
-              <span class="brand-logo-text">⚡ Bible Quiz Challenge</span>
-              <span class="card-type-tag">Official Result Card</span>
+              <span class="brand-logo-text" id="card-brand-title">⚡ Bible Quiz Challenge</span>
+              <span class="card-type-tag" id="card-badge-tag">Official Result Card</span>
             </div>
 
             <div class="card-player-hero">
               <div class="card-avatar">🏆</div>
               <div>
                 <h3 id="card-player-name" class="card-player-name">Player</h3>
-                <p class="card-attempt-id">Attempt ID: <code id="card-attempt-id">BQC-000000</code></p>
+                <p class="card-attempt-id"><span id="lbl-attempt-id">Attempt ID:</span> <code id="card-attempt-id">BQC-000000</code></p>
               </div>
             </div>
 
@@ -188,24 +212,24 @@
             <div class="card-stats-grid">
               <div class="card-stat-item">
                 <span class="stat-num" id="card-correct-count">0/15</span>
-                <span class="stat-lbl">Correct Answers</span>
+                <span class="stat-lbl" id="card-lbl-correct">Correct Answers</span>
               </div>
               <div class="card-stat-item">
                 <span class="stat-num" id="card-accuracy">0%</span>
-                <span class="stat-lbl">Accuracy</span>
+                <span class="stat-lbl" id="card-lbl-accuracy">Accuracy</span>
               </div>
               <div class="card-stat-item">
                 <span class="stat-num" id="card-avg-time">0.0s</span>
-                <span class="stat-lbl">Avg Response</span>
+                <span class="stat-lbl" id="card-lbl-avg-time">Avg Response</span>
               </div>
               <div class="card-stat-item">
                 <span class="stat-num" id="card-speed-bonus">0</span>
-                <span class="stat-lbl">Speed Bonus</span>
+                <span class="stat-lbl" id="card-lbl-speed-bonus">Speed Bonus</span>
               </div>
             </div>
 
             <div class="card-footer-info">
-              <span>Category: <strong>Bible Characters & Basic Knowledge</strong></span>
+              <span><span id="card-lbl-category">Category:</span> <strong id="card-val-category">Bible Characters & Basic Knowledge</strong></span>
               <span id="card-timestamp">Date: 2026-10-22</span>
             </div>
           </div>
@@ -214,37 +238,40 @@
         <!-- Result Stats Details -->
         <div class="stats-summary-breakdown">
           <div class="breakdown-item">
-            <span class="breakdown-label">Correct</span>
+            <span class="breakdown-label" id="lbl-stat-correct">Correct</span>
             <span class="breakdown-value text-success" id="summary-correct">0</span>
           </div>
           <div class="breakdown-item">
-            <span class="breakdown-label">Incorrect</span>
+            <span class="breakdown-label" id="lbl-stat-incorrect">Incorrect</span>
             <span class="breakdown-value text-danger" id="summary-incorrect">0</span>
           </div>
           <div class="breakdown-item">
-            <span class="breakdown-label">Unanswered</span>
+            <span class="breakdown-label" id="lbl-stat-unanswered">Unanswered</span>
             <span class="breakdown-value text-warning" id="summary-unanswered">0</span>
           </div>
           <div class="breakdown-item">
-            <span class="breakdown-label">Total Time</span>
+            <span class="breakdown-label" id="lbl-stat-total-time">Total Time</span>
             <span class="breakdown-value" id="summary-total-time">0.0s</span>
           </div>
         </div>
 
-        <!-- Export Actions & Navigation -->
+        <!-- Export Actions & Navigation (Includes Back Home) -->
         <div class="results-actions">
-          <button type="button" id="download-card-btn" class="btn btn-secondary">
-            📸 Download Result Card (PNG)
-          </button>
-          <button type="button" id="review-btn" class="btn btn-outline">
-            📝 Review Answers
+          <button type="button" id="back-home-btn" class="btn btn-outline">
+            🏠 Back Home
           </button>
           <button type="button" id="play-again-btn" class="btn btn-primary">
             🔄 Play Again
           </button>
+          <button type="button" id="review-btn" class="btn btn-secondary">
+            📝 Review Answers
+          </button>
+          <button type="button" id="download-card-btn" class="btn btn-primary" style="background-color: #0284c7;">
+            📸 Download Card (PNG)
+          </button>
         </div>
 
-        <p class="export-note">
+        <p class="export-note" id="lbl-export-note">
           💡 <strong>Tip for Quiz Organizers:</strong> You can download the result card above or take a screenshot directly and send it to your quiz organizer.
         </p>
       </div>
@@ -255,8 +282,8 @@
       <div class="review-layout card">
         <div class="review-header">
           <div>
-            <h2>Question & Answer Review</h2>
-            <p>Review each question, your answer, and the Bible references.</p>
+            <h2 id="lbl-review-title">Question & Answer Review</h2>
+            <p id="lbl-review-subtitle">Review each question, your answer, and the Bible references.</p>
           </div>
           <button type="button" id="back-to-results-btn" class="btn btn-outline">
             ⬅ Back to Results
@@ -268,7 +295,10 @@
         </div>
 
         <div class="review-footer">
-          <button type="button" id="review-play-again-btn" class="btn btn-primary btn-lg">
+          <button type="button" id="review-home-btn" class="btn btn-outline btn-lg" style="margin-right: 12px; width: auto;">
+            🏠 Back Home
+          </button>
+          <button type="button" id="review-play-again-btn" class="btn btn-primary btn-lg" style="width: auto;">
             🔄 Play Again
           </button>
         </div>
@@ -277,11 +307,6 @@
 
   </div>
 
-  <footer class="app-footer">
-    <p>Bible Quiz Challenge &bull; Built with pure HTML5, CSS3, & Vanilla JavaScript</p>
-  </footer>
-
-  <!-- Native SVG-Canvas Image Exporter helper (Fallback-proof, No external npm/packages) -->
   <script src="script.js"></script>
 </body>
 </html>

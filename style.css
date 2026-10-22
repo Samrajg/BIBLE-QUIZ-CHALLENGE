@@ -66,10 +66,110 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   line-height: 1.5;
   padding: 16px;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* ------------------ Floating Bible Elements Background ------------------ */
+.floating-elements-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.float-item {
+  position: absolute;
+  font-size: 2.2rem;
+  opacity: 0.18;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+  animation: floatDrift 16s ease-in-out infinite alternate;
+  user-select: none;
+}
+
+.float-1  { top: 8%;  left: 6%;  animation-duration: 18s; font-size: 2.8rem; } /* Ship / Ark */
+.float-2  { top: 22%; right: 8%; animation-duration: 14s; font-size: 2.4rem; animation-delay: 2s; } /* Dove */
+.float-3  { top: 58%; left: 4%;  animation-duration: 20s; font-size: 2.6rem; animation-delay: 4s; } /* Lion */
+.float-4  { top: 76%; right: 6%; animation-duration: 22s; font-size: 3rem;   animation-delay: 1s; } /* Tree */
+.float-5  { top: 38%; left: 88%; animation-duration: 16s; font-size: 2rem;   animation-delay: 3s; } /* Fruit/Apple */
+.float-6  { top: 86%; left: 24%; animation-duration: 19s; font-size: 2.3rem; animation-delay: 5s; } /* Bible */
+.float-7  { top: 44%; left: 8%;  animation-duration: 15s; font-size: 2.5rem; animation-delay: 1.5s; } /* Great Fish */
+.float-8  { top: 12%; right: 28%; animation-duration: 21s; font-size: 2.7rem; animation-delay: 2.5s; } /* Rainbow */
+.float-9  { top: 68%; right: 34%; animation-duration: 17s; font-size: 2.2rem; animation-delay: 3.5s; } /* Crown */
+.float-10 { top: 92%; right: 18%; animation-duration: 13s; font-size: 2rem;   animation-delay: 0.5s; } /* Star */
+
+@keyframes floatDrift {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-24px) rotate(6deg) scale(1.08);
+  }
+  100% {
+    transform: translateY(18px) rotate(-6deg) scale(0.95);
+  }
+}
+
+/* ------------------ Top Bar & Language Switcher ------------------ */
+.app-topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 10;
+}
+
+.lang-switch-wrapper {
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.lang-icon {
+  font-size: 1.15rem;
+}
+
+.lang-divider {
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 300;
+}
+
+.lang-toggle-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+
+.lang-toggle-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.lang-toggle-btn.active {
+  background: #ff8c00;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
 }
 
 /* Screen Management */
@@ -95,6 +195,8 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+  z-index: 2;
 }
 
 .card {
@@ -978,14 +1080,6 @@ body {
 
 .review-footer {
   text-align: center;
-}
-
-/* App Footer */
-.app-footer {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.85rem;
-  margin-top: 24px;
 }
 
 /* ------------------ Accessibility & Responsiveness ------------------ */
