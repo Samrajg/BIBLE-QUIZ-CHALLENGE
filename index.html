@@ -10,6 +10,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Fullscreen Confetti Canvas (Feature 2) -->
+  <canvas id="confetti-canvas"></canvas>
+
   <!-- Floating Bible Elements in Background -->
   <div class="floating-elements-bg" aria-hidden="true">
     <div class="float-item float-1">🚢</div> <!-- Ark / Ship -->
@@ -26,8 +29,15 @@
 
   <div class="app-container">
 
-    <!-- Top Bar with Language Toggle -->
+    <!-- Top Bar with Audio Mute Toggle (Feature 1) & Language Toggle -->
     <header class="app-topbar">
+      <!-- Audio Toggle Button -->
+      <button type="button" id="sound-toggle-btn" class="sound-toggle-btn" aria-label="Toggle Sound" title="Sound Effects">
+        <span id="sound-icon" class="sound-icon">🔊</span>
+        <span id="sound-label" class="sound-label">Sound On</span>
+      </button>
+
+      <!-- Language Selector -->
       <div class="lang-switch-wrapper">
         <span class="lang-icon">🌐</span>
         <button type="button" id="lang-btn-en" class="lang-toggle-btn active" data-lang="en">English</button>
@@ -71,6 +81,12 @@
             Start Quiz 🚀
           </button>
         </form>
+
+        <!-- Feature 3: Personal Best & Leaderboard Badge -->
+        <div id="welcome-best-score" class="welcome-best-score hidden">
+          <span class="best-badge">⭐ Personal Best:</span>
+          <span id="welcome-best-details">0 pts</span>
+        </div>
 
         <div class="instructions-card">
           <h3 id="lbl-instructions-title">🎮 How to Play</h3>
@@ -121,6 +137,11 @@
       <!-- Question Card -->
       <main class="quiz-main card">
         <div class="question-container">
+          <!-- Streak Indicator (Feature 2) -->
+          <div id="streak-indicator" class="streak-indicator hidden">
+            🔥 <span id="streak-count">2</span> IN A ROW!
+          </div>
+
           <span class="question-category-tag">Easy Level • Question 1</span>
           <h2 id="question-text" class="question-title">Loading question...</h2>
         </div>
@@ -180,6 +201,11 @@
     <section id="results-screen" class="screen">
       <div class="results-layout card">
         <div class="results-header">
+          <!-- Personal Best Celebration Alert (Feature 3) -->
+          <div id="new-high-score-banner" class="new-high-score-banner hidden">
+            🎉 NEW HIGH SCORE! 🎉
+          </div>
+
           <div class="celebration-badge" id="results-rating-badge">Bible Expert</div>
           <h2 class="results-title" id="lbl-results-title">Quiz Completed!</h2>
           <p id="results-encouragement" class="results-encouragement">Superb effort! You really know your Bible history!</p>
@@ -255,24 +281,27 @@
           </div>
         </div>
 
-        <!-- Export Actions & Navigation (Includes Back Home) -->
+        <!-- Export Actions & Navigation (Includes Feature 5: Native Share) -->
         <div class="results-actions">
-          <button type="button" id="back-home-btn" class="btn btn-outline">
-            🏠 Back Home
+          <button type="button" id="share-card-btn" class="btn btn-primary" style="background-color: #25d366; box-shadow: 0 4px 0 #128c7e;">
+            📲 Share Card
+          </button>
+          <button type="button" id="download-card-btn" class="btn btn-secondary">
+            📸 Download Card (PNG)
+          </button>
+          <button type="button" id="review-btn" class="btn btn-outline">
+            📝 Review Answers
           </button>
           <button type="button" id="play-again-btn" class="btn btn-primary">
             🔄 Play Again
           </button>
-          <button type="button" id="review-btn" class="btn btn-secondary">
-            📝 Review Answers
-          </button>
-          <button type="button" id="download-card-btn" class="btn btn-primary" style="background-color: #0284c7;">
-            📸 Download Card (PNG)
+          <button type="button" id="back-home-btn" class="btn btn-outline">
+            🏠 Back Home
           </button>
         </div>
 
         <p class="export-note" id="lbl-export-note">
-          💡 <strong>Tip for Quiz Organizers:</strong> You can download the result card above or take a screenshot directly and send it to your quiz organizer.
+          💡 <strong>Tip for Quiz Organizers:</strong> You can share or download your official result card to send to your quiz organizer.
         </p>
       </div>
     </section>

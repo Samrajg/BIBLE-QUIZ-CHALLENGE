@@ -1,8 +1,13 @@
 /**
  * BIBLE QUIZ CHALLENGE - script.js
  * Pure Vanilla JavaScript (ES6+)
- * Bilingual Support: English (en) & Tamil (ta)
- * 15 Progressive Questions across Easy, Medium, and Hard
+ * 
+ * Includes Technical Enhancements:
+ * - Feature 1: Native Web Audio API Sound FX (Synthesizer chimes, buzzer, tick, victory fanfare)
+ * - Feature 2: Pure HTML5 Canvas Confetti System + Streak Counters
+ * - Feature 3: LocalStorage Persistence & Personal Best High-Score Tracker
+ * - Feature 5: Native Web Share API (WhatsApp/Instagram/Native Card sharing)
+ * - Multilingual English & Tamil Support
  */
 
 // ==========================================
@@ -62,13 +67,19 @@ const QUIZ_DATA = {
     btnPlayAgain: "🔄 Play Again",
     btnReview: "📝 Review Answers",
     btnDownloadCard: "📸 Download Card (PNG)",
-    exportNote: "💡 <strong>Tip for Quiz Organizers:</strong> You can download the result card above or take a screenshot directly and send it to your quiz organizer.",
+    btnShareCard: "📲 Share Card",
+    exportNote: "💡 <strong>Tip for Quiz Organizers:</strong> You can share or download your official result card to send to your quiz organizer.",
     reviewTitle: "Question & Answer Review",
     reviewSubtitle: "Review each question, your answer, and the Bible references.",
     btnBackToResults: "⬅ Back to Results",
     reviewYourAnswer: "Your Answer",
     reviewCorrectAnswer: "Correct Answer",
     reviewTimedOut: "Timed Out",
+    streakLabel: "IN A ROW!",
+    soundOn: "Sound On",
+    soundOff: "Sound Off",
+    personalBestLabel: "⭐ Personal Best:",
+    newHighScore: "🎉 NEW HIGH SCORE! 🎉",
     difficultyLevels: [
       {
         level: "Easy",
@@ -245,13 +256,19 @@ const QUIZ_DATA = {
     btnPlayAgain: "🔄 மீண்டும் விளையாடு",
     btnReview: "📝 விடைகளைச் சரிபார்",
     btnDownloadCard: "📸 கார்டைப் பதிவிறக்கு (PNG)",
-    exportNote: "💡 <strong>ஒருங்கிணைப்பாளர்களுக்கான குறிப்பு:</strong> முடிவு அட்டையைப் பதிவிறக்கி அல்லது ஸ்கிரீன்ஷாட் எடுத்து ஒருங்கிணைப்பாளருக்கு அனுப்பலாம்.",
+    btnShareCard: "📲 பகிர் (Share)",
+    exportNote: "💡 <strong>ஒருங்கிணைப்பாளர்களுக்கான குறிப்பு:</strong> முடிவு அட்டையைப் பகிரலாம் அல்லது பதிவிறக்கி ஒருங்கிணைப்பாளருக்கு அனுப்பலாம்.",
     reviewTitle: "வினா & விடை மதிப்பாய்வு",
     reviewSubtitle: "ஒவ்வொரு கேள்வி, உங்கள் விடை மற்றும் வேதாகம குறிப்புகளை மதிப்பாய்வு செய்யுங்கள்.",
     btnBackToResults: "⬅ முடிவுகளுக்குத் திரும்பு",
     reviewYourAnswer: "உங்கள் விடை",
     reviewCorrectAnswer: "சரியான விடை",
     reviewTimedOut: "நேரம் கடந்துவிட்டது",
+    streakLabel: "தொடர் வெற்றிகள்!",
+    soundOn: "ஒலி இயக்கத்தில்",
+    soundOff: "ஒலி முடக்கப்பட்டது",
+    personalBestLabel: "⭐ சிறந்த சாதனை:",
+    newHighScore: "🎉 புதிய அதிகபட்ச சாதனை! 🎉",
     difficultyLevels: [
       {
         level: "Easy",
@@ -384,13 +401,15 @@ const QUIZ_DATA = {
 // 2. CONFIGURATION & STATE
 // ==========================================
 let currentLang = "en";
+let isAudioMuted = false;
 
 const CONFIG = {
   TOTAL_QUESTIONS: 15,
   TIME_LIMIT_SECONDS: 20,
   BASE_POINTS: 500,
   SPEED_BONUS_MAX: 500,
-  MAX_SCORE_PER_Q: 1000
+  MAX_SCORE_PER_Q: 1000,
+  STORAGE_KEY_BEST: "BIBLE_QUIZ_BEST_SCORE"
 };
 
 const gameState = {
@@ -402,7 +421,8 @@ const gameState = {
   cumulativeScore: 0,
   questionStartTime: 0,
   timerInterval: null,
-  isAnswerSubmitted: false
+  isAnswerSubmitted: false,
+  currentStreak: 0
 };
 
 // ==========================================
@@ -415,6 +435,9 @@ const DOM = {
     results: document.getElementById("results-screen"),
     review: document.getElementById("review-screen")
   },
+  soundToggleBtn: document.getElementById("sound-toggle-btn"),
+  soundIcon: document.getElementById("sound-icon"),
+  soundLabel: document.getElementById("sound-label"),
   langBtnEn: document.getElementById("lang-btn-en"),
   langBtnTa: document.getElementById("lang-btn-ta"),
   // Welcome Elements
@@ -433,6 +456,8 @@ const DOM = {
   nicknameInput: document.getElementById("nickname-input"),
   nicknameError: document.getElementById("nickname-error"),
   startBtn: document.getElementById("start-btn"),
+  welcomeBestScore: document.getElementById("welcome-best-score"),
+  welcomeBestDetails: document.getElementById("welcome-best-details"),
   lblInstructionsTitle: document.getElementById("lbl-instructions-title"),
   instructionsList: document.getElementById("instructions-list"),
   // Quiz Screen Elements
@@ -446,6 +471,8 @@ const DOM = {
   lblScore: document.getElementById("lbl-score"),
   hudScore: document.getElementById("hud-score"),
   progressBar: document.getElementById("progress-bar"),
+  streakIndicator: document.getElementById("streak-indicator"),
+  streakCount: document.getElementById("streak-count"),
   questionCategoryTag: document.querySelector(".question-category-tag"),
   questionText: document.getElementById("question-text"),
   answerButtons: [
@@ -465,6 +492,7 @@ const DOM = {
   feedbackExplanation: document.getElementById("feedback-explanation"),
   nextQuestionBtn: document.getElementById("next-question-btn"),
   // Results Elements
+  newHighScoreBanner: document.getElementById("new-high-score-banner"),
   resultsRatingBadge: document.getElementById("results-rating-badge"),
   lblResultsTitle: document.getElementById("lbl-results-title"),
   resultsEncouragement: document.getElementById("results-encouragement"),
@@ -495,6 +523,7 @@ const DOM = {
   summaryUnanswered: document.getElementById("summary-unanswered"),
   summaryTotalTime: document.getElementById("summary-total-time"),
   screenshotCard: document.getElementById("screenshot-card"),
+  shareCardBtn: document.getElementById("share-card-btn"),
   downloadCardBtn: document.getElementById("download-card-btn"),
   backHomeBtn: document.getElementById("back-home-btn"),
   playAgainBtn: document.getElementById("play-again-btn"),
@@ -506,21 +535,244 @@ const DOM = {
   backToResultsBtn: document.getElementById("back-to-results-btn"),
   reviewList: document.getElementById("review-list"),
   reviewHomeBtn: document.getElementById("review-home-btn"),
-  reviewPlayAgainBtn: document.getElementById("review-play-again-btn")
+  reviewPlayAgainBtn: document.getElementById("review-play-again-btn"),
+  confettiCanvas: document.getElementById("confetti-canvas")
 };
 
 // ==========================================
-// 4. LANGUAGE SWITCHER LOGIC
+// 4. FEATURE 1: NATIVE WEB AUDIO API SYNTHESIZER
+// ==========================================
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+      audioCtx = new AudioContext();
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+const SoundFX = {
+  // Short tick for final countdown seconds
+  playTick() {
+    if (isAudioMuted) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
+    } catch(e) {}
+  },
+
+  // Harmonious Major Chord on Correct Answer
+  playCorrect() {
+    if (isAudioMuted) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.06);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime + idx * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.06 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.06);
+        osc.stop(ctx.currentTime + idx * 0.06 + 0.35);
+      });
+    } catch(e) {}
+  },
+
+  // Soft low buzzer on incorrect/timeout
+  playIncorrect() {
+    if (isAudioMuted) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(180, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(120, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.16, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } catch(e) {}
+  },
+
+  // Joyful Fanfare for high completion score
+  playFanfare() {
+    if (isAudioMuted) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const melody = [
+        { f: 523.25, t: 0.00, d: 0.12 }, // C5
+        { f: 523.25, t: 0.14, d: 0.12 }, // C5
+        { f: 523.25, t: 0.28, d: 0.12 }, // C5
+        { f: 659.25, t: 0.42, d: 0.20 }, // E5
+        { f: 783.99, t: 0.64, d: 0.45 }  // G5
+      ];
+      melody.forEach(n => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(n.f, ctx.currentTime + n.t);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime + n.t);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.t + n.d);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + n.t);
+        osc.stop(ctx.currentTime + n.t + n.d);
+      });
+    } catch(e) {}
+  }
+};
+
+function toggleSound() {
+  isAudioMuted = !isAudioMuted;
+  const dict = QUIZ_DATA[currentLang];
+  if (isAudioMuted) {
+    DOM.soundIcon.textContent = "🔇";
+    DOM.soundLabel.textContent = dict.soundOff;
+    DOM.soundToggleBtn.classList.add("muted");
+  } else {
+    DOM.soundIcon.textContent = "🔊";
+    DOM.soundLabel.textContent = dict.soundOn;
+    DOM.soundToggleBtn.classList.remove("muted");
+    getAudioContext();
+    SoundFX.playTick();
+  }
+}
+
+// ==========================================
+// 5. FEATURE 2: PURE HTML5 CANVAS CONFETTI
+// ==========================================
+const ConfettiCannon = {
+  particles: [],
+  animFrameId: null,
+
+  start() {
+    const canvas = DOM.confettiCanvas;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#ff924c"];
+    this.particles = [];
+
+    for (let i = 0; i < 110; i++) {
+      this.particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height * 0.8,
+        w: Math.random() * 10 + 6,
+        h: Math.random() * 6 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 4,
+        vy: Math.random() * 4 + 3,
+        rot: Math.random() * 360,
+        vRot: (Math.random() - 0.5) * 8
+      });
+    }
+
+    cancelAnimationFrame(this.animFrameId);
+    let frames = 0;
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      this.particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vRot;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rot * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+
+      frames++;
+      if (frames < 240) {
+        this.animFrameId = requestAnimationFrame(render);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    };
+
+    render();
+  }
+};
+
+// ==========================================
+// 6. FEATURE 3: LOCALSTORAGE & PERSONAL BEST
+// ==========================================
+function getPersonalBest() {
+  try {
+    const raw = localStorage.getItem(CONFIG.STORAGE_KEY_BEST);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function savePersonalBest(score, playerName) {
+  try {
+    const currentBest = getPersonalBest();
+    if (!currentBest || score > currentBest.score) {
+      const data = {
+        score: score,
+        playerName: playerName,
+        date: new Date().toLocaleDateString()
+      };
+      localStorage.setItem(CONFIG.STORAGE_KEY_BEST, JSON.stringify(data));
+      return true; // New High Score!
+    }
+  } catch (e) {}
+  return false;
+}
+
+function displayWelcomeBestScore() {
+  const best = getPersonalBest();
+  if (best && best.score > 0) {
+    DOM.welcomeBestScore.classList.remove("hidden");
+    DOM.welcomeBestDetails.textContent = `${best.playerName} (${best.score.toLocaleString()} pts)`;
+  } else {
+    DOM.welcomeBestScore.classList.add("hidden");
+  }
+}
+
+// ==========================================
+// 7. LANGUAGE SWITCHER LOGIC
 // ==========================================
 function setLanguage(lang) {
   currentLang = lang;
   const dict = QUIZ_DATA[lang];
 
-  // Update Buttons
   DOM.langBtnEn.classList.toggle("active", lang === "en");
   DOM.langBtnTa.classList.toggle("active", lang === "ta");
 
-  // Update Welcome Screen
   DOM.lblBrandBadge.textContent = dict.brandBadge;
   DOM.lblBrandTitle.innerHTML = dict.brandTitle;
   DOM.lblBrandSubtitle.textContent = dict.brandSubtitle;
@@ -538,14 +790,12 @@ function setLanguage(lang) {
 
   DOM.instructionsList.innerHTML = dict.instructions.map(item => `<li>${item}</li>`).join("");
 
-  // Update Quiz HUD labels
   DOM.lblQTracker.textContent = dict.hudQuestion;
   DOM.lblOfTracker.textContent = dict.hudOf;
   DOM.lblScore.textContent = dict.hudScore;
   DOM.lblScriptureRef.textContent = `${dict.scriptureRef}:`;
   DOM.nextQuestionBtn.textContent = dict.nextQuestionBtn;
 
-  // Update Results Labels
   DOM.lblResultsTitle.textContent = dict.resultsTitle;
   DOM.cardBrandTitle.textContent = dict.cardTitle;
   DOM.cardBadgeTag.textContent = dict.cardBadge;
@@ -562,22 +812,25 @@ function setLanguage(lang) {
   DOM.lblStatUnanswered.textContent = dict.statUnanswered;
   DOM.lblStatTotalTime.textContent = dict.statTotalTime;
 
+  DOM.shareCardBtn.textContent = dict.btnShareCard;
   DOM.backHomeBtn.textContent = dict.btnBackHome;
   DOM.playAgainBtn.textContent = dict.btnPlayAgain;
   DOM.reviewBtn.textContent = dict.btnReview;
   DOM.downloadCardBtn.textContent = dict.btnDownloadCard;
   DOM.lblExportNote.innerHTML = dict.exportNote;
+  DOM.soundLabel.textContent = isAudioMuted ? dict.soundOff : dict.soundOn;
 
-  // Review screen
   DOM.lblReviewTitle.textContent = dict.reviewTitle;
   DOM.lblReviewSubtitle.textContent = dict.reviewSubtitle;
   DOM.backToResultsBtn.textContent = dict.btnBackToResults;
   DOM.reviewHomeBtn.textContent = dict.btnBackHome;
   DOM.reviewPlayAgainBtn.textContent = dict.btnPlayAgain;
+
+  displayWelcomeBestScore();
 }
 
 // ==========================================
-// 5. HELPER UTILITIES
+// 8. HELPER UTILITIES
 // ==========================================
 function shuffleArray(array) {
   const shuffled = [...array];
@@ -623,15 +876,17 @@ function getPerformanceRating(accuracyPercentage) {
 }
 
 // ==========================================
-// 6. GAME FLOW CONTROLLER
+// 9. GAME FLOW CONTROLLER
 // ==========================================
 function startQuiz(nickname) {
+  getAudioContext();
   gameState.playerName = nickname;
   gameState.attemptId = generateAttemptId();
   gameState.currentQuestionIndex = 0;
   gameState.cumulativeScore = 0;
   gameState.userRecords = [];
   gameState.isAnswerSubmitted = false;
+  gameState.currentStreak = 0;
 
   const dict = QUIZ_DATA[currentLang];
   const allQuestions = dict.difficultyLevels.flatMap(lvl => 
@@ -647,6 +902,7 @@ function startQuiz(nickname) {
   DOM.hudPlayerName.textContent = gameState.playerName;
   DOM.totalQNum.textContent = CONFIG.TOTAL_QUESTIONS;
   DOM.hudScore.textContent = "0";
+  DOM.streakIndicator.classList.add("hidden");
 
   showScreen("quiz");
   loadQuestion(0);
@@ -698,6 +954,7 @@ function loadQuestion(index) {
     DOM.timerDisplay.textContent = timeLeft;
     if (timeLeft <= 5) {
       DOM.timerBox.classList.add("timer-urgent");
+      SoundFX.playTick(); // Tick sound FX for urgency
     }
   }, 1000);
 }
@@ -714,6 +971,19 @@ function handleAnswerSelection(chosenIndex) {
   const chosenAnswer = qData.shuffledOptions[chosenIndex];
   const isCorrect = (chosenAnswer === qData.correctAnswer);
   const pointsAwarded = calculateQuestionPoints(isCorrect, elapsedSec);
+
+  if (isCorrect) {
+    gameState.currentStreak++;
+    SoundFX.playCorrect(); // Major chord chime
+    if (gameState.currentStreak >= 2) {
+      DOM.streakCount.textContent = gameState.currentStreak;
+      DOM.streakIndicator.classList.remove("hidden");
+    }
+  } else {
+    gameState.currentStreak = 0;
+    DOM.streakIndicator.classList.add("hidden");
+    SoundFX.playIncorrect(); // Buzzer sound
+  }
 
   gameState.cumulativeScore += pointsAwarded;
   DOM.hudScore.textContent = gameState.cumulativeScore.toLocaleString();
@@ -761,6 +1031,10 @@ function handleTimeout() {
   const qData = gameState.selectedQuestions[gameState.currentQuestionIndex];
   const elapsedSec = CONFIG.TIME_LIMIT_SECONDS;
   const dict = QUIZ_DATA[currentLang];
+
+  gameState.currentStreak = 0;
+  DOM.streakIndicator.classList.add("hidden");
+  SoundFX.playIncorrect();
 
   gameState.userRecords.push({
     questionNumber: gameState.currentQuestionIndex + 1,
@@ -856,6 +1130,20 @@ function completeQuiz() {
   const speedBonusTotal = Math.max(0, gameState.cumulativeScore - (CONFIG.BASE_POINTS * correctCount));
   const performance = getPerformanceRating(accuracy);
 
+  // Check personal best (Feature 3)
+  const isNewRecord = savePersonalBest(gameState.cumulativeScore, gameState.playerName);
+  if (isNewRecord) {
+    DOM.newHighScoreBanner.classList.remove("hidden");
+  } else {
+    DOM.newHighScoreBanner.classList.add("hidden");
+  }
+
+  // Trigger sound & confetti if accuracy >= 70% or new high score (Feature 1 & 2)
+  if (accuracy >= 70 || isNewRecord) {
+    SoundFX.playFanfare();
+    ConfettiCannon.start();
+  }
+
   DOM.resultsRatingBadge.textContent = performance.title;
   DOM.resultsEncouragement.textContent = performance.message;
 
@@ -925,10 +1213,10 @@ function populateAnswerReview() {
   showScreen("review");
 }
 
-function exportCardAsImage() {
-  const cardElement = DOM.screenshotCard;
-  if (!cardElement) return;
-
+/**
+ * Render canvas card for export & sharing
+ */
+function renderCardCanvas() {
   const dict = QUIZ_DATA[currentLang];
   const width = 600;
   const height = 440;
@@ -1032,6 +1320,11 @@ function exportCardAsImage() {
   ctx.fillText(`${dict.cardCategory}: ${dict.categoryName}`, 30, 405);
   ctx.fillText(DOM.cardTimestamp.textContent, width - 240, 405);
 
+  return canvas;
+}
+
+function exportCardAsImage() {
+  const canvas = renderCardCanvas();
   try {
     const imageURL = canvas.toDataURL("image/png");
     const downloadLink = document.createElement("a");
@@ -1046,13 +1339,67 @@ function exportCardAsImage() {
 }
 
 // ==========================================
-// 7. EVENT LISTENERS
+// 10. FEATURE 5: NATIVE WEB SHARE API
+// ==========================================
+async function shareResultCard() {
+  const canvas = renderCardCanvas();
+  const shareText = currentLang === "ta" 
+    ? `நான் வேதாகம வினாடி வினாவில் ${gameState.cumulativeScore.toLocaleString()} புள்ளிகள் பெற்றேன்! என் சாதனையை முறியடிக்க முடியுமா?`
+    : `I scored ${gameState.cumulativeScore.toLocaleString()} pts on the Bible Quiz Challenge! Can you beat my score?`;
+
+  // Check if Web Share API with files is supported
+  canvas.toBlob(async (blob) => {
+    if (!blob) {
+      exportCardAsImage();
+      return;
+    }
+
+    const file = new File([blob], `BibleQuiz_${gameState.playerName}.png`, { type: "image/png" });
+    const shareData = {
+      title: "Bible Quiz Challenge",
+      text: shareText,
+      files: [file]
+    };
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          exportCardAsImage();
+        }
+        return;
+      }
+    }
+
+    // Fallback: If image share is not supported, try text share or download
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Bible Quiz Challenge",
+          text: shareText,
+          url: window.location.href
+        });
+      } catch (e) {
+        exportCardAsImage();
+      }
+    } else {
+      exportCardAsImage();
+    }
+  }, "image/png");
+}
+
+// ==========================================
+// 11. EVENT LISTENERS
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialize default language
   setLanguage("en");
 
-  // Language switch buttons
+  // Audio Toggle (Feature 1)
+  DOM.soundToggleBtn.addEventListener("click", toggleSound);
+
+  // Language switch
   DOM.langBtnEn.addEventListener("click", () => setLanguage("en"));
   DOM.langBtnTa.addEventListener("click", () => setLanguage("ta"));
 
@@ -1110,7 +1457,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Result Actions
+  DOM.shareCardBtn.addEventListener("click", shareResultCard);
+  DOM.downloadCardBtn.addEventListener("click", exportCardAsImage);
+
   DOM.backHomeBtn.addEventListener("click", () => {
+    displayWelcomeBestScore();
     showScreen("welcome");
   });
 
@@ -1123,7 +1474,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   DOM.reviewBtn.addEventListener("click", populateAnswerReview);
-  DOM.downloadCardBtn.addEventListener("click", exportCardAsImage);
 
   // Review Actions
   DOM.backToResultsBtn.addEventListener("click", () => {
@@ -1131,6 +1481,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   DOM.reviewHomeBtn.addEventListener("click", () => {
+    displayWelcomeBestScore();
     showScreen("welcome");
   });
 
