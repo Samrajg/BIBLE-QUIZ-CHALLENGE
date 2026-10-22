@@ -1,79 +1,271 @@
 /**
  * BIBLE QUIZ CHALLENGE - script.js
  * Pure Vanilla JavaScript (ES6+)
- * No external libraries, no frameworks, zero dependencies.
+ * Fully compliant with master quiz specifications & difficulty levels.
  */
 
 // ==========================================
-// 1. QUESTION BANK (5 Focused Questions for MVP)
+// 1. QUIZ DATA (15 Questions across 3 Difficulty Levels)
 // ==========================================
-const QUESTION_BANK = [
-  {
-    id: 1,
-    category: "Gospels",
-    difficulty: "Beginner",
-    question: "How many disciples did Jesus choose?",
-    options: ["12", "7", "10", "40"],
-    correctAnswer: "12",
-    reference: "Luke 6:12–16",
-    explanation: "Jesus went up on a mountainside to pray all night, and when morning came, He called His disciples and chose twelve of them, whom He also designated apostles."
+const QUIZ_SPEC = {
+  quizTitle: "Bible Quiz Challenge",
+  category: "Bible Characters and Basic Bible Knowledge",
+  totalQuestions: 15,
+  timePerQuestion: 20,
+  scoring: {
+    correctAnswerBasePoints: 500,
+    maximumSpeedBonus: 500,
+    maximumPointsPerQuestion: 1000,
+    incorrectAnswerPoints: 0,
+    timeoutPoints: 0
   },
-  {
-    id: 2,
-    category: "Gospels",
-    difficulty: "Beginner",
-    question: "Which disciple betrayed Jesus?",
-    options: ["Judas Iscariot", "Simon Peter", "Thomas", "John"],
-    correctAnswer: "Judas Iscariot",
-    reference: "Matthew 26:14–16",
-    explanation: "Judas Iscariot went to the chief priests and agreed to betray Jesus for thirty pieces of silver."
-  },
-  {
-    id: 3,
-    category: "Old Testament",
-    difficulty: "Beginner",
-    question: "Who was thrown into the lions’ den but stayed safe?",
-    options: ["Daniel", "David", "Joseph", "Samson"],
-    correctAnswer: "Daniel",
-    reference: "Daniel 6:16–23",
-    explanation: "King Darius had Daniel cast into the den of lions for praying to God, but God sent His angel to shut the lions' mouths because Daniel was found blameless."
-  },
-  {
-    id: 4,
-    category: "Gospels",
-    difficulty: "Beginner",
-    question: "In which town was Jesus born?",
-    options: ["Bethlehem", "Nazareth", "Jerusalem", "Capernaum"],
-    correctAnswer: "Bethlehem",
-    reference: "Micah 5:2 & Luke 2:4–7",
-    explanation: "Joseph and Mary traveled to Bethlehem, the City of David, where Jesus was born in a manger, fulfilling prophecy."
-  },
-  {
-    id: 5,
-    category: "Miracles",
-    difficulty: "Beginner",
-    question: "What was Jesus’ first miracle?",
-    options: [
-      "Turning water into wine (at the wedding in Cana)",
-      "Feeding the 5,000",
-      "Walking on water",
-      "Healing the blind man"
-    ],
-    correctAnswer: "Turning water into wine (at the wedding in Cana)",
-    reference: "John 2:1–11",
-    explanation: "Jesus performed this first of His signs in Cana of Galilee, turning water into wine and revealing His glory, and His disciples believed in Him."
-  }
-];
+  difficultyLevels: [
+    {
+      level: "Easy",
+      questions: [
+        {
+          id: 1,
+          question: "How many disciples did Jesus choose?",
+          choices: [
+            "12",
+            "10",
+            "7",
+            "40"
+          ],
+          correctAnswer: "12",
+          correctIndex: 0,
+          difficulty: "easy",
+          reference: "Luke 6:13"
+        },
+        {
+          id: 2,
+          question: "In which town was Jesus born?",
+          choices: [
+            "Nazareth",
+            "Bethlehem",
+            "Jerusalem",
+            "Capernaum"
+          ],
+          correctAnswer: "Bethlehem",
+          correctIndex: 1,
+          difficulty: "easy",
+          reference: "Matthew 2:1"
+        },
+        {
+          id: 3,
+          question: "Who built the ark?",
+          choices: [
+            "Moses",
+            "Abraham",
+            "Noah",
+            "Jacob"
+          ],
+          correctAnswer: "Noah",
+          correctIndex: 2,
+          difficulty: "easy",
+          reference: "Genesis 6:13-22"
+        },
+        {
+          id: 4,
+          question: "Who was thrown into the lions' den but remained safe?",
+          choices: [
+            "Joseph",
+            "Elijah",
+            "Samson",
+            "Daniel"
+          ],
+          correctAnswer: "Daniel",
+          correctIndex: 3,
+          difficulty: "easy",
+          reference: "Daniel 6:16-23"
+        },
+        {
+          id: 5,
+          question: "Who was swallowed by a great fish?",
+          choices: [
+            "Jonah",
+            "Job",
+            "John",
+            "Joshua"
+          ],
+          correctAnswer: "Jonah",
+          correctIndex: 0,
+          difficulty: "easy",
+          reference: "Jonah 1:17"
+        }
+      ]
+    },
+    {
+      level: "Medium",
+      questions: [
+        {
+          id: 6,
+          question: "Which disciple betrayed Jesus?",
+          choices: [
+            "Simon Peter",
+            "Judas Iscariot",
+            "Thomas",
+            "Judas son of James"
+          ],
+          correctAnswer: "Judas Iscariot",
+          correctIndex: 1,
+          difficulty: "medium",
+          reference: "Matthew 26:14-16"
+        },
+        {
+          id: 7,
+          question: "What was Jesus' first recorded miracle?",
+          choices: [
+            "Healing a blind man",
+            "Feeding five thousand people",
+            "Turning water into wine",
+            "Walking on water"
+          ],
+          correctAnswer: "Turning water into wine",
+          correctIndex: 2,
+          difficulty: "medium",
+          reference: "John 2:1-11"
+        },
+        {
+          id: 8,
+          question: "Which disciple denied Jesus three times?",
+          choices: [
+            "Andrew",
+            "John",
+            "Matthew",
+            "Peter"
+          ],
+          correctAnswer: "Peter",
+          correctIndex: 3,
+          difficulty: "medium",
+          reference: "Luke 22:54-62"
+        },
+        {
+          id: 9,
+          question: "What was the name of Abraham's son born to him in his old age?",
+          choices: [
+            "Isaac",
+            "Ishmael",
+            "Jacob",
+            "Esau"
+          ],
+          correctAnswer: "Isaac",
+          correctIndex: 0,
+          difficulty: "medium",
+          reference: "Genesis 21:1-3"
+        },
+        {
+          id: 10,
+          question: "What sign did God give as a promise after the flood?",
+          choices: [
+            "A pillar of fire",
+            "A rainbow",
+            "A burning bush",
+            "A cloud of smoke"
+          ],
+          correctAnswer: "A rainbow",
+          correctIndex: 1,
+          difficulty: "medium",
+          reference: "Genesis 9:12-17"
+        }
+      ]
+    },
+    {
+      level: "Hard",
+      questions: [
+        {
+          id: 11,
+          question: "According to Genesis, what did God create on the first day?",
+          choices: [
+            "The sun and the moon",
+            "The land and the seas",
+            "Light",
+            "The stars and the planets"
+          ],
+          correctAnswer: "Light",
+          correctIndex: 2,
+          difficulty: "hard",
+          reference: "Genesis 1:3-5"
+        },
+        {
+          id: 12,
+          question: "How many loaves and fish were used when Jesus fed five thousand men?",
+          choices: [
+            "7 loaves and 2 fish",
+            "5 loaves and 5 fish",
+            "12 loaves and 2 fish",
+            "5 loaves and 2 fish"
+          ],
+          correctAnswer: "5 loaves and 2 fish",
+          correctIndex: 3,
+          difficulty: "hard",
+          reference: "Matthew 14:17-21"
+        },
+        {
+          id: 13,
+          question: "How many days and nights did the rain fall during the flood?",
+          choices: [
+            "40 days and 40 nights",
+            "7 days and 7 nights",
+            "30 days and 30 nights",
+            "150 days and 150 nights"
+          ],
+          correctAnswer: "40 days and 40 nights",
+          correctIndex: 0,
+          difficulty: "hard",
+          reference: "Genesis 7:12"
+        },
+        {
+          id: 14,
+          question: "Which sea did God part so the Israelites could cross?",
+          choices: [
+            "The Dead Sea",
+            "The Red Sea",
+            "The Sea of Galilee",
+            "The Mediterranean Sea"
+          ],
+          correctAnswer: "The Red Sea",
+          correctIndex: 1,
+          difficulty: "hard",
+          reference: "Exodus 14:21-22"
+        },
+        {
+          id: 15,
+          question: "Who led the Israelites out of Egypt?",
+          choices: [
+            "Joshua",
+            "Aaron",
+            "Moses",
+            "Abraham"
+          ],
+          correctAnswer: "Moses",
+          correctIndex: 2,
+          difficulty: "hard",
+          reference: "Exodus 3:10"
+        }
+      ]
+    }
+  ]
+};
+
+// Flatten and order questions progressively: Easy (1-5) -> Medium (6-10) -> Hard (11-15)
+const ALL_QUESTIONS = QUIZ_SPEC.difficultyLevels.flatMap(lvl => 
+  lvl.questions.map(q => ({
+    ...q,
+    levelName: lvl.level,
+    options: [...q.choices]
+  }))
+);
 
 // ==========================================
 // 2. CONSTANTS & CONFIGURATION
 // ==========================================
 const CONFIG = {
-  TOTAL_QUESTIONS: QUESTION_BANK.length, // 5 questions
-  TIME_LIMIT_SECONDS: 20,
-  BASE_POINTS: 500,
-  SPEED_BONUS_MAX: 500,
-  MAX_SCORE_PER_Q: 1000
+  TOTAL_QUESTIONS: QUIZ_SPEC.totalQuestions,
+  TIME_LIMIT_SECONDS: QUIZ_SPEC.timePerQuestion,
+  BASE_POINTS: QUIZ_SPEC.scoring.correctAnswerBasePoints,
+  SPEED_BONUS_MAX: QUIZ_SPEC.scoring.maximumSpeedBonus,
+  MAX_SCORE_PER_Q: QUIZ_SPEC.scoring.maximumPointsPerQuestion
 };
 
 // ==========================================
@@ -116,6 +308,7 @@ const DOM = {
   hudScore: document.getElementById("hud-score"),
   progressBar: document.getElementById("progress-bar"),
   // Screen B Question & Answers
+  questionCategoryTag: document.querySelector(".question-category-tag"),
   questionText: document.getElementById("question-text"),
   answerGrid: document.getElementById("answer-grid"),
   answerButtons: [
@@ -241,7 +434,7 @@ function getPerformanceRating(accuracyPercentage) {
 // ==========================================
 
 /**
- * Initialize a brand new game session
+ * Initialize a brand new game session with all 15 questions
  */
 function startQuiz(nickname) {
   gameState.playerName = nickname;
@@ -251,14 +444,11 @@ function startQuiz(nickname) {
   gameState.userRecords = [];
   gameState.isAnswerSubmitted = false;
 
-  // Select questions from the question bank and shuffle options
-  const shuffledBank = shuffleArray(QUESTION_BANK);
-  gameState.selectedQuestions = shuffledBank.slice(0, CONFIG.TOTAL_QUESTIONS).map(q => {
-    return {
-      ...q,
-      shuffledOptions: shuffleArray(q.options)
-    };
-  });
+  // Prepare questions: Keep progressive difficulty (Easy -> Medium -> Hard), shuffle choices per question
+  gameState.selectedQuestions = ALL_QUESTIONS.map(q => ({
+    ...q,
+    shuffledOptions: shuffleArray(q.choices)
+  }));
 
   // Setup HUD
   DOM.hudPlayerName.textContent = gameState.playerName;
@@ -283,6 +473,11 @@ function loadQuestion(index) {
   DOM.currentQNum.textContent = index + 1;
   const progressPercent = ((index + 1) / CONFIG.TOTAL_QUESTIONS) * 100;
   DOM.progressBar.style.width = `${progressPercent}%`;
+
+  // Update Category / Difficulty Tag
+  if (DOM.questionCategoryTag) {
+    DOM.questionCategoryTag.textContent = `${qData.levelName} Level • Question ${index + 1}`;
+  }
 
   // Update Question Content
   DOM.questionText.textContent = qData.question;
@@ -348,6 +543,7 @@ function handleAnswerSelection(chosenIndex) {
   gameState.userRecords.push({
     questionNumber: gameState.currentQuestionIndex + 1,
     questionText: qData.question,
+    levelName: qData.levelName,
     options: qData.shuffledOptions,
     userAnswer: chosenAnswer,
     correctAnswer: qData.correctAnswer,
@@ -355,8 +551,7 @@ function handleAnswerSelection(chosenIndex) {
     isTimeout: false,
     responseTimeSec: elapsedSec,
     points: pointsAwarded,
-    reference: qData.reference,
-    explanation: qData.explanation
+    reference: qData.reference
   });
 
   // Disable all answer buttons immediately
@@ -380,7 +575,7 @@ function handleAnswerSelection(chosenIndex) {
     isTimeout: false,
     points: pointsAwarded,
     reference: qData.reference,
-    explanation: qData.explanation
+    correctAnswer: qData.correctAnswer
   });
 }
 
@@ -398,6 +593,7 @@ function handleTimeout() {
   gameState.userRecords.push({
     questionNumber: gameState.currentQuestionIndex + 1,
     questionText: qData.question,
+    levelName: qData.levelName,
     options: qData.shuffledOptions,
     userAnswer: "Unanswered (Time ran out)",
     correctAnswer: qData.correctAnswer,
@@ -405,8 +601,7 @@ function handleTimeout() {
     isTimeout: true,
     responseTimeSec: elapsedSec,
     points: 0,
-    reference: qData.reference,
-    explanation: qData.explanation
+    reference: qData.reference
   });
 
   // Disable buttons and reveal correct answer
@@ -426,14 +621,14 @@ function handleTimeout() {
     isTimeout: true,
     points: 0,
     reference: qData.reference,
-    explanation: qData.explanation
+    correctAnswer: qData.correctAnswer
   });
 }
 
 /**
  * Displays Screen C Feedback panel
  */
-function showFeedback({ isCorrect, isTimeout, points, reference, explanation }) {
+function showFeedback({ isCorrect, isTimeout, points, reference, correctAnswer }) {
   DOM.feedbackBanner.className = "feedback-banner";
 
   if (isTimeout) {
@@ -454,7 +649,7 @@ function showFeedback({ isCorrect, isTimeout, points, reference, explanation }) 
   }
 
   DOM.feedbackReference.textContent = reference;
-  DOM.feedbackExplanation.textContent = explanation;
+  DOM.feedbackExplanation.textContent = `The correct answer is: "${correctAnswer}" according to scripture.`;
 
   DOM.feedbackPanel.classList.remove("hidden");
   DOM.nextQuestionBtn.focus();
@@ -554,7 +749,7 @@ function populateAnswerReview() {
     card.className = `review-card ${statusClass}`;
     card.innerHTML = `
       <div class="review-top-bar">
-        <span class="review-q-num">Question ${rec.questionNumber} of ${CONFIG.TOTAL_QUESTIONS}</span>
+        <span class="review-q-num">Question ${rec.questionNumber} of ${CONFIG.TOTAL_QUESTIONS} • <span style="text-transform: capitalize;">${rec.levelName}</span></span>
         <span class="review-status-pill">${statusLabel} (+${rec.points} pts in ${rec.responseTimeSec.toFixed(1)}s)</span>
       </div>
       <div class="review-question-text">${rec.questionText}</div>
@@ -563,7 +758,7 @@ function populateAnswerReview() {
         <div class="review-correct-ans"><strong>Correct Answer:</strong> ${rec.correctAnswer}</div>
       </div>
       <div class="review-ref-exp">
-        <strong>Scripture (${rec.reference}):</strong> ${rec.explanation}
+        <strong>Scripture Reference:</strong> ${rec.reference}
       </div>
     `;
 
@@ -575,7 +770,6 @@ function populateAnswerReview() {
 
 /**
  * Exports Result Card as high-resolution PNG using HTML5 Canvas
- * Fallback-proof, pure native browser canvas rendering!
  */
 function exportCardAsImage() {
   const cardElement = DOM.screenshotCard;
@@ -641,7 +835,7 @@ function exportCardAsImage() {
   const maxPossibleScore = (CONFIG.TOTAL_QUESTIONS * CONFIG.MAX_SCORE_PER_Q).toLocaleString();
   ctx.fillStyle = "#cbd5e1";
   ctx.font = "18px 'Inter', Arial, sans-serif";
-  ctx.fillText(`/ ${maxPossibleScore} pts`, 190, 230);
+  ctx.fillText(`/ ${maxPossibleScore} pts`, 220, 230);
 
   // Rating Badge in Box
   const ratingText = DOM.cardRatingLabel.textContent;
@@ -689,7 +883,7 @@ function exportCardAsImage() {
 
   ctx.fillStyle = "#94a3b8";
   ctx.font = "12px 'Inter', Arial, sans-serif";
-  ctx.fillText("Category: Bible Quiz Challenge (MVP)", 30, 405);
+  ctx.fillText("Category: Bible Characters & Basic Knowledge", 30, 405);
   ctx.fillText(DOM.cardTimestamp.textContent, width - 240, 405);
 
   // Trigger download
@@ -769,7 +963,7 @@ document.addEventListener("DOMContentLoaded", () => {
   DOM.reviewBtn.addEventListener("click", populateAnswerReview);
 
   DOM.playAgainBtn.addEventListener("click", () => {
-    DOM.nicknameInput.value = gameState.playerName; // pre-fill last nickname
+    DOM.nicknameInput.value = gameState.playerName;
     showScreen("welcome");
     DOM.nicknameInput.focus();
   });
