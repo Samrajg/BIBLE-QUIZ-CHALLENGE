@@ -409,7 +409,14 @@ const CONFIG = {
   BASE_POINTS: 500,
   SPEED_BONUS_MAX: 500,
   MAX_SCORE_PER_Q: 1000,
-  STORAGE_KEY_BEST: "BIBLE_QUIZ_BEST_SCORE"
+  STORAGE_KEY_BEST: "BIBLE_QUIZ_BEST_SCORE",
+  STORAGE_KEY_CUSTOM_QUIZZES: "BIBLE_QUIZ_ADMIN_QUIZZES",
+  STORAGE_KEY_ADMIN_SESSION: "BIBLE_QUIZ_ADMIN_AUTH"
+};
+
+const ADMIN_DEMO_CREDENTIALS = {
+  user: "admin",
+  pass: "jesus"
 };
 
 const gameState = {
@@ -422,7 +429,9 @@ const gameState = {
   questionStartTime: 0,
   timerInterval: null,
   isAnswerSubmitted: false,
-  currentStreak: 0
+  currentStreak: 0,
+  // Custom quiz support (Phase 2)
+  activeCustomQuiz: null
 };
 
 // ==========================================
@@ -433,17 +442,27 @@ const DOM = {
     welcome: document.getElementById("welcome-screen"),
     quiz: document.getElementById("quiz-screen"),
     results: document.getElementById("results-screen"),
-    review: document.getElementById("review-screen")
+    review: document.getElementById("review-screen"),
+    admin: document.getElementById("admin-screen"),
+    editor: document.getElementById("editor-screen")
   },
   soundToggleBtn: document.getElementById("sound-toggle-btn"),
   soundIcon: document.getElementById("sound-icon"),
   soundLabel: document.getElementById("sound-label"),
   langBtnEn: document.getElementById("lang-btn-en"),
   langBtnTa: document.getElementById("lang-btn-ta"),
+  adminPortalBtn: document.getElementById("admin-portal-btn"),
   // Welcome Elements
   lblBrandBadge: document.getElementById("lbl-brand-badge"),
   lblBrandTitle: document.getElementById("lbl-brand-title"),
   lblBrandSubtitle: document.getElementById("lbl-brand-subtitle"),
+  sharedQuizBanner: document.getElementById("shared-quiz-banner"),
+  sharedQuizTitle: document.getElementById("shared-quiz-title"),
+  sharedQuizDesc: document.getElementById("shared-quiz-desc"),
+  sharedQuizQCount: document.getElementById("shared-quiz-qcount"),
+  sharedQuizTime: document.getElementById("shared-quiz-time"),
+  sharedQuizDifficulty: document.getElementById("shared-quiz-difficulty"),
+  playDefaultQuizBtn: document.getElementById("play-default-quiz-btn"),
   lblPillCategory: document.getElementById("lbl-pill-category"),
   valPillCategory: document.getElementById("val-pill-category"),
   lblPillLevels: document.getElementById("lbl-pill-levels"),
@@ -537,7 +556,47 @@ const DOM = {
   reviewList: document.getElementById("review-list"),
   reviewHomeBtn: document.getElementById("review-home-btn"),
   reviewPlayAgainBtn: document.getElementById("review-play-again-btn"),
-  confettiCanvas: document.getElementById("confetti-canvas")
+  confettiCanvas: document.getElementById("confetti-canvas"),
+  // Phase 2: Admin Dashboard Elements
+  adminCreateQuizBtn: document.getElementById("admin-create-quiz-btn"),
+  adminImportJsonBtn: document.getElementById("admin-import-json-btn"),
+  adminImportFileInput: document.getElementById("admin-import-file-input"),
+  adminLogoutBtn: document.getElementById("admin-logout-btn"),
+  adminExitHomeBtn: document.getElementById("admin-exit-home-btn"),
+  adminQuizCount: document.getElementById("admin-quiz-count"),
+  adminQuizList: document.getElementById("admin-quiz-list"),
+  // Phase 2: Quiz Editor Elements
+  editorPageTitle: document.getElementById("editor-page-title"),
+  editorModeBadge: document.getElementById("editor-mode-badge"),
+  editorCancelBtn: document.getElementById("editor-cancel-btn"),
+  editorSaveDraftBtn: document.getElementById("editor-save-draft-btn"),
+  editorPublishBtn: document.getElementById("editor-publish-btn"),
+  editorQuizForm: document.getElementById("quiz-editor-form"),
+  editorQuizId: document.getElementById("editor-quiz-id"),
+  editorQuizTitle: document.getElementById("editor-quiz-title"),
+  editorQuizDifficulty: document.getElementById("editor-quiz-difficulty"),
+  editorQuizTime: document.getElementById("editor-quiz-time"),
+  editorQuizDesc: document.getElementById("editor-quiz-desc"),
+  editorQuestionsCount: document.getElementById("editor-questions-count"),
+  editorQuestionsList: document.getElementById("editor-questions-list"),
+  editorAddQBtn: document.getElementById("editor-add-q-btn"),
+  editorAddQBottomBtn: document.getElementById("editor-add-q-bottom-btn"),
+  // Phase 2: Modals Elements
+  adminLoginModal: document.getElementById("admin-login-modal"),
+  closeLoginModalBtn: document.getElementById("close-login-modal-btn"),
+  adminLoginForm: document.getElementById("admin-login-form"),
+  adminUserInput: document.getElementById("admin-user-input"),
+  adminPassInput: document.getElementById("admin-pass-input"),
+  adminLoginError: document.getElementById("admin-login-error"),
+  cancelLoginBtn: document.getElementById("cancel-login-btn"),
+  shareLinkModal: document.getElementById("share-link-modal"),
+  closeShareModalBtn: document.getElementById("close-share-modal-btn"),
+  shareUrlWarning: document.getElementById("share-url-warning"),
+  shareUrlCharCount: document.getElementById("share-url-char-count"),
+  shareUrlInput: document.getElementById("share-url-input"),
+  copyShareUrlBtn: document.getElementById("copy-share-url-btn"),
+  downloadQuizJsonBtn: document.getElementById("download-quiz-json-btn"),
+  testQuizLinkBtn: document.getElementById("test-quiz-link-btn")
 };
 
 // ==========================================
@@ -894,19 +953,37 @@ function startQuiz(nickname) {
   gameState.isAnswerSubmitted = false;
   gameState.currentStreak = 0;
 
-  const dict = QUIZ_DATA[currentLang];
-  const allQuestions = dict.difficultyLevels.flatMap(lvl => 
-    lvl.questions.map(q => ({
-      ...q,
-      levelDisplay: currentLang === "ta" ? lvl.levelTamil : lvl.level,
+  let allQuestions = [];
+  let totalQ = CONFIG.TOTAL_QUESTIONS;
+
+  if (gameState.activeCustomQuiz) {
+    const custom = gameState.activeCustomQuiz;
+    totalQ = custom.questions.length;
+    allQuestions = custom.questions.map((q, idx) => ({
+      id: q.id || idx + 1,
+      question: q.question,
+      choices: q.choices,
+      correctAnswer: q.correctAnswer || q.choices[q.correctIndex || 0],
+      reference: q.reference || "Bible Scripture",
+      levelDisplay: custom.difficulty || "Custom",
       shuffledOptions: shuffleArray(q.choices)
-    }))
-  );
+    }));
+  } else {
+    const dict = QUIZ_DATA[currentLang];
+    allQuestions = dict.difficultyLevels.flatMap(lvl => 
+      lvl.questions.map(q => ({
+        ...q,
+        levelDisplay: currentLang === "ta" ? lvl.levelTamil : lvl.level,
+        shuffledOptions: shuffleArray(q.choices)
+      }))
+    );
+    totalQ = allQuestions.length;
+  }
 
   gameState.selectedQuestions = allQuestions;
 
   DOM.hudPlayerName.textContent = gameState.playerName;
-  DOM.totalQNum.textContent = CONFIG.TOTAL_QUESTIONS;
+  DOM.totalQNum.textContent = totalQ;
   DOM.hudScore.textContent = "0";
   DOM.streakIndicator.classList.add("hidden");
 
@@ -921,9 +998,10 @@ function loadQuestion(index) {
 
   const qData = gameState.selectedQuestions[index];
   const dict = QUIZ_DATA[currentLang];
+  const totalCount = gameState.selectedQuestions.length;
 
   DOM.currentQNum.textContent = index + 1;
-  const progressPercent = ((index + 1) / CONFIG.TOTAL_QUESTIONS) * 100;
+  const progressPercent = ((index + 1) / totalCount) * 100;
   DOM.progressBar.style.width = `${progressPercent}%`;
 
   if (DOM.questionCategoryTag) {
@@ -938,13 +1016,17 @@ function loadQuestion(index) {
     btn.setAttribute("data-index", idx);
     const optionTextEl = btn.querySelector(".option-text");
     if (optionTextEl) {
-      optionTextEl.textContent = qData.shuffledOptions[idx];
+      optionTextEl.textContent = qData.shuffledOptions[idx] || "";
     }
   });
 
   DOM.feedbackPanel.classList.add("hidden");
 
-  let timeLeft = CONFIG.TIME_LIMIT_SECONDS;
+  const questionTimeLimit = (gameState.activeCustomQuiz && gameState.activeCustomQuiz.timeLimit) 
+    ? gameState.activeCustomQuiz.timeLimit 
+    : CONFIG.TIME_LIMIT_SECONDS;
+
+  let timeLeft = questionTimeLimit;
   DOM.timerDisplay.textContent = timeLeft;
   DOM.timerBox.classList.remove("timer-urgent");
 
@@ -1105,7 +1187,8 @@ function showFeedback({ isCorrect, isTimeout, points, reference, correctAnswer }
 
 function advanceToNextQuestion() {
   const nextIndex = gameState.currentQuestionIndex + 1;
-  if (nextIndex < CONFIG.TOTAL_QUESTIONS) {
+  const totalCount = gameState.selectedQuestions.length || CONFIG.TOTAL_QUESTIONS;
+  if (nextIndex < totalCount) {
     loadQuestion(nextIndex);
   } else {
     completeQuiz();
@@ -1119,6 +1202,7 @@ function completeQuiz() {
   let incorrectCount = 0;
   let unansweredCount = 0;
   let totalTime = 0;
+  const totalCount = gameState.selectedQuestions.length || CONFIG.TOTAL_QUESTIONS;
 
   gameState.userRecords.forEach(rec => {
     totalTime += rec.responseTimeSec;
@@ -1131,8 +1215,8 @@ function completeQuiz() {
     }
   });
 
-  const accuracy = Math.round((correctCount / CONFIG.TOTAL_QUESTIONS) * 100);
-  const avgResponseTime = (totalTime / CONFIG.TOTAL_QUESTIONS).toFixed(1);
+  const accuracy = Math.round((correctCount / totalCount) * 100);
+  const avgResponseTime = (totalTime / totalCount).toFixed(1);
   const speedBonusTotal = Math.max(0, gameState.cumulativeScore - (CONFIG.BASE_POINTS * correctCount));
   const performance = getPerformanceRating(accuracy);
 
@@ -1158,7 +1242,7 @@ function completeQuiz() {
   DOM.summaryUnanswered.textContent = unansweredCount;
   DOM.summaryTotalTime.textContent = `${totalTime.toFixed(1)}s`;
 
-  const maxPossibleScore = CONFIG.TOTAL_QUESTIONS * CONFIG.MAX_SCORE_PER_Q;
+  const maxPossibleScore = totalCount * CONFIG.MAX_SCORE_PER_Q;
   DOM.cardPlayerName.textContent = gameState.playerName;
   DOM.cardAttemptId.textContent = gameState.attemptId;
   DOM.cardFinalScore.textContent = gameState.cumulativeScore.toLocaleString();
@@ -1168,7 +1252,7 @@ function completeQuiz() {
   }
 
   DOM.cardRatingLabel.textContent = performance.title;
-  DOM.cardCorrectCount.textContent = `${correctCount}/${CONFIG.TOTAL_QUESTIONS}`;
+  DOM.cardCorrectCount.textContent = `${correctCount}/${totalCount}`;
   DOM.cardAccuracy.textContent = `${accuracy}%`;
   DOM.cardAvgTime.textContent = `${avgResponseTime}s`;
   DOM.cardSpeedBonus.textContent = `+${speedBonusTotal.toLocaleString()}`;
@@ -1516,4 +1600,748 @@ document.addEventListener("DOMContentLoaded", () => {
       showScreen("welcome");
     }
   });
+
+  // ==========================================
+  // PHASE 2: ADMIN PORTAL & QUIZ BUILDER LISTENERS
+  // ==========================================
+  initAdminModule();
+  checkForSharedQuizInUrl();
 });
+
+// ==========================================
+// 12. PHASE 2: ADMIN, BUILDER & SHARE MODULE
+// ==========================================
+const AdminModule = {
+  currentEditingQuizId: null,
+
+  // Demo Login Session Check
+  isAdminLoggedIn() {
+    try {
+      return sessionStorage.getItem(CONFIG.STORAGE_KEY_ADMIN_SESSION) === "true";
+    } catch (e) {
+      return false;
+    }
+  },
+
+  setAdminLoggedIn(val) {
+    try {
+      if (val) {
+        sessionStorage.setItem(CONFIG.STORAGE_KEY_ADMIN_SESSION, "true");
+      } else {
+        sessionStorage.removeItem(CONFIG.STORAGE_KEY_ADMIN_SESSION);
+      }
+    } catch (e) {}
+  },
+
+  // LocalStorage Custom Quizzes CRUD
+  getSavedQuizzes() {
+    try {
+      const raw = localStorage.getItem(CONFIG.STORAGE_KEY_CUSTOM_QUIZZES);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.warn("Error reading custom quizzes from localStorage:", e);
+      return [];
+    }
+  },
+
+  saveQuizzes(quizzes) {
+    try {
+      localStorage.setItem(CONFIG.STORAGE_KEY_CUSTOM_QUIZZES, JSON.stringify(quizzes));
+      return true;
+    } catch (e) {
+      alert("Failed to save quiz to browser localStorage: " + e.message);
+      return false;
+    }
+  },
+
+  getQuizById(id) {
+    return this.getSavedQuizzes().find(q => q.id === id) || null;
+  },
+
+  saveQuiz(quizData) {
+    const list = this.getSavedQuizzes();
+    const existingIndex = list.findIndex(q => q.id === quizData.id);
+    quizData.updatedAt = new Date().toISOString();
+    if (existingIndex >= 0) {
+      list[existingIndex] = quizData;
+    } else {
+      quizData.createdAt = new Date().toISOString();
+      list.unshift(quizData);
+    }
+    this.saveQuizzes(list);
+    this.renderAdminDashboard();
+  },
+
+  deleteQuiz(id) {
+    if (!confirm("Are you sure you want to delete this custom quiz? This action cannot be undone.")) return;
+    let list = this.getSavedQuizzes();
+    list = list.filter(q => q.id !== id);
+    this.saveQuizzes(list);
+    this.renderAdminDashboard();
+  },
+
+  renderAdminDashboard() {
+    const quizzes = this.getSavedQuizzes();
+    DOM.adminQuizCount.textContent = quizzes.length;
+
+    if (quizzes.length === 0) {
+      DOM.adminQuizList.innerHTML = `
+        <div class="admin-empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-icon">📖</div>
+          <h4>No Custom Quizzes Created Yet</h4>
+          <p>Create your first custom Bible quiz or import a previously exported JSON file to get started.</p>
+          <button type="button" class="btn btn-primary" onclick="AdminModule.openEditorForNew()" style="margin-top: 14px;">
+            ➕ Create First Quiz
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    DOM.adminQuizList.innerHTML = quizzes.map(q => {
+      const isPub = q.published;
+      const statusClass = isPub ? "status-published" : "status-draft";
+      const statusLabel = isPub ? "Published" : "Draft";
+      const qCount = (q.questions || []).length;
+      const timeLimit = q.timeLimit || 10;
+      const diff = q.difficulty || "Medium";
+      const safeTitle = escapeHtml(q.title || "Untitled Quiz");
+      const safeDesc = escapeHtml(q.description || "No description provided.");
+
+      return `
+        <div class="admin-quiz-card" data-quiz-id="${q.id}">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="quiz-card-status-badge ${statusClass}">${statusLabel}</span>
+              <span style="font-size: 0.76rem; color: #94a3b8;">${new Date(q.updatedAt || q.createdAt).toLocaleDateString()}</span>
+            </div>
+            <h4 class="quiz-card-title">${safeTitle}</h4>
+            <p class="quiz-card-desc">${safeDesc}</p>
+            <div class="quiz-card-meta">
+              <span>📝 ${qCount} Questions</span>
+              <span>⏳ ${timeLimit}s/Q</span>
+              <span>⚡ ${diff}</span>
+            </div>
+          </div>
+          <div class="quiz-card-actions">
+            <button type="button" class="btn btn-primary btn-sm" onclick="AdminModule.generateAndShowShareLink('${q.id}')" title="Generate Shareable Link">
+              🔗 Share Link
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="AdminModule.openEditorForEdit('${q.id}')" title="Edit Quiz">
+              ✏️ Edit
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="AdminModule.previewQuiz('${q.id}')" title="Preview & Play">
+              ▶️ Play
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="AdminModule.exportQuizAsJson('${q.id}')" title="Export as JSON file">
+              💾 Export JSON
+            </button>
+            <button type="button" class="btn-icon-danger" onclick="AdminModule.deleteQuiz('${q.id}')" title="Delete Quiz">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  },
+
+  // Open Quiz Editor for New Quiz
+  openEditorForNew() {
+    this.currentEditingQuizId = null;
+    DOM.editorModeBadge.textContent = "✏️ Create New Quiz";
+    DOM.editorPageTitle.textContent = "Create Custom Bible Quiz";
+    DOM.editorQuizId.value = "";
+    DOM.editorQuizTitle.value = "";
+    DOM.editorQuizDesc.value = "";
+    DOM.editorQuizDifficulty.value = "Medium";
+    DOM.editorQuizTime.value = "10";
+    DOM.editorQuestionsList.innerHTML = "";
+
+    // Add 3 starter question items for convenience
+    this.addQuestionToEditor();
+    this.addQuestionToEditor();
+    this.addQuestionToEditor();
+
+    showScreen("editor");
+  },
+
+  // Open Quiz Editor for Existing Quiz
+  openEditorForEdit(quizId) {
+    const quiz = this.getQuizById(quizId);
+    if (!quiz) {
+      alert("Quiz not found.");
+      return;
+    }
+    this.currentEditingQuizId = quiz.id;
+    DOM.editorModeBadge.textContent = "✏️ Edit Quiz";
+    DOM.editorPageTitle.textContent = `Edit "${quiz.title}"`;
+    DOM.editorQuizId.value = quiz.id;
+    DOM.editorQuizTitle.value = quiz.title || "";
+    DOM.editorQuizDesc.value = quiz.description || "";
+    DOM.editorQuizDifficulty.value = quiz.difficulty || "Medium";
+    DOM.editorQuizTime.value = String(quiz.timeLimit || 10);
+    DOM.editorQuestionsList.innerHTML = "";
+
+    (quiz.questions || []).forEach(q => {
+      this.addQuestionToEditor(q);
+    });
+
+    if (!quiz.questions || quiz.questions.length === 0) {
+      this.addQuestionToEditor();
+    }
+
+    showScreen("editor");
+  },
+
+  addQuestionToEditor(initialData = null) {
+    const container = DOM.editorQuestionsList;
+    const qIndex = container.children.length;
+    const qNumber = qIndex + 1;
+
+    const qCard = document.createElement("div");
+    qCard.className = "editor-q-card";
+    qCard.dataset.index = qIndex;
+
+    const initialQText = initialData ? escapeHtml(initialData.question || "") : "";
+    const initialChoices = (initialData && Array.isArray(initialData.choices)) 
+      ? initialData.choices 
+      : ["", "", "", ""];
+    const initialCorrectIndex = (initialData && typeof initialData.correctIndex === "number") 
+      ? initialData.correctIndex 
+      : 0;
+    const initialRef = initialData ? escapeHtml(initialData.reference || "") : "";
+
+    const choiceRowsHtml = [0, 1, 2, 3].map(cIdx => {
+      const choiceLabel = String.fromCharCode(65 + cIdx); // A, B, C, D
+      const choiceVal = escapeHtml(initialChoices[cIdx] || "");
+      const isChecked = (cIdx === initialCorrectIndex) ? "checked" : "";
+      const rowClass = (cIdx === initialCorrectIndex) ? "choice-input-row is-correct-choice" : "choice-input-row";
+
+      return `
+        <div class="${rowClass}" data-choice-row="${cIdx}">
+          <label class="choice-radio-label">
+            <input type="radio" name="correct_q_${qIndex}" value="${cIdx}" ${isChecked} onchange="AdminModule.onCorrectChoiceChange(this)" />
+            <span>${choiceLabel}</span>
+          </label>
+          <input type="text" class="choice-text-input" placeholder="Option ${choiceLabel} text" value="${choiceVal}" required />
+        </div>
+      `;
+    }).join("");
+
+    qCard.innerHTML = `
+      <div class="editor-q-card-header">
+        <span class="editor-q-number">Question #${qNumber}</span>
+        <div class="editor-q-actions">
+          <button type="button" class="btn-icon-danger" onclick="AdminModule.removeQuestionCard(this)" title="Delete this question">
+            ✕ Remove
+          </button>
+        </div>
+      </div>
+
+      <div class="input-group" style="margin-bottom: 10px;">
+        <input type="text" class="editor-q-text" placeholder="Enter Bible question text (e.g. In which city was Jesus born?)" value="${initialQText}" required />
+      </div>
+
+      <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 8px;">
+        Choices (Select the radio button next to the CORRECT answer):
+      </div>
+
+      <div class="editor-choices-grid">
+        ${choiceRowsHtml}
+      </div>
+
+      <div class="editor-q-ref-row">
+        <label>Scripture Reference:</label>
+        <input type="text" class="editor-q-ref" placeholder="e.g. Luke 2:4 or Genesis 1:1" value="${initialRef}" />
+      </div>
+    `;
+
+    container.appendChild(qCard);
+    this.updateEditorQuestionNumbers();
+  },
+
+  onCorrectChoiceChange(radio) {
+    const card = radio.closest(".editor-q-card");
+    if (!card) return;
+    const choiceRows = card.querySelectorAll(".choice-input-row");
+    choiceRows.forEach(row => {
+      const r = row.querySelector('input[type="radio"]');
+      if (r && r.checked) {
+        row.classList.add("is-correct-choice");
+      } else {
+        row.classList.remove("is-correct-choice");
+      }
+    });
+  },
+
+  removeQuestionCard(btn) {
+    const card = btn.closest(".editor-q-card");
+    const container = DOM.editorQuestionsList;
+    if (container.children.length <= 1) {
+      alert("A quiz must have at least one question.");
+      return;
+    }
+    if (card) {
+      card.remove();
+      this.updateEditorQuestionNumbers();
+    }
+  },
+
+  updateEditorQuestionNumbers() {
+    const cards = DOM.editorQuestionsList.querySelectorAll(".editor-q-card");
+    cards.forEach((card, idx) => {
+      card.dataset.index = idx;
+      const numSpan = card.querySelector(".editor-q-number");
+      if (numSpan) numSpan.textContent = `Question #${idx + 1}`;
+      // Rename radio buttons to avoid conflict
+      const radios = card.querySelectorAll('input[type="radio"]');
+      radios.forEach(r => {
+        r.name = `correct_q_${idx}`;
+      });
+    });
+    DOM.editorQuestionsCount.textContent = cards.length;
+  },
+
+  collectEditorData(isPublishing) {
+    const title = DOM.editorQuizTitle.value.trim();
+    if (!title) {
+      alert("Please provide a Quiz Title.");
+      DOM.editorQuizTitle.focus();
+      return null;
+    }
+
+    const cards = DOM.editorQuestionsList.querySelectorAll(".editor-q-card");
+    if (cards.length === 0) {
+      alert("Please add at least one question.");
+      return null;
+    }
+
+    const questions = [];
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i];
+      const qText = card.querySelector(".editor-q-text").value.trim();
+      if (!qText) {
+        alert(`Question #${i + 1} has empty question text.`);
+        card.querySelector(".editor-q-text").focus();
+        return null;
+      }
+
+      const choiceInputs = card.querySelectorAll(".choice-text-input");
+      const choices = [];
+      for (let j = 0; j < choiceInputs.length; j++) {
+        const val = choiceInputs[j].value.trim();
+        if (!val) {
+          alert(`Question #${i + 1}, Option ${String.fromCharCode(65 + j)} is empty.`);
+          choiceInputs[j].focus();
+          return null;
+        }
+        choices.push(val);
+      }
+
+      const checkedRadio = card.querySelector('input[type="radio"]:checked');
+      const correctIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : 0;
+      const refInput = card.querySelector(".editor-q-ref");
+      const refText = refInput ? refInput.value.trim() : "";
+
+      questions.push({
+        id: i + 1,
+        question: qText,
+        choices: choices,
+        correctIndex: correctIndex,
+        correctAnswer: choices[correctIndex],
+        reference: refText || "Bible Reference"
+      });
+    }
+
+    const quizId = DOM.editorQuizId.value || `quiz_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const difficulty = DOM.editorQuizDifficulty.value;
+    const timeLimit = parseInt(DOM.editorQuizTime.value, 10) || 10;
+    const desc = DOM.editorQuizDesc.value.trim();
+
+    return {
+      v: 1,
+      id: quizId,
+      title: title,
+      description: desc,
+      difficulty: difficulty,
+      timeLimit: timeLimit,
+      published: Boolean(isPublishing),
+      questions: questions
+    };
+  },
+
+  saveCurrentEditor(isPublishing) {
+    const data = this.collectEditorData(isPublishing);
+    if (!data) return;
+    this.saveQuiz(data);
+    alert(isPublishing ? "🎉 Quiz published successfully!" : "💾 Quiz draft saved!");
+    showScreen("admin");
+  },
+
+  // Export a quiz as a JSON file
+  exportQuizAsJson(quizId) {
+    const quiz = this.getQuizById(quizId);
+    if (!quiz) {
+      alert("Quiz not found for export.");
+      return;
+    }
+    // Clean export data without administrative secrets
+    const exportData = {
+      v: 1,
+      id: quiz.id,
+      title: quiz.title,
+      description: quiz.description,
+      difficulty: quiz.difficulty,
+      timeLimit: quiz.timeLimit,
+      questions: quiz.questions
+    };
+
+    const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", jsonString);
+    const cleanFileName = (quiz.title || "quiz").replace(/[^a-zA-Z0-9_-]/g, "_");
+    downloadAnchor.setAttribute("download", `${cleanFileName}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  },
+
+  // Import a previously exported JSON file
+  handleImportJson(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        const validation = validateQuizData(parsed);
+        if (!validation.valid) {
+          alert("Import failed: " + validation.error);
+          return;
+        }
+
+        // Generate fresh unique ID so it does not collide unexpectedly
+        parsed.id = `quiz_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        parsed.published = true;
+        this.saveQuiz(parsed);
+        alert(`✅ Quiz "${parsed.title}" imported successfully with ${parsed.questions.length} questions!`);
+      } catch (err) {
+        alert("Invalid JSON file: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+  },
+
+  // Generate & Show Share Link
+  generateAndShowShareLink(quizId) {
+    const quiz = this.getQuizById(quizId);
+    if (!quiz) {
+      alert("Quiz not found.");
+      return;
+    }
+
+    // Prepare shareable payload (strip private admin metadata)
+    const payload = {
+      v: 1,
+      id: quiz.id,
+      title: quiz.title,
+      description: quiz.description,
+      difficulty: quiz.difficulty,
+      timeLimit: quiz.timeLimit,
+      questions: quiz.questions.map(q => ({
+        id: q.id,
+        question: q.question,
+        choices: q.choices,
+        correctIndex: q.correctIndex,
+        reference: q.reference
+      }))
+    };
+
+    const encoded = encodeQuizForUrl(payload);
+    // Base URL pointing to GitHub Pages location
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = `${baseUrl}?quiz=${encoded}`;
+
+    DOM.shareUrlInput.value = shareUrl;
+    DOM.shareUrlCharCount.textContent = shareUrl.length;
+
+    // Show warning if excessively long (> 2000 chars)
+    if (shareUrl.length > 2000) {
+      DOM.shareUrlWarning.classList.remove("hidden");
+    } else {
+      DOM.shareUrlWarning.classList.add("hidden");
+    }
+
+    DOM.downloadQuizJsonBtn.onclick = () => {
+      this.exportQuizAsJson(quiz.id);
+    };
+
+    DOM.testQuizLinkBtn.onclick = () => {
+      DOM.shareLinkModal.classList.add("hidden");
+      loadCustomQuizIntoGame(payload);
+    };
+
+    DOM.shareLinkModal.classList.remove("hidden");
+  },
+
+  previewQuiz(quizId) {
+    const quiz = this.getQuizById(quizId);
+    if (!quiz) return;
+    loadCustomQuizIntoGame(quiz);
+  }
+};
+
+// ==========================================
+// 13. URL ENCODING & DECODING UTILITIES
+// ==========================================
+function encodeQuizForUrl(quizObj) {
+  try {
+    const jsonStr = JSON.stringify(quizObj);
+    // Safely encode Unicode UTF-8 string to Base64
+    const utf8Bytes = encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+      return String.fromCharCode(parseInt(p1, 16));
+    });
+    const base64 = btoa(utf8Bytes);
+    return encodeURIComponent(base64);
+  } catch (err) {
+    console.error("URL encoding error:", err);
+    return "";
+  }
+}
+
+function decodeQuizFromUrl(encodedStr) {
+  try {
+    const base64 = decodeURIComponent(encodedStr);
+    const decodedBytes = atob(base64);
+    const jsonStr = decodeURIComponent(Array.prototype.map.call(decodedBytes, (c) => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonStr);
+  } catch (err) {
+    console.error("URL decoding error:", err);
+    return null;
+  }
+}
+
+function validateQuizData(data) {
+  if (!data || typeof data !== "object") {
+    return { valid: false, error: "Quiz data is missing or not a JSON object." };
+  }
+  if (!data.title || typeof data.title !== "string") {
+    return { valid: false, error: "Quiz title is missing." };
+  }
+  if (!Array.isArray(data.questions) || data.questions.length === 0) {
+    return { valid: false, error: "Quiz contains no valid questions." };
+  }
+
+  for (let i = 0; i < data.questions.length; i++) {
+    const q = data.questions[i];
+    if (!q.question || typeof q.question !== "string") {
+      return { valid: false, error: `Question #${i + 1} has invalid text.` };
+    }
+    if (!Array.isArray(q.choices) || q.choices.length < 2) {
+      return { valid: false, error: `Question #${i + 1} must have at least 2 choices.` };
+    }
+    const cIdx = (typeof q.correctIndex === "number") ? q.correctIndex : 0;
+    if (cIdx < 0 || cIdx >= q.choices.length) {
+      return { valid: false, error: `Question #${i + 1} has an out-of-range correctIndex.` };
+    }
+  }
+
+  return { valid: true };
+}
+
+function checkForSharedQuizInUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const quizParam = urlParams.get("quiz");
+
+  if (!quizParam) {
+    // Also check hash fallback e.g. #quiz=...
+    const hash = window.location.hash;
+    if (hash && hash.includes("quiz=")) {
+      const match = hash.match(/quiz=([^&]+)/);
+      if (match && match[1]) {
+        handleEncodedQuizParam(match[1]);
+      }
+    }
+    return;
+  }
+
+  handleEncodedQuizParam(quizParam);
+}
+
+function handleEncodedQuizParam(encodedStr) {
+  const decoded = decodeQuizFromUrl(encodedStr);
+  if (!decoded) {
+    alert("⚠️ Could not load the shared quiz link. The link may be incomplete or corrupted. Loading the standard Bible Quiz.");
+    return;
+  }
+
+  const validation = validateQuizData(decoded);
+  if (!validation.valid) {
+    alert("⚠️ Invalid quiz link: " + validation.error + "\nLoading the standard Bible Quiz.");
+    return;
+  }
+
+  loadCustomQuizIntoGame(decoded);
+}
+
+function loadCustomQuizIntoGame(quizData) {
+  gameState.activeCustomQuiz = quizData;
+
+  // Show customized banner on welcome screen
+  DOM.sharedQuizBanner.classList.remove("hidden");
+  DOM.sharedQuizTitle.textContent = quizData.title;
+  DOM.sharedQuizDesc.textContent = quizData.description || "Custom Bible Quiz challenge created by quiz organizer.";
+  DOM.sharedQuizQCount.textContent = `${quizData.questions.length} Questions`;
+  DOM.sharedQuizTime.textContent = `${quizData.timeLimit || 10}s/Q`;
+  DOM.sharedQuizDifficulty.textContent = `${quizData.difficulty || "Custom"}`;
+
+  DOM.valPillCategory.textContent = quizData.title;
+  DOM.valPillLevels.textContent = quizData.difficulty || "Custom";
+  DOM.valPillQuestions.textContent = quizData.questions.length;
+  DOM.valPillTime.textContent = `${quizData.timeLimit || 10}s/Q`;
+  const maxPts = quizData.questions.length * 1000;
+  DOM.valPillScore.textContent = `${maxPts.toLocaleString()} pts`;
+
+  showScreen("welcome");
+}
+
+function revertToDefaultQuiz() {
+  gameState.activeCustomQuiz = null;
+  DOM.sharedQuizBanner.classList.add("hidden");
+  setLanguage(currentLang);
+  // Clear quiz param from URL without refreshing
+  if (window.history.replaceState) {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return "";
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// ==========================================
+// 14. ADMIN MODULE INITIALIZATION
+// ==========================================
+function initAdminModule() {
+  // Topbar Admin Button Trigger
+  DOM.adminPortalBtn.addEventListener("click", () => {
+    if (AdminModule.isAdminLoggedIn()) {
+      AdminModule.renderAdminDashboard();
+      showScreen("admin");
+    } else {
+      DOM.adminUserInput.value = "";
+      DOM.adminPassInput.value = "";
+      DOM.adminLoginError.textContent = "";
+      DOM.adminLoginModal.classList.remove("hidden");
+      DOM.adminUserInput.focus();
+    }
+  });
+
+  // Admin Login Modal Handlers
+  DOM.closeLoginModalBtn.addEventListener("click", () => {
+    DOM.adminLoginModal.classList.add("hidden");
+  });
+
+  DOM.cancelLoginBtn.addEventListener("click", () => {
+    DOM.adminLoginModal.classList.add("hidden");
+  });
+
+  DOM.adminLoginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const user = DOM.adminUserInput.value.trim();
+    const pass = DOM.adminPassInput.value.trim();
+
+    if (user === ADMIN_DEMO_CREDENTIALS.user && pass === ADMIN_DEMO_CREDENTIALS.pass) {
+      AdminModule.setAdminLoggedIn(true);
+      DOM.adminLoginModal.classList.add("hidden");
+      DOM.adminLoginError.textContent = "";
+      AdminModule.renderAdminDashboard();
+      showScreen("admin");
+    } else {
+      DOM.adminLoginError.textContent = "Invalid username or password. (Hint: admin / jesus)";
+    }
+  });
+
+  // Admin Dashboard Actions
+  DOM.adminCreateQuizBtn.addEventListener("click", () => {
+    AdminModule.openEditorForNew();
+  });
+
+  DOM.adminImportJsonBtn.addEventListener("click", () => {
+    DOM.adminImportFileInput.value = "";
+    DOM.adminImportFileInput.click();
+  });
+
+  DOM.adminImportFileInput.addEventListener("change", (e) => {
+    if (e.target.files && e.target.files[0]) {
+      AdminModule.handleImportJson(e.target.files[0]);
+    }
+  });
+
+  DOM.adminLogoutBtn.addEventListener("click", () => {
+    AdminModule.setAdminLoggedIn(false);
+    showScreen("welcome");
+  });
+
+  DOM.adminExitHomeBtn.addEventListener("click", () => {
+    showScreen("welcome");
+  });
+
+  // Editor Actions
+  DOM.editorCancelBtn.addEventListener("click", () => {
+    if (confirm("Discard unsaved changes?")) {
+      showScreen("admin");
+    }
+  });
+
+  DOM.editorSaveDraftBtn.addEventListener("click", () => {
+    AdminModule.saveCurrentEditor(false);
+  });
+
+  DOM.editorPublishBtn.addEventListener("click", () => {
+    AdminModule.saveCurrentEditor(true);
+  });
+
+  DOM.editorAddQBtn.addEventListener("click", () => {
+    AdminModule.addQuestionToEditor();
+  });
+
+  DOM.editorAddQBottomBtn.addEventListener("click", () => {
+    AdminModule.addQuestionToEditor();
+  });
+
+  // Share Modal Handlers
+  DOM.closeShareModalBtn.addEventListener("click", () => {
+    DOM.shareLinkModal.classList.add("hidden");
+  });
+
+  DOM.copyShareUrlBtn.addEventListener("click", () => {
+    DOM.shareUrlInput.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(DOM.shareUrlInput.value).then(() => {
+        const origText = DOM.copyShareUrlBtn.textContent;
+        DOM.copyShareUrlBtn.textContent = "✅ Copied!";
+        setTimeout(() => {
+          DOM.copyShareUrlBtn.textContent = origText;
+        }, 2000);
+      }).catch(() => {
+        document.execCommand("copy");
+        alert("Link copied to clipboard!");
+      });
+    } else {
+      document.execCommand("copy");
+      alert("Link copied to clipboard!");
+    }
+  });
+
+  // Welcome Screen Custom Quiz Banner Revert
+  DOM.playDefaultQuizBtn.addEventListener("click", revertToDefaultQuiz);
+}

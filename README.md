@@ -46,15 +46,25 @@ Built cleanly with **HTML5, CSS3, and Vanilla JavaScript** with zero external pa
    - Tap **📸 Download Card (PNG)** to save the high-resolution certificate directly.
    - Tap **🏠 Back Home** to quickly return to the welcome screen.
 
+7. **Phase 2: Admin Portal & Custom Quiz Builder (No Backend / No Database)**:
+   - **Demo Login**: Username `admin`, Password `jesus` (client-side demo).
+   - **Full Quiz Management**: Create custom quizzes with custom titles, descriptions, difficulty levels, custom time limits (5s, 10s, 15s, 20s, 30s), and any number of 4-choice questions.
+   - **Draft & Publish**: Save drafts or publish directly to browser `localStorage`.
+   - **JSON Export & Import**: Back up or share quiz files as JSON.
+   - **🔗 Instant Shareable URL Links**:
+     - Serializes and safely encodes quiz data into URL query parameters (`?quiz=...`).
+     - Anyone opening the link can play immediately on GitHub Pages without logging in or needing an account.
+     - Includes validation, error recovery, URL length warnings, and one-click clipboard copying.
+
 ---
 
 ## 📂 Project Structure
 
 ```text
 BIBLE-QUIZ-CHALLENGE/
-├── index.html        # Clean semantic markup with bilingual containers & canvas
-├── style.css         # Modern white & royal blue theme, floating animations, cards
-├── script.js         # Game state, question banks, AudioContext SFX, Canvas, & Web Share
+├── index.html        # Clean semantic markup with bilingual containers, canvas & Admin Portal
+├── style.css         # Modern white & royal blue theme, floating animations, cards, admin UI
+├── script.js         # Game state, questions, AudioContext SFX, Canvas, Admin & URL serialization
 ├── logo.avif         # Official logo & favicon
 └── README.md         # Documentation & deployment guide
 ```
