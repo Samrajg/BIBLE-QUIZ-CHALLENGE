@@ -2285,7 +2285,7 @@ function initAdminModule() {
       AdminModule.renderAdminDashboard();
       showScreen("admin");
     } else {
-      DOM.adminLoginError.textContent = "Invalid username or password. (Hint: admin / jesus)";
+      DOM.adminLoginError.textContent = "Invalid username or password.";
     }
   });
 
