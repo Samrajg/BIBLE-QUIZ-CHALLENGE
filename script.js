@@ -5,358 +5,63 @@
  */
 
 // ==========================================
-// 1. QUESTION BANK (35 Verified Questions)
+// 1. QUESTION BANK (5 Focused Questions for MVP)
 // ==========================================
 const QUESTION_BANK = [
   {
     id: 1,
-    category: "Characters",
+    category: "Gospels",
     difficulty: "Beginner",
-    question: "Who built an ark to save his family and animals from the great flood?",
-    options: ["Noah", "Moses", "Abraham", "Elijah"],
-    correctAnswer: "Noah",
-    reference: "Genesis 6:13–22",
-    explanation: "God instructed Noah to build an ark of gopher wood because Noah walked faithfully with God."
+    question: "How many disciples did Jesus choose?",
+    options: ["12", "7", "10", "40"],
+    correctAnswer: "12",
+    reference: "Luke 6:12–16",
+    explanation: "Jesus went up on a mountainside to pray all night, and when morning came, He called His disciples and chose twelve of them, whom He also designated apostles."
   },
   {
     id: 2,
-    category: "Characters",
+    category: "Gospels",
     difficulty: "Beginner",
-    question: "Who defeated the giant Goliath with a sling and a stone?",
-    options: ["David", "Saul", "Samson", "Jonathan"],
-    correctAnswer: "David",
-    reference: "1 Samuel 17:48–50",
-    explanation: "Young shepherd David trusted in the name of the Lord to overcome the Philistine champion Goliath."
+    question: "Which disciple betrayed Jesus?",
+    options: ["Judas Iscariot", "Simon Peter", "Thomas", "John"],
+    correctAnswer: "Judas Iscariot",
+    reference: "Matthew 26:14–16",
+    explanation: "Judas Iscariot went to the chief priests and agreed to betray Jesus for thirty pieces of silver."
   },
   {
     id: 3,
-    category: "Characters",
+    category: "Old Testament",
     difficulty: "Beginner",
-    question: "Which prophet was swallowed by a great fish after fleeing God's command?",
-    options: ["Jonah", "Jeremiah", "Hosea", "Amos"],
-    correctAnswer: "Jonah",
-    reference: "Jonah 1:17",
-    explanation: "Jonah attempted to sail to Tarshish instead of Nineveh, and spent three days and nights in the belly of the fish."
+    question: "Who was thrown into the lions’ den but stayed safe?",
+    options: ["Daniel", "David", "Joseph", "Samson"],
+    correctAnswer: "Daniel",
+    reference: "Daniel 6:16–23",
+    explanation: "King Darius had Daniel cast into the den of lions for praying to God, but God sent His angel to shut the lions' mouths because Daniel was found blameless."
   },
   {
     id: 4,
-    category: "Characters",
+    category: "Gospels",
     difficulty: "Beginner",
-    question: "Who was chosen by God to lead the Israelites out of slavery in Egypt?",
-    options: ["Moses", "Joshua", "Aaron", "Caleb"],
-    correctAnswer: "Moses",
-    reference: "Exodus 3:10–12",
-    explanation: "God spoke to Moses from the burning bush and sent him to Pharaoh to deliver His people."
+    question: "In which town was Jesus born?",
+    options: ["Bethlehem", "Nazareth", "Jerusalem", "Capernaum"],
+    correctAnswer: "Bethlehem",
+    reference: "Micah 5:2 & Luke 2:4–7",
+    explanation: "Joseph and Mary traveled to Bethlehem, the City of David, where Jesus was born in a manger, fulfilling prophecy."
   },
   {
     id: 5,
-    category: "Characters",
+    category: "Miracles",
     difficulty: "Beginner",
-    question: "Who was the mother of Jesus Christ?",
-    options: ["Mary", "Elizabeth", "Martha", "Hannah"],
-    correctAnswer: "Mary",
-    reference: "Luke 1:26–38",
-    explanation: "The angel Gabriel visited Mary of Nazareth, announcing that she would give birth to Jesus, the Son of God."
-  },
-  {
-    id: 6,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who was the first man created according to Genesis?",
-    options: ["Adam", "Noah", "Seth", "Abel"],
-    correctAnswer: "Adam",
-    reference: "Genesis 2:7",
-    explanation: "God formed Adam from the dust of the ground and breathed into his nostrils the breath of life."
-  },
-  {
-    id: 7,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who was the first woman created according to Genesis?",
-    options: ["Eve", "Sarah", "Rebekah", "Leah"],
-    correctAnswer: "Eve",
-    reference: "Genesis 2:21–23",
-    explanation: "Eve was created by God as a suitable companion and helper for Adam."
-  },
-  {
-    id: 8,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which king asked God for wisdom rather than wealth or long life?",
-    options: ["Solomon", "David", "Hezekiah", "Josiah"],
-    correctAnswer: "Solomon",
-    reference: "1 Kings 3:7–12",
-    explanation: "King Solomon prayed for an understanding heart to judge God's people, and God granted him unmatched wisdom."
-  },
-  {
-    id: 9,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who was thrown into a den of lions for continuing to pray to God?",
-    options: ["Daniel", "Shadrach", "Meshach", "Abednego"],
-    correctAnswer: "Daniel",
-    reference: "Daniel 6:16–23",
-    explanation: "Daniel remained faithful in praying three times daily, and God sent His angel to shut the lions' mouths."
-  },
-  {
-    id: 10,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which disciple betrayed Jesus for thirty pieces of silver?",
-    options: ["Judas Iscariot", "Peter", "Thomas", "Philip"],
-    correctAnswer: "Judas Iscariot",
-    reference: "Matthew 26:14–16",
-    explanation: "Judas Iscariot agreed to deliver Jesus to the chief priests in exchange for thirty silver coins."
-  },
-  {
-    id: 11,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who is known as the father of faith, whom God promised descendants like the stars?",
-    options: ["Abraham", "Lot", "Terah", "Nahor"],
-    correctAnswer: "Abraham",
-    reference: "Genesis 15:5–6",
-    explanation: "Abraham believed God's covenant promise that he would be the father of many nations."
-  },
-  {
-    id: 12,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which son of Abraham was born to Sarah in her old age?",
-    options: ["Isaac", "Ishmael", "Esau", "Jacob"],
-    correctAnswer: "Isaac",
-    reference: "Genesis 21:1–3",
-    explanation: "Sarah bore Isaac, whose name means 'laughter', fulfilling God's promise to Abraham."
-  },
-  {
-    id: 13,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who received a coat of many colors and was sold into Egypt by his brothers?",
-    options: ["Joseph", "Benjamin", "Reuben", "Judah"],
-    correctAnswer: "Joseph",
-    reference: "Genesis 37:3–28",
-    explanation: "Joseph's brothers were jealous of his dreams and coat, but God used his journey to Egypt to preserve lives."
-  },
-  {
-    id: 14,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who succeeded Moses and led the Israelites across the Jordan into the Promised Land?",
-    options: ["Joshua", "Caleb", "Gideon", "Barak"],
-    correctAnswer: "Joshua",
-    reference: "Joshua 1:1–6",
-    explanation: "Joshua was commanded to be strong and courageous as he led Israel into Canaan."
-  },
-  {
-    id: 15,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which judge was blessed with superhuman physical strength tied to his Nazirite vow?",
-    options: ["Samson", "Gideon", "Jephthah", "Ehud"],
-    correctAnswer: "Samson",
-    reference: "Judges 16:17",
-    explanation: "Samson was dedicated as a Nazirite from birth, and his physical strength was an empowerment from God's Spirit."
-  },
-  {
-    id: 16,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which young boy heard God calling his name at night while serving in the temple with Eli?",
-    options: ["Samuel", "David", "Solomon", "Josiah"],
-    correctAnswer: "Samuel",
-    reference: "1 Samuel 3:8–10",
-    explanation: "Eli told Samuel to reply, 'Speak, Lord, for your servant is listening', beginning Samuel's prophetic ministry."
-  },
-  {
-    id: 17,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who was anointed as the very first king of Israel?",
-    options: ["Saul", "David", "Jeroboam", "Rehoboam"],
-    correctAnswer: "Saul",
-    reference: "1 Samuel 10:1",
-    explanation: "The prophet Samuel anointed Saul, from the tribe of Benjamin, as Israel's first monarch."
-  },
-  {
-    id: 18,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which prophet confronted the prophets of Baal on Mount Carmel with fire from heaven?",
-    options: ["Elijah", "Elisha", "Isaiah", "Micah"],
-    correctAnswer: "Elijah",
-    reference: "1 Kings 18:36–39",
-    explanation: "The Lord answered Elijah's prayer with fire that consumed the water-drenched sacrifice on Mount Carmel."
-  },
-  {
-    id: 19,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which prophet asked for a double portion of Elijah's spirit and received his cloak?",
-    options: ["Elisha", "Enoch", "Obadiah", "Joel"],
-    correctAnswer: "Elisha",
-    reference: "2 Kings 2:9–14",
-    explanation: "Elisha witnessed Elijah being taken up to heaven in a whirlwind and continued the prophetic ministry."
-  },
-  {
-    id: 20,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which Jewish queen risked her life to save her people from Haman's plot?",
-    options: ["Esther", "Ruth", "Deborah", "Vashti"],
-    correctAnswer: "Esther",
-    reference: "Esther 4:14–16",
-    explanation: "Queen Esther approached King Xerxes with bravery, saying, 'If I perish, I perish', rescuing her people."
-  },
-  {
-    id: 21,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which devoted Moabite woman said to Naomi, 'Where you go I will go, and where you stay I will stay'?",
-    options: ["Ruth", "Orpah", "Rahab", "Rachel"],
-    correctAnswer: "Ruth",
-    reference: "Ruth 1:16–17",
-    explanation: "Ruth clung loyally to her mother-in-law Naomi and later became an ancestor of King David and Jesus."
-  },
-  {
-    id: 22,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which fisherman disciple walked on water briefly toward Jesus before starting to sink?",
-    options: ["Peter", "Andrew", "John", "James"],
-    correctAnswer: "Peter",
-    reference: "Matthew 14:28–31",
-    explanation: "Peter stepped out of the boat onto the water, but when he saw the wind, he became afraid and Jesus rescued him."
-  },
-  {
-    id: 23,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who baptized Jesus in the Jordan River and preached repentance in the wilderness?",
-    options: ["John the Baptist", "Nicodemus", "Simon of Cyrene", "Joseph of Arimathea"],
-    correctAnswer: "John the Baptist",
-    reference: "Matthew 3:13–17",
-    explanation: "John baptized Jesus in the Jordan, where the heavens opened and the Spirit descended like a dove."
-  },
-  {
-    id: 24,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which apostle was formerly known as Saul and encountered Jesus on the road to Damascus?",
-    options: ["Paul", "Barnabas", "Silas", "Luke"],
-    correctAnswer: "Paul",
-    reference: "Acts 9:1–6",
-    explanation: "Saul the persecutor had a life-changing encounter with the risen Christ and became the apostle Paul."
-  },
-  {
-    id: 25,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Whom did Jesus raise from the dead after he had been in the tomb for four days in Bethany?",
-    options: ["Lazarus", "Jairus", "Zacchaeus", "Bartimaeus"],
-    correctAnswer: "Lazarus",
-    reference: "John 11:38–44",
-    explanation: "Jesus called out with a loud voice, 'Lazarus, come out!' and Lazarus walked out alive."
-  },
-  {
-    id: 26,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which sister was busy preparing hospitality while Mary sat at Jesus' feet listening to His teaching?",
-    options: ["Martha", "Salome", "Joanna", "Priscilla"],
-    correctAnswer: "Martha",
-    reference: "Luke 10:38–42",
-    explanation: "Jesus gently told Martha that Mary had chosen what is better, which would not be taken away from her."
-  },
-  {
-    id: 27,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which short chief tax collector climbed a sycamore-fig tree to see Jesus passing by?",
-    options: ["Zacchaeus", "Matthew", "Cornelius", "Theophilus"],
-    correctAnswer: "Zacchaeus",
-    reference: "Luke 19:1–8",
-    explanation: "Jesus called Zacchaeus down and stayed at his house, leading to Zacchaeus repenting and making restitution."
-  },
-  {
-    id: 28,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which disciple declared he would not believe Jesus had risen unless he saw the nail marks?",
-    options: ["Thomas", "Philip", "Bartholomew", "Thaddaeus"],
-    correctAnswer: "Thomas",
-    reference: "John 20:24–29",
-    explanation: "When Jesus appeared, Thomas saw His hands and side and exclaimed, 'My Lord and my God!'"
-  },
-  {
-    id: 29,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which female judge and prophetess in Israel led a victory alongside commander Barak?",
-    options: ["Deborah", "Jael", "Huldah", "Miriam"],
-    correctAnswer: "Deborah",
-    reference: "Judges 4:4–9",
-    explanation: "Deborah held court under the Palm of Deborah and inspired Israel to defeat Sisera's army."
-  },
-  {
-    id: 30,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which brother sold his birthright for a bowl of red lentil stew?",
-    options: ["Esau", "Jacob", "Ishmael", "Labon"],
-    correctAnswer: "Esau",
-    reference: "Genesis 25:29–34",
-    explanation: "Esau came in famished from hunting and surrendered his birthright to his twin brother Jacob."
-  },
-  {
-    id: 31,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Whose wife looked back at the burning city of Sodom and became a pillar of salt?",
-    options: ["Lot's wife", "Abraham's wife", "Noah's wife", "Nahor's wife"],
-    correctAnswer: "Lot's wife",
-    reference: "Genesis 19:26",
-    explanation: "Despite the angels' warning not to look back, Lot's wife looked behind her and turned into a pillar of salt."
-  },
-  {
-    id: 32,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which judge tested God's sign using a fleece of wool with morning dew?",
-    options: ["Gideon", "Jephthah", "Othniel", "Shamgar"],
-    correctAnswer: "Gideon",
-    reference: "Judges 6:36–40",
-    explanation: "Gideon laid a fleece on the threshing floor to confirm God would save Israel by his hand."
-  },
-  {
-    id: 33,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who was the sister of Moses and Aaron who led the women in singing praise after the Red Sea crossing?",
-    options: ["Miriam", "Zipporah", "Jochebed", "Elisheba"],
-    correctAnswer: "Miriam",
-    reference: "Exodus 15:20–21",
-    explanation: "Miriam the prophetess took a timbrel and led the women in singing triumph to the Lord."
-  },
-  {
-    id: 34,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Which young Jewish man and his friends resolved not to defile themselves with the royal Babylonian food?",
-    options: ["Daniel", "Nehemiah", "Ezra", "Mordecai"],
-    correctAnswer: "Daniel",
-    reference: "Daniel 1:8",
-    explanation: "Daniel resolved in his heart not to defile himself with the king's rich food and wine."
-  },
-  {
-    id: 35,
-    category: "Characters",
-    difficulty: "Beginner",
-    question: "Who was the cupbearer to King Artaxerxes who rebuilt the broken walls of Jerusalem in 52 days?",
-    options: ["Nehemiah", "Ezra", "Zerubbabel", "Haggai"],
-    correctAnswer: "Nehemiah",
-    reference: "Nehemiah 2:1–5, 6:15",
-    explanation: "Nehemiah organized the people with faith and prayer, repairing the walls of Jerusalem despite opposition."
+    question: "What was Jesus’ first miracle?",
+    options: [
+      "Turning water into wine (at the wedding in Cana)",
+      "Feeding the 5,000",
+      "Walking on water",
+      "Healing the blind man"
+    ],
+    correctAnswer: "Turning water into wine (at the wedding in Cana)",
+    reference: "John 2:1–11",
+    explanation: "Jesus performed this first of His signs in Cana of Galilee, turning water into wine and revealing His glory, and His disciples believed in Him."
   }
 ];
 
@@ -364,7 +69,7 @@ const QUESTION_BANK = [
 // 2. CONSTANTS & CONFIGURATION
 // ==========================================
 const CONFIG = {
-  TOTAL_QUESTIONS: 10,
+  TOTAL_QUESTIONS: QUESTION_BANK.length, // 5 questions
   TIME_LIMIT_SECONDS: 20,
   BASE_POINTS: 500,
   SPEED_BONUS_MAX: 500,
@@ -546,7 +251,7 @@ function startQuiz(nickname) {
   gameState.userRecords = [];
   gameState.isAnswerSubmitted = false;
 
-  // Select 10 unique random questions from the question bank
+  // Select questions from the question bank and shuffle options
   const shuffledBank = shuffleArray(QUESTION_BANK);
   gameState.selectedQuestions = shuffledBank.slice(0, CONFIG.TOTAL_QUESTIONS).map(q => {
     return {
@@ -804,9 +509,15 @@ function completeQuiz() {
   DOM.summaryTotalTime.textContent = `${totalTime.toFixed(1)}s`;
 
   // Screen F Result Card elements
+  const maxPossibleScore = CONFIG.TOTAL_QUESTIONS * CONFIG.MAX_SCORE_PER_Q;
   DOM.cardPlayerName.textContent = gameState.playerName;
   DOM.cardAttemptId.textContent = gameState.attemptId;
   DOM.cardFinalScore.textContent = gameState.cumulativeScore.toLocaleString();
+  const cardScoreSub = document.querySelector(".card-score-box .score-sub");
+  if (cardScoreSub) {
+    cardScoreSub.textContent = `/ ${maxPossibleScore.toLocaleString()} pts`;
+  }
+
   DOM.cardRatingLabel.textContent = performance.title;
   DOM.cardCorrectCount.textContent = `${correctCount}/${CONFIG.TOTAL_QUESTIONS}`;
   DOM.cardAccuracy.textContent = `${accuracy}%`;
@@ -927,9 +638,10 @@ function exportCardAsImage() {
   ctx.font = "bold 44px 'Fredoka', 'Segoe UI', Arial, sans-serif";
   ctx.fillText(`${gameState.cumulativeScore.toLocaleString()}`, 50, 235);
 
+  const maxPossibleScore = (CONFIG.TOTAL_QUESTIONS * CONFIG.MAX_SCORE_PER_Q).toLocaleString();
   ctx.fillStyle = "#cbd5e1";
   ctx.font = "18px 'Inter', Arial, sans-serif";
-  ctx.fillText("/ 10,000 pts", 190, 230);
+  ctx.fillText(`/ ${maxPossibleScore} pts`, 190, 230);
 
   // Rating Badge in Box
   const ratingText = DOM.cardRatingLabel.textContent;
@@ -977,7 +689,7 @@ function exportCardAsImage() {
 
   ctx.fillStyle = "#94a3b8";
   ctx.font = "12px 'Inter', Arial, sans-serif";
-  ctx.fillText("Category: Bible Characters (Beginner)", 30, 405);
+  ctx.fillText("Category: Bible Quiz Challenge (MVP)", 30, 405);
   ctx.fillText(DOM.cardTimestamp.textContent, width - 240, 405);
 
   // Trigger download
