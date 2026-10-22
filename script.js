@@ -1226,17 +1226,17 @@ function renderCardCanvas() {
   const ctx = canvas.getContext("2d");
 
   const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, "#2e0854");
-  gradient.addColorStop(1, "#150630");
+  gradient.addColorStop(0, "#0f172a");
+  gradient.addColorStop(1, "#1e293b");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+  ctx.lineWidth = 3;
   ctx.strokeRect(10, 10, width - 20, height - 20);
 
-  ctx.fillStyle = "#fbbf24";
-  ctx.font = "bold 22px 'Fredoka', 'Noto Sans Tamil', sans-serif";
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 22px 'Plus Jakarta Sans', 'Noto Sans Tamil', sans-serif";
   ctx.fillText(dict.cardTitle, 30, 52);
 
   ctx.fillStyle = "#cbd5e1";

@@ -4,16 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bible Quiz Challenge | வேதாகம வினாடி வினா</title>
+  
+  <!-- Favicon using provided image -->
+  <link rel="icon" type="image/avif" href="logo.avif">
+  <link rel="apple-touch-icon" href="logo.avif">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <!-- Fullscreen Confetti Canvas (Feature 2) -->
   <canvas id="confetti-canvas"></canvas>
 
-  <!-- Floating Bible Elements in Background -->
+  <!-- Floating Bible Elements in Background (Clean soft opacity on crisp white canvas) -->
   <div class="floating-elements-bg" aria-hidden="true">
     <div class="float-item float-1">🚢</div> <!-- Ark / Ship -->
     <div class="float-item float-2">🕊️</div> <!-- Dove -->
@@ -29,26 +34,39 @@
 
   <div class="app-container">
 
-    <!-- Top Bar with Audio Mute Toggle (Feature 1) & Language Toggle -->
+    <!-- Top Navigation Bar with Logo, Audio & Language Toggle -->
     <header class="app-topbar">
-      <!-- Audio Toggle Button -->
-      <button type="button" id="sound-toggle-btn" class="sound-toggle-btn" aria-label="Toggle Sound" title="Sound Effects">
-        <span id="sound-icon" class="sound-icon">🔊</span>
-        <span id="sound-label" class="sound-label">Sound On</span>
-      </button>
+      <!-- Brand Logo & Title -->
+      <div class="topbar-brand">
+        <img src="logo.avif" alt="Bible Quiz Logo" class="brand-logo-img" />
+        <span class="topbar-brand-title">Bible Quiz</span>
+      </div>
 
-      <!-- Language Selector -->
-      <div class="lang-switch-wrapper">
-        <span class="lang-icon">🌐</span>
-        <button type="button" id="lang-btn-en" class="lang-toggle-btn active" data-lang="en">English</button>
-        <span class="lang-divider">|</span>
-        <button type="button" id="lang-btn-ta" class="lang-toggle-btn" data-lang="ta">தமிழ்</button>
+      <!-- Controls Group -->
+      <div class="topbar-controls">
+        <!-- Audio Toggle Button -->
+        <button type="button" id="sound-toggle-btn" class="sound-toggle-btn" aria-label="Toggle Sound" title="Sound Effects">
+          <span id="sound-icon" class="sound-icon">🔊</span>
+          <span id="sound-label" class="sound-label">Sound On</span>
+        </button>
+
+        <!-- Language Selector -->
+        <div class="lang-switch-wrapper">
+          <span class="lang-icon">🌐</span>
+          <button type="button" id="lang-btn-en" class="lang-toggle-btn active" data-lang="en">English</button>
+          <span class="lang-divider">|</span>
+          <button type="button" id="lang-btn-ta" class="lang-toggle-btn" data-lang="ta">தமிழ்</button>
+        </div>
       </div>
     </header>
 
     <!-- Screen A: Welcome Screen -->
     <section id="welcome-screen" class="screen active">
       <div class="welcome-card card">
+        <div class="welcome-hero-logo">
+          <img src="logo.avif" alt="Bible Quiz Logo" class="hero-logo-avatar" />
+        </div>
+
         <div class="brand-header">
           <div class="brand-badge" id="lbl-brand-badge">⚡ Interactive Quiz</div>
           <h1 class="brand-title" id="lbl-brand-title">Bible Quiz <span class="highlight">Challenge</span></h1>
@@ -106,7 +124,7 @@
       <header class="quiz-hud">
         <div class="hud-left">
           <div class="player-badge">
-            <span class="avatar-icon">👤</span>
+            <img src="logo.avif" alt="Player Avatar" class="hud-avatar-img" />
             <span id="hud-player-name" class="player-name">Player</span>
           </div>
           <div class="question-tracker">
@@ -146,25 +164,25 @@
           <h2 id="question-text" class="question-title">Loading question...</h2>
         </div>
 
-        <!-- Four Answer Options (A, B, C, D) -->
+        <!-- Four Answer Options (A, B, C, D) with elegant letter badges -->
         <div id="answer-grid" class="answer-grid" role="group" aria-label="Answer Options">
           <button type="button" class="answer-card btn-option" data-index="0" id="opt-0">
-            <span class="shape-indicator shape-triangle">▲</span>
+            <span class="shape-indicator badge-opt-a">A</span>
             <span class="option-text">Option 1</span>
             <span class="status-indicator"></span>
           </button>
           <button type="button" class="answer-card btn-option" data-index="1" id="opt-1">
-            <span class="shape-indicator shape-diamond">◆</span>
+            <span class="shape-indicator badge-opt-b">B</span>
             <span class="option-text">Option 2</span>
             <span class="status-indicator"></span>
           </button>
           <button type="button" class="answer-card btn-option" data-index="2" id="opt-2">
-            <span class="shape-indicator shape-circle">●</span>
+            <span class="shape-indicator badge-opt-c">C</span>
             <span class="option-text">Option 3</span>
             <span class="status-indicator"></span>
           </button>
           <button type="button" class="answer-card btn-option" data-index="3" id="opt-3">
-            <span class="shape-indicator shape-square">■</span>
+            <span class="shape-indicator badge-opt-d">D</span>
             <span class="option-text">Option 4</span>
             <span class="status-indicator"></span>
           </button>
@@ -215,12 +233,15 @@
         <div id="screenshot-card" class="result-card-export">
           <div class="card-export-inner">
             <div class="card-brand">
-              <span class="brand-logo-text" id="card-brand-title">⚡ Bible Quiz Challenge</span>
+              <div class="card-brand-left">
+                <img src="logo.avif" alt="Bible Logo" class="card-logo-mini" />
+                <span class="brand-logo-text" id="card-brand-title">Bible Quiz Challenge</span>
+              </div>
               <span class="card-type-tag" id="card-badge-tag">Official Result Card</span>
             </div>
 
             <div class="card-player-hero">
-              <div class="card-avatar">🏆</div>
+              <img src="logo.avif" alt="Avatar" class="card-avatar-img" />
               <div>
                 <h3 id="card-player-name" class="card-player-name">Player</h3>
                 <p class="card-attempt-id"><span id="lbl-attempt-id">Attempt ID:</span> <code id="card-attempt-id">BQC-000000</code></p>
@@ -283,7 +304,7 @@
 
         <!-- Export Actions & Navigation (Includes Feature 5: Native Share) -->
         <div class="results-actions">
-          <button type="button" id="share-card-btn" class="btn btn-primary" style="background-color: #25d366; box-shadow: 0 4px 0 #128c7e;">
+          <button type="button" id="share-card-btn" class="btn btn-share">
             📲 Share Card
           </button>
           <button type="button" id="download-card-btn" class="btn btn-secondary">
