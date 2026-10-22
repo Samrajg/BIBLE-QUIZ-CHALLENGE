@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bible Quiz Challenge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Screen A: Welcome Screen -->
+    <section id="welcome-screen" class="screen active">
+      <div class="welcome-card card">
+        <div class="brand-header">
+          <div class="brand-badge">⚡ Interactive Quiz</div>
+          <h1 class="brand-title">Bible Quiz <span class="highlight">Challenge</span></h1>
+          <p class="brand-subtitle">Discover Bible characters, test your knowledge, and learn something new.</p>
+        </div>
+
+        <div class="quiz-info-pills">
+          <div class="info-pill"><span class="pill-label">Category:</span> Characters</div>
+          <div class="info-pill"><span class="pill-label">Level:</span> Beginner</div>
+          <div class="info-pill"><span class="pill-label">Questions:</span> 10</div>
+          <div class="info-pill"><span class="pill-label">Time:</span> 20s/Q</div>
+          <div class="info-pill"><span class="pill-label">Max Score:</span> 10,000 pts</div>
+        </div>
+
+        <form id="nickname-form" class="welcome-form" novalidate>
+          <div class="input-group">
+            <label for="nickname-input">Choose Your Player Nickname</label>
+            <input 
+              type="text" 
+              id="nickname-input" 
+              placeholder="e.g. JoyfulRunner or Noah7" 
+              maxlength="20" 
+              autocomplete="off"
+              aria-describedby="nickname-error"
+            />
+            <span id="nickname-error" class="error-msg" aria-live="polite"></span>
+          </div>
+
+          <button type="submit" id="start-btn" class="btn btn-primary btn-lg">
+            Start Quiz 🚀
+          </button>
+        </form>
+
+        <div class="instructions-card">
+          <h3>🎮 How to Play</h3>
+          <ul>
+            <li><strong>10 Random Questions:</strong> Selected from our beginner Bible character bank.</li>
+            <li><strong>20 Seconds Per Question:</strong> Answer fast to earn maximum speed bonus!</li>
+            <li><strong>Score Breakdown:</strong> Up to 1,000 pts per question (500 base + up to 500 speed bonus).</li>
+            <li><strong>No Sign-up Needed:</strong> Play immediately, review all answers, and download your card.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen B & C: Question & Answer Feedback Screen -->
+    <section id="quiz-screen" class="screen">
+      <!-- Quiz Header / HUD -->
+      <header class="quiz-hud">
+        <div class="hud-left">
+          <div class="player-badge">
+            <span class="avatar-icon">👤</span>
+            <span id="hud-player-name" class="player-name">Player</span>
+          </div>
+          <div class="question-tracker">
+            Question <span id="current-q-num">1</span> of <span id="total-q-num">10</span>
+          </div>
+        </div>
+
+        <div class="hud-center">
+          <div class="timer-box" id="timer-box" role="timer" aria-live="polite">
+            <span class="timer-icon">⏳</span>
+            <span id="timer-display" class="timer-count">20</span>s
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <div class="score-display">
+            <span class="score-label">Score</span>
+            <span id="hud-score" class="score-val">0</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Progress Bar -->
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar-fill" style="width: 10%;"></div>
+      </div>
+
+      <!-- Question Card -->
+      <main class="quiz-main card">
+        <div class="question-container">
+          <span class="question-category-tag">Bible Character</span>
+          <h2 id="question-text" class="question-title">Loading question...</h2>
+        </div>
+
+        <!-- Four Answer Options (A, B, C, D) -->
+        <div id="answer-grid" class="answer-grid" role="group" aria-label="Answer Options">
+          <button type="button" class="answer-card btn-option" data-index="0" id="opt-0">
+            <span class="shape-indicator shape-triangle">▲</span>
+            <span class="option-text">Option 1</span>
+            <span class="status-indicator"></span>
+          </button>
+          <button type="button" class="answer-card btn-option" data-index="1" id="opt-1">
+            <span class="shape-indicator shape-diamond">◆</span>
+            <span class="option-text">Option 2</span>
+            <span class="status-indicator"></span>
+          </button>
+          <button type="button" class="answer-card btn-option" data-index="2" id="opt-2">
+            <span class="shape-indicator shape-circle">●</span>
+            <span class="option-text">Option 3</span>
+            <span class="status-indicator"></span>
+          </button>
+          <button type="button" class="answer-card btn-option" data-index="3" id="opt-3">
+            <span class="shape-indicator shape-square">■</span>
+            <span class="option-text">Option 4</span>
+            <span class="status-indicator"></span>
+          </button>
+        </div>
+
+        <!-- Screen C: Feedback Panel (Revealed after selection or timeout) -->
+        <div id="feedback-panel" class="feedback-panel hidden" aria-live="assertive">
+          <div class="feedback-header">
+            <div id="feedback-banner" class="feedback-banner">
+              <span id="feedback-icon" class="feedback-icon">✓</span>
+              <div class="feedback-text-group">
+                <h3 id="feedback-title">Correct!</h3>
+                <p id="feedback-points-tag">+850 Points</p>
+              </div>
+            </div>
+            <button id="next-question-btn" class="btn btn-next">
+              Next Question ➜
+            </button>
+          </div>
+
+          <div class="feedback-details">
+            <div class="reference-badge">
+              <strong>Scripture Reference:</strong> <span id="feedback-reference">Genesis 6:13-22</span>
+            </div>
+            <p id="feedback-explanation" class="feedback-explanation">
+              Noah obediently built an ark of gopher wood according to God's exact instructions to save his household and the animals.
+            </p>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- Screen D & F: Final Results & Result Card Screen -->
+    <section id="results-screen" class="screen">
+      <div class="results-layout card">
+        <div class="results-header">
+          <div class="celebration-badge" id="results-rating-badge">Bible Expert</div>
+          <h2 class="results-title">Quiz Completed!</h2>
+          <p id="results-encouragement" class="results-encouragement">Superb effort! You really know your Bible history!</p>
+        </div>
+
+        <!-- Screen F: Screenshot-Friendly Result Card -->
+        <div id="screenshot-card" class="result-card-export">
+          <div class="card-export-inner">
+            <div class="card-brand">
+              <span class="brand-logo-text">⚡ Bible Quiz Challenge</span>
+              <span class="card-type-tag">Official Result Card</span>
+            </div>
+
+            <div class="card-player-hero">
+              <div class="card-avatar">🏆</div>
+              <div>
+                <h3 id="card-player-name" class="card-player-name">Player</h3>
+                <p class="card-attempt-id">Attempt ID: <code id="card-attempt-id">BQC-000000</code></p>
+              </div>
+            </div>
+
+            <div class="card-score-box">
+              <div class="score-main">
+                <span class="score-big" id="card-final-score">0</span>
+                <span class="score-sub">/ 10,000 pts</span>
+              </div>
+              <div class="rating-ribbon" id="card-rating-label">Bible Explorer</div>
+            </div>
+
+            <div class="card-stats-grid">
+              <div class="card-stat-item">
+                <span class="stat-num" id="card-correct-count">0/10</span>
+                <span class="stat-lbl">Correct Answers</span>
+              </div>
+              <div class="card-stat-item">
+                <span class="stat-num" id="card-accuracy">0%</span>
+                <span class="stat-lbl">Accuracy</span>
+              </div>
+              <div class="card-stat-item">
+                <span class="stat-num" id="card-avg-time">0.0s</span>
+                <span class="stat-lbl">Avg Response</span>
+              </div>
+              <div class="card-stat-item">
+                <span class="stat-num" id="card-speed-bonus">0</span>
+                <span class="stat-lbl">Speed Bonus</span>
+              </div>
+            </div>
+
+            <div class="card-footer-info">
+              <span>Category: <strong>Characters (Beginner)</strong></span>
+              <span id="card-timestamp">Date: 2026-10-22</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result Stats Details -->
+        <div class="stats-summary-breakdown">
+          <div class="breakdown-item">
+            <span class="breakdown-label">Correct</span>
+            <span class="breakdown-value text-success" id="summary-correct">0</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Incorrect</span>
+            <span class="breakdown-value text-danger" id="summary-incorrect">0</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Unanswered</span>
+            <span class="breakdown-value text-warning" id="summary-unanswered">0</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-label">Total Time</span>
+            <span class="breakdown-value" id="summary-total-time">0.0s</span>
+          </div>
+        </div>
+
+        <!-- Export Actions & Navigation -->
+        <div class="results-actions">
+          <button type="button" id="download-card-btn" class="btn btn-secondary">
+            📸 Download Result Card (PNG)
+          </button>
+          <button type="button" id="review-btn" class="btn btn-outline">
+            📝 Review Answers
+          </button>
+          <button type="button" id="play-again-btn" class="btn btn-primary">
+            🔄 Play Again
+          </button>
+        </div>
+
+        <p class="export-note">
+          💡 <strong>Tip for Quiz Organizers:</strong> You can download the result card above or take a screenshot directly and send it to your quiz organizer.
+        </p>
+      </div>
+    </section>
+
+    <!-- Screen E: Answer Review Screen -->
+    <section id="review-screen" class="screen">
+      <div class="review-layout card">
+        <div class="review-header">
+          <div>
+            <h2>Question & Answer Review</h2>
+            <p>Review each question, your answer, and the Bible references.</p>
+          </div>
+          <button type="button" id="back-to-results-btn" class="btn btn-outline">
+            ⬅ Back to Results
+          </button>
+        </div>
+
+        <div id="review-list" class="review-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <div class="review-footer">
+          <button type="button" id="review-play-again-btn" class="btn btn-primary btn-lg">
+            🔄 Play Again
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="app-footer">
+    <p>Bible Quiz Challenge &bull; Built with pure HTML5, CSS3, & Vanilla JavaScript</p>
+  </footer>
+
+  <!-- Native SVG-Canvas Image Exporter helper (Fallback-proof, No external npm/packages) -->
+  <script src="script.js"></script>
+</body>
+</html>
