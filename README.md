@@ -70,7 +70,11 @@ BIBLE-QUIZ-CHALLENGE/
 
 $$\text{Points} = 500 + \text{round}\left(500 \times \left(1 - \frac{\text{responseTime}}{\text{timeLimit}}\right)\right)$$
 
-Maximum possible score across 15 questions: **15,000 points**.
+- **Time Limit**: 10 seconds per question (fast-paced)
+- **Base Points**: 500 pts
+- **Speed Bonus**: Up to 500 pts
+- **Max Score per Question**: 1,000 pts
+- **Total Max Score (15 Questions)**: 15,000 pts
 
 ---
 

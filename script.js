@@ -28,7 +28,7 @@ const QUIZ_DATA = {
     instructionsTitle: "🎮 How to Play",
     instructions: [
       "<strong>15 Progressive Questions:</strong> 5 Easy, 5 Medium, and 5 Hard questions.",
-      "<strong>20 Seconds Per Question:</strong> Answer fast to earn maximum speed bonus!",
+      "<strong>10 Seconds Per Question:</strong> Answer fast to earn maximum speed bonus!",
       "<strong>Score Breakdown:</strong> Up to 1,000 pts per question (500 base + up to 500 speed bonus).",
       "<strong>No Sign-up Needed:</strong> Play immediately, review all answers, and download your card."
     ],
@@ -217,7 +217,7 @@ const QUIZ_DATA = {
     instructionsTitle: "🎮 விளையாடுவது எப்படி",
     instructions: [
       "<strong>15 படிப்படியான கேள்விகள்:</strong> 5 எளிது, 5 நடுத்தரம், 5 கடினம் கேள்விகள்.",
-      "<strong>கேள்விக்கு 20 வினாடிகள்:</strong> விரைவாகப் பதிலளித்து கூடுதல் வேகப் புள்ளிகளைப் பெறுங்கள்!",
+      "<strong>கேள்விக்கு 10 வினாடிகள்:</strong> விரைவாகப் பதிலளித்து கூடுதல் வேகப் புள்ளிகளைப் பெறுங்கள்!",
       "<strong>மதிப்பெண் கணக்கீடு:</strong> ஒரு கேள்விக்கு 1,000 புள்ளிகள் வரை (500 அடிப்படை + 500 வரை வேகப் போனஸ்).",
       "<strong>கணக்கு தேவையில்லை:</strong> உடனடியாக விளையாடி, விடைகளைச் சரிபார்த்து, உங்கள் கார்டைப் பதிவிறக்குங்கள்."
     ],
@@ -405,7 +405,7 @@ let isAudioMuted = false;
 
 const CONFIG = {
   TOTAL_QUESTIONS: 15,
-  TIME_LIMIT_SECONDS: 20,
+  TIME_LIMIT_SECONDS: 10,
   BASE_POINTS: 500,
   SPEED_BONUS_MAX: 500,
   MAX_SCORE_PER_Q: 1000,
@@ -782,6 +782,7 @@ function setLanguage(lang) {
   DOM.valPillLevels.textContent = dict.levelsName;
   DOM.lblPillQuestions.textContent = lang === "ta" ? "கேள்விகள்:" : "Questions:";
   DOM.lblPillTime.textContent = lang === "ta" ? "நேரம்:" : "Time:";
+  DOM.valPillTime.textContent = "10s/Q";
   DOM.lblPillScore.textContent = lang === "ta" ? "அதிகபட்ச மதிப்பெண்:" : "Max Score:";
   DOM.lblNickname.textContent = dict.nicknameLabel;
   DOM.nicknameInput.placeholder = dict.nicknamePlaceholder;
