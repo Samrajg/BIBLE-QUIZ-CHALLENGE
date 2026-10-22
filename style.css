@@ -1338,6 +1338,102 @@ body {
    PHASE 2: ADMIN PORTAL, QUIZ BUILDER & MODALS STYLES
    ======================================================== */
 
+/* Unauthorized Screen Styles */
+.unauthorized-card {
+  max-width: 620px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 48px 36px;
+  border-top: 6px solid #ef4444;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.unauthorized-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  background: #fef2f2;
+  border: 2px solid #fecaca;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.unauthorized-lock-icon {
+  font-size: 2.5rem;
+}
+
+.unauthorized-badge {
+  display: inline-block;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 12px;
+}
+
+.unauthorized-title {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+
+.unauthorized-desc {
+  font-size: 1.02rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 26px;
+}
+
+.unauthorized-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  text-align: left;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.unauthorized-box-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.unauthorized-box-item .box-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.unauthorized-box-item strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.unauthorized-box-item p {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.unauthorized-actions {
+  display: flex;
+  justify-content: center;
+}
+
 /* Admin Trigger Button in Topbar */
 .admin-portal-btn {
   background: #ffffff;

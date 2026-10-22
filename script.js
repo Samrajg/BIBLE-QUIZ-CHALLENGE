@@ -439,6 +439,7 @@ const gameState = {
 // ==========================================
 const DOM = {
   screens: {
+    unauthorized: document.getElementById("unauthorized-screen"),
     welcome: document.getElementById("welcome-screen"),
     quiz: document.getElementById("quiz-screen"),
     results: document.getElementById("results-screen"),
@@ -468,9 +469,11 @@ const DOM = {
   lblPillLevels: document.getElementById("lbl-pill-levels"),
   valPillLevels: document.getElementById("val-pill-levels"),
   lblPillQuestions: document.getElementById("lbl-pill-questions"),
+  valPillQuestions: document.getElementById("val-pill-questions"),
   lblPillTime: document.getElementById("lbl-pill-time"),
   valPillTime: document.getElementById("val-pill-time"),
   lblPillScore: document.getElementById("lbl-pill-score"),
+  valPillScore: document.getElementById("val-pill-score"),
   lblNickname: document.getElementById("lbl-nickname"),
   form: document.getElementById("nickname-form"),
   nicknameInput: document.getElementById("nickname-input"),
@@ -596,7 +599,8 @@ const DOM = {
   shareUrlInput: document.getElementById("share-url-input"),
   copyShareUrlBtn: document.getElementById("copy-share-url-btn"),
   downloadQuizJsonBtn: document.getElementById("download-quiz-json-btn"),
-  testQuizLinkBtn: document.getElementById("test-quiz-link-btn")
+  testQuizLinkBtn: document.getElementById("test-quiz-link-btn"),
+  unauthorizedAdminBtn: document.getElementById("unauthorized-admin-btn")
 };
 
 // ==========================================
@@ -953,32 +957,22 @@ function startQuiz(nickname) {
   gameState.isAnswerSubmitted = false;
   gameState.currentStreak = 0;
 
-  let allQuestions = [];
-  let totalQ = CONFIG.TOTAL_QUESTIONS;
-
-  if (gameState.activeCustomQuiz) {
-    const custom = gameState.activeCustomQuiz;
-    totalQ = custom.questions.length;
-    allQuestions = custom.questions.map((q, idx) => ({
-      id: q.id || idx + 1,
-      question: q.question,
-      choices: q.choices,
-      correctAnswer: q.correctAnswer || q.choices[q.correctIndex || 0],
-      reference: q.reference || "Bible Scripture",
-      levelDisplay: custom.difficulty || "Custom",
-      shuffledOptions: shuffleArray(q.choices)
-    }));
-  } else {
-    const dict = QUIZ_DATA[currentLang];
-    allQuestions = dict.difficultyLevels.flatMap(lvl => 
-      lvl.questions.map(q => ({
-        ...q,
-        levelDisplay: currentLang === "ta" ? lvl.levelTamil : lvl.level,
-        shuffledOptions: shuffleArray(q.choices)
-      }))
-    );
-    totalQ = allQuestions.length;
+  if (!gameState.activeCustomQuiz) {
+    showScreen("unauthorized");
+    return;
   }
+
+  const custom = gameState.activeCustomQuiz;
+  const totalQ = custom.questions.length;
+  const allQuestions = custom.questions.map((q, idx) => ({
+    id: q.id || idx + 1,
+    question: q.question,
+    choices: q.choices,
+    correctAnswer: q.correctAnswer || q.choices[q.correctIndex || 0],
+    reference: q.reference || "Bible Scripture",
+    levelDisplay: custom.difficulty || "Custom",
+    shuffledOptions: shuffleArray(q.choices)
+  }));
 
   gameState.selectedQuestions = allQuestions;
 
@@ -2161,8 +2155,11 @@ function checkForSharedQuizInUrl() {
       const match = hash.match(/quiz=([^&]+)/);
       if (match && match[1]) {
         handleEncodedQuizParam(match[1]);
+        return;
       }
     }
+    // No quiz parameter in URL: show Unauthorized Access screen
+    showScreen("unauthorized");
     return;
   }
 
@@ -2172,13 +2169,15 @@ function checkForSharedQuizInUrl() {
 function handleEncodedQuizParam(encodedStr) {
   const decoded = decodeQuizFromUrl(encodedStr);
   if (!decoded) {
-    alert("⚠️ Could not load the shared quiz link. The link may be incomplete or corrupted. Loading the standard Bible Quiz.");
+    alert("⚠️ Could not load the shared quiz link. The link may be incomplete or corrupted.");
+    showScreen("unauthorized");
     return;
   }
 
   const validation = validateQuizData(decoded);
   if (!validation.valid) {
-    alert("⚠️ Invalid quiz link: " + validation.error + "\nLoading the standard Bible Quiz.");
+    alert("⚠️ Invalid quiz link: " + validation.error);
+    showScreen("unauthorized");
     return;
   }
 
@@ -2208,8 +2207,7 @@ function loadCustomQuizIntoGame(quizData) {
 
 function revertToDefaultQuiz() {
   gameState.activeCustomQuiz = null;
-  DOM.sharedQuizBanner.classList.add("hidden");
-  setLanguage(currentLang);
+  showScreen("unauthorized");
   // Clear quiz param from URL without refreshing
   if (window.history.replaceState) {
     const cleanUrl = window.location.origin + window.location.pathname;
@@ -2288,12 +2286,31 @@ function initAdminModule() {
 
   DOM.adminLogoutBtn.addEventListener("click", () => {
     AdminModule.setAdminLoggedIn(false);
-    showScreen("welcome");
+    if (gameState.activeCustomQuiz) {
+      showScreen("welcome");
+    } else {
+      showScreen("unauthorized");
+    }
   });
 
   DOM.adminExitHomeBtn.addEventListener("click", () => {
-    showScreen("welcome");
+    if (gameState.activeCustomQuiz) {
+      showScreen("welcome");
+    } else {
+      showScreen("unauthorized");
+    }
   });
+
+  // Unauthorized Screen Admin Button
+  if (DOM.unauthorizedAdminBtn) {
+    DOM.unauthorizedAdminBtn.addEventListener("click", () => {
+      DOM.adminUserInput.value = "";
+      DOM.adminPassInput.value = "";
+      DOM.adminLoginError.textContent = "";
+      DOM.adminLoginModal.classList.remove("hidden");
+      DOM.adminUserInput.focus();
+    });
+  }
 
   // Editor Actions
   DOM.editorCancelBtn.addEventListener("click", () => {
@@ -2342,6 +2359,7 @@ function initAdminModule() {
     }
   });
 
-  // Welcome Screen Custom Quiz Banner Revert
-  DOM.playDefaultQuizBtn.addEventListener("click", revertToDefaultQuiz);
+  if (DOM.playDefaultQuizBtn) {
+    DOM.playDefaultQuizBtn.addEventListener("click", revertToDefaultQuiz);
+  }
 }

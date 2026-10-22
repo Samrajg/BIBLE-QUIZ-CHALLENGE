@@ -66,8 +66,45 @@
       </div>
     </header>
 
-    <!-- Screen A: Welcome Screen -->
-    <section id="welcome-screen" class="screen active">
+    <!-- Screen: Unauthorized Access Screen (Shown when visiting without a valid quiz link) -->
+    <section id="unauthorized-screen" class="screen">
+      <div class="unauthorized-card card">
+        <div class="unauthorized-icon-wrapper">
+          <span class="unauthorized-lock-icon">🔒</span>
+        </div>
+        <div class="unauthorized-badge">403 • Restricted Access</div>
+        <h1 class="unauthorized-title">Unauthorized Access</h1>
+        <p class="unauthorized-desc">
+          No quiz link detected. The default quiz has been disabled. You must open a valid shared quiz link provided by your quiz organizer, or sign in as an Admin to create and publish a quiz.
+        </p>
+
+        <div class="unauthorized-box">
+          <div class="unauthorized-box-item">
+            <span class="box-icon">🔗</span>
+            <div>
+              <strong>Are you a player?</strong>
+              <p>Please click the official quiz link shared with you by your teacher or quiz administrator.</p>
+            </div>
+          </div>
+          <div class="unauthorized-box-item">
+            <span class="box-icon">⚙️</span>
+            <div>
+              <strong>Are you an administrator?</strong>
+              <p>Sign in to the Admin Portal to create, manage, and distribute new quizzes.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="unauthorized-actions">
+          <button type="button" id="unauthorized-admin-btn" class="btn btn-primary btn-lg">
+            🔐 Admin Login
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen A: Welcome Screen (Only shown when a valid shared quiz is loaded) -->
+    <section id="welcome-screen" class="screen">
       <div class="welcome-card card">
         <div class="welcome-hero-logo">
           <img src="logo.avif" alt="Bible Quiz Logo" class="hero-logo-avatar" />
@@ -79,8 +116,8 @@
           <p class="brand-subtitle" id="lbl-brand-subtitle">Discover Bible characters, test your knowledge, and learn something new.</p>
         </div>
 
-        <!-- Custom Shared Quiz Alert Banner (Displayed when loaded via link) -->
-        <div id="shared-quiz-banner" class="shared-quiz-banner hidden">
+        <!-- Custom Shared Quiz Alert Banner -->
+        <div id="shared-quiz-banner" class="shared-quiz-banner">
           <div class="shared-quiz-pill">🔗 Custom Shared Quiz Loaded</div>
           <h2 id="shared-quiz-title" class="shared-quiz-title">Custom Bible Quiz</h2>
           <p id="shared-quiz-desc" class="shared-quiz-desc"></p>
@@ -89,15 +126,14 @@
             <span id="shared-quiz-time">10s/Q</span> • 
             <span id="shared-quiz-difficulty">Medium</span>
           </div>
-          <button type="button" id="play-default-quiz-btn" class="btn-text-link">← Switch back to Official 15-Q Quiz</button>
         </div>
 
         <div class="quiz-info-pills">
-          <div class="info-pill"><span class="pill-label" id="lbl-pill-category">Category:</span> <span id="val-pill-category">Characters & Basic Facts</span></div>
-          <div class="info-pill"><span class="pill-label" id="lbl-pill-levels">Levels:</span> <span id="val-pill-levels">Easy • Medium • Hard</span></div>
-          <div class="info-pill"><span class="pill-label" id="lbl-pill-questions">Questions:</span> <span id="val-pill-questions">15</span></div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-category">Quiz:</span> <span id="val-pill-category">Custom Bible Quiz</span></div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-levels">Level:</span> <span id="val-pill-levels">Medium</span></div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-questions">Questions:</span> <span id="val-pill-questions">10</span></div>
           <div class="info-pill"><span class="pill-label" id="lbl-pill-time">Time:</span> <span id="val-pill-time">10s/Q</span></div>
-          <div class="info-pill"><span class="pill-label" id="lbl-pill-score">Max Score:</span> <span id="val-pill-score">15,000 pts</span></div>
+          <div class="info-pill"><span class="pill-label" id="lbl-pill-score">Max Score:</span> <span id="val-pill-score">10,000 pts</span></div>
         </div>
 
         <form id="nickname-form" class="welcome-form" novalidate>
@@ -128,10 +164,9 @@
         <div class="instructions-card">
           <h3 id="lbl-instructions-title">🎮 How to Play</h3>
           <ul id="instructions-list">
-            <li><strong>15 Progressive Questions:</strong> 5 Easy, 5 Medium, and 5 Hard questions.</li>
-            <li><strong>10 Seconds Per Question:</strong> Answer fast to earn maximum speed bonus!</li>
+            <li><strong>Answer Fast:</strong> Earn maximum speed bonus for quick correct answers!</li>
             <li><strong>Score Breakdown:</strong> Up to 1,000 pts per question (500 base + up to 500 speed bonus).</li>
-            <li><strong>No Sign-up Needed:</strong> Play immediately, review all answers, and download your card.</li>
+            <li><strong>Instant Review:</strong> Review all scripture references and download your certificate at the end!</li>
           </ul>
         </div>
       </div>
