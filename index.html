@@ -58,6 +58,12 @@
           <button type="button" id="lang-btn-ta" class="lang-toggle-btn" data-lang="ta">தமிழ்</button>
         </div>
 
+        <!-- Live Leaderboard Trigger Button -->
+        <button type="button" id="leaderboard-nav-btn" class="leaderboard-nav-btn" aria-label="Live Leaderboard" title="Live Shared Leaderboard">
+          <span>🏆</span>
+          <span id="leaderboard-nav-label">Leaderboard</span>
+        </button>
+
         <!-- Admin Portal Trigger Button -->
         <button type="button" id="admin-portal-btn" class="admin-portal-btn" aria-label="Admin Portal" title="Quiz Creator / Admin">
           <span>⚙️</span>
@@ -358,6 +364,9 @@
 
         <!-- Export Actions & Navigation (Includes Feature 5: Native Share) -->
         <div class="results-actions">
+          <button type="button" id="view-leaderboard-btn" class="btn btn-primary">
+            🏆 View Live Leaderboard
+          </button>
           <button type="button" id="share-card-btn" class="btn btn-share">
             📲 Share Card
           </button>
@@ -534,6 +543,60 @@
             </div>
           </div>
         </form>
+      </div>
+    <!-- Screen I: Dedicated Shared Live Leaderboard Screen (Projector & Mobile Ready) -->
+    <section id="leaderboard-screen" class="screen">
+      <div class="leaderboard-container card">
+        <div class="leaderboard-header">
+          <div class="leaderboard-title-group">
+            <div class="leaderboard-live-pill">
+              <span class="live-dot" id="leaderboard-status-dot"></span>
+              <span id="leaderboard-status-text">Connecting...</span>
+            </div>
+            <h2 class="leaderboard-title" id="leaderboard-event-title">🏆 Live Leaderboard</h2>
+            <p class="leaderboard-subtitle" id="leaderboard-event-subtitle">Real-time rankings powered by Cloudflare Durable Objects</p>
+          </div>
+          
+          <div class="leaderboard-controls-group">
+            <div class="leaderboard-meta-badge">
+              <span id="lb-participant-count">0</span> Players
+            </div>
+            <button type="button" id="lb-refresh-btn" class="btn btn-secondary btn-sm" title="Refresh Rankings">
+              🔄 Refresh
+            </button>
+            <button type="button" id="lb-projector-mode-btn" class="btn btn-outline btn-sm" title="Toggle Fullscreen Projector Mode">
+              🖥️ Projector Mode
+            </button>
+            <button type="button" id="lb-back-btn" class="btn btn-outline btn-sm">
+              🏠 Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Leaderboard Table Container -->
+        <div class="leaderboard-table-wrapper">
+          <table class="leaderboard-table" id="leaderboard-table">
+            <thead>
+              <tr>
+                <th class="th-rank">Rank</th>
+                <th class="th-player">Player Name</th>
+                <th class="th-score">Score</th>
+                <th class="th-accuracy">Accuracy</th>
+                <th class="th-time">Time</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody">
+              <tr>
+                <td colspan="5" class="lb-empty-msg">Waiting for quiz submissions...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="leaderboard-footer">
+          <span class="lb-footer-info" id="lb-last-updated">Last updated: Just now</span>
+          <span class="lb-tie-rule">⚡ Tie-Break: Higher Score ➔ Faster Response Time ➔ Submission Time</span>
+        </div>
       </div>
     </section>
 

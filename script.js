@@ -445,7 +445,8 @@ const DOM = {
     results: document.getElementById("results-screen"),
     review: document.getElementById("review-screen"),
     admin: document.getElementById("admin-screen"),
-    editor: document.getElementById("editor-screen")
+    editor: document.getElementById("editor-screen"),
+    leaderboard: document.getElementById("leaderboard-screen")
   },
   soundToggleBtn: document.getElementById("sound-toggle-btn"),
   soundIcon: document.getElementById("sound-icon"),
@@ -600,7 +601,20 @@ const DOM = {
   copyShareUrlBtn: document.getElementById("copy-share-url-btn"),
   downloadQuizJsonBtn: document.getElementById("download-quiz-json-btn"),
   testQuizLinkBtn: document.getElementById("test-quiz-link-btn"),
-  unauthorizedAdminBtn: document.getElementById("unauthorized-admin-btn")
+  unauthorizedAdminBtn: document.getElementById("unauthorized-admin-btn"),
+  // Phase 2: Live Leaderboard Elements
+  leaderboardNavBtn: document.getElementById("leaderboard-nav-btn"),
+  viewLeaderboardBtn: document.getElementById("view-leaderboard-btn"),
+  lbStatusDot: document.getElementById("leaderboard-status-dot"),
+  lbStatusText: document.getElementById("leaderboard-status-text"),
+  lbEventTitle: document.getElementById("leaderboard-event-title"),
+  lbEventSubtitle: document.getElementById("leaderboard-event-subtitle"),
+  lbParticipantCount: document.getElementById("lb-participant-count"),
+  lbRefreshBtn: document.getElementById("lb-refresh-btn"),
+  lbProjectorModeBtn: document.getElementById("lb-projector-mode-btn"),
+  lbBackBtn: document.getElementById("lb-back-btn"),
+  lbTbody: document.getElementById("leaderboard-tbody"),
+  lbLastUpdated: document.getElementById("lb-last-updated")
 };
 
 // ==========================================
@@ -1276,6 +1290,16 @@ function completeQuiz() {
   const dateFormatted = now.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   const timeFormatted = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
   DOM.cardTimestamp.textContent = `${dateFormatted} at ${timeFormatted}`;
+
+  // Phase 2: Asynchronously submit score to live shared leaderboard (Cloudflare DO)
+  LeaderboardClient.submitQuizResult({
+    playerName: gameState.playerName,
+    score: gameState.cumulativeScore,
+    totalTimeSec: totalTime,
+    correctCount: correctCount,
+    maxQuestions: totalCount,
+    attemptId: gameState.attemptId
+  });
 
   showScreen("results");
 }
@@ -2384,3 +2408,239 @@ function initAdminModule() {
     DOM.playDefaultQuizBtn.addEventListener("click", revertToDefaultQuiz);
   }
 }
+
+// ==========================================
+// 15. PHASE 2: LIVE LEADERBOARD CLIENT (CLOUDFLARE DO)
+// ==========================================
+const LeaderboardClient = {
+  socket: null,
+  reconnectAttempts: 0,
+  maxReconnectAttempts: 5,
+  reconnectDelay: 2000,
+  currentEventId: "default-event",
+  isProjector: false,
+
+  getApiBase() {
+    // Check if query param specifies custom backend or default to local/remote
+    const urlParams = new URLSearchParams(window.location.search);
+    const customApi = urlParams.get("api");
+    if (customApi) return customApi;
+
+    // In local dev, use port 8787; in production, use Cloudflare worker route or window.location.origin
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:8787";
+    }
+    return window.location.origin;
+  },
+
+  getWsBase() {
+    const api = this.getApiBase();
+    if (api.startsWith("https://")) {
+      return api.replace("https://", "wss://");
+    }
+    return api.replace("http://", "ws://");
+  },
+
+  getEventId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const ev = urlParams.get("event");
+    if (ev) return ev;
+    if (gameState.activeCustomQuiz && gameState.activeCustomQuiz.id) {
+      return `quiz-${gameState.activeCustomQuiz.id}`;
+    }
+    return "default-event";
+  },
+
+  connectWebSocket() {
+    if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
+
+    const eventId = this.getEventId();
+    this.currentEventId = eventId;
+    const wsUrl = `${this.getWsBase()}/ws?event=${encodeURIComponent(eventId)}`;
+
+    try {
+      this.updateConnectionStatus("connecting", "Connecting...");
+      this.socket = new WebSocket(wsUrl);
+
+      this.socket.addEventListener("open", () => {
+        this.reconnectAttempts = 0;
+        this.updateConnectionStatus("connected", "Live • Connected");
+      });
+
+      this.socket.addEventListener("message", (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "snapshot" || msg.type === "update") {
+            this.renderLeaderboard(msg.data);
+          }
+        } catch (e) {}
+      });
+
+      this.socket.addEventListener("close", () => {
+        this.updateConnectionStatus("disconnected", "Offline • Reconnecting...");
+        this.scheduleReconnect();
+      });
+
+      this.socket.addEventListener("error", () => {
+        this.updateConnectionStatus("disconnected", "Connection Error");
+      });
+    } catch (err) {
+      this.updateConnectionStatus("disconnected", "Offline");
+    }
+  },
+
+  scheduleReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      const delay = this.reconnectDelay * Math.pow(1.5, this.reconnectAttempts - 1);
+      setTimeout(() => {
+        this.connectWebSocket();
+      }, delay);
+    }
+  },
+
+  updateConnectionStatus(status, label) {
+    if (!DOM.lbStatusDot || !DOM.lbStatusText) return;
+    const pill = DOM.lbStatusDot.parentElement;
+    if (pill) {
+      pill.className = `leaderboard-live-pill ${status}`;
+    }
+    DOM.lbStatusText.textContent = label;
+  },
+
+  async fetchSnapshot() {
+    const eventId = this.getEventId();
+    try {
+      const res = await fetch(`${this.getApiBase()}/api/leaderboard?event=${encodeURIComponent(eventId)}&limit=25`);
+      if (res.ok) {
+        const data = await res.json();
+        this.renderLeaderboard(data);
+      }
+    } catch (e) {}
+  },
+
+  async submitQuizResult(resultData) {
+    const eventId = this.getEventId();
+    try {
+      await fetch(`${this.getApiBase()}/api/submit-score?event=${encodeURIComponent(eventId)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerName: resultData.playerName,
+          playerId: resultData.playerName,
+          score: resultData.score,
+          totalTimeSec: resultData.totalTimeSec,
+          correctCount: resultData.correctCount,
+          maxQuestions: resultData.maxQuestions,
+          attemptId: resultData.attemptId,
+          idempotencyKey: resultData.attemptId
+        })
+      });
+    } catch (err) {
+      console.warn("Live leaderboard submit skipped:", err);
+    }
+  },
+
+  renderLeaderboard(data) {
+    if (!data || !DOM.lbTbody) return;
+
+    if (DOM.lbParticipantCount) {
+      DOM.lbParticipantCount.textContent = data.totalParticipants || 0;
+    }
+    if (DOM.lbLastUpdated) {
+      const timeStr = new Date().toLocaleTimeString();
+      DOM.lbLastUpdated.textContent = `Last updated: ${timeStr} (${data.status === "closed" ? "Event Closed" : "Live"})`;
+    }
+
+    const rankings = data.topRankings || [];
+    if (rankings.length === 0) {
+      DOM.lbTbody.innerHTML = `<tr><td colspan="5" class="lb-empty-msg">Waiting for quiz submissions...</td></tr>`;
+      return;
+    }
+
+    let html = "";
+    rankings.forEach(item => {
+      let rankBadge = `<span class="rank-badge">${item.rank}</span>`;
+      if (item.rank === 1) rankBadge = `<span class="rank-badge rank-1">🥇 1</span>`;
+      else if (item.rank === 2) rankBadge = `<span class="rank-badge rank-2">🥈 2</span>`;
+      else if (item.rank === 3) rankBadge = `<span class="rank-badge rank-3">🥉 3</span>`;
+
+      const escapedName = escapeHtml(item.playerName);
+      const isCurrentPlayer = (item.playerName === gameState.playerName);
+      const rowStyle = isCurrentPlayer ? "background: #eff6ff; font-weight: bold;" : "";
+
+      html += `
+        <tr style="${rowStyle}">
+          <td class="td-rank">${rankBadge}</td>
+          <td class="td-player">${escapedName} ${isCurrentPlayer ? "⭐ (You)" : ""}</td>
+          <td class="td-score">${item.score.toLocaleString()} pts</td>
+          <td class="td-accuracy">${item.accuracy || 0}%</td>
+          <td class="td-time">${item.totalTimeSec || 0}s</td>
+        </tr>
+      `;
+    });
+
+    DOM.lbTbody.innerHTML = html;
+  },
+
+  init() {
+    if (DOM.leaderboardNavBtn) {
+      DOM.leaderboardNavBtn.addEventListener("click", () => {
+        showScreen("leaderboard");
+        this.connectWebSocket();
+        this.fetchSnapshot();
+      });
+    }
+
+    if (DOM.viewLeaderboardBtn) {
+      DOM.viewLeaderboardBtn.addEventListener("click", () => {
+        showScreen("leaderboard");
+        this.connectWebSocket();
+        this.fetchSnapshot();
+      });
+    }
+
+    if (DOM.lbBackBtn) {
+      DOM.lbBackBtn.addEventListener("click", () => {
+        if (gameState.playerName) {
+          showScreen("results");
+        } else if (gameState.activeCustomQuiz) {
+          showScreen("welcome");
+        } else {
+          showScreen("unauthorized");
+        }
+      });
+    }
+
+    if (DOM.lbRefreshBtn) {
+      DOM.lbRefreshBtn.addEventListener("click", () => {
+        this.fetchSnapshot();
+      });
+    }
+
+    if (DOM.lbProjectorModeBtn) {
+      DOM.lbProjectorModeBtn.addEventListener("click", () => {
+        this.isProjector = !this.isProjector;
+        document.body.classList.toggle("projector-mode", this.isProjector);
+        DOM.lbProjectorModeBtn.textContent = this.isProjector ? "📱 Exit Projector" : "🖥️ Projector Mode";
+      });
+    }
+
+    // Auto-open leaderboard if URL has ?leaderboard=true
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("leaderboard") === "true") {
+      showScreen("leaderboard");
+      this.connectWebSocket();
+      this.fetchSnapshot();
+      if (urlParams.get("projector") === "true") {
+        this.isProjector = true;
+        document.body.classList.add("projector-mode");
+      }
+    }
+  }
+};
+
+// Auto-initialize Leaderboard Client
+LeaderboardClient.init();

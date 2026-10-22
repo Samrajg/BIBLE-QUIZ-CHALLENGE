@@ -1,0 +1,23 @@
+{
+  "name": "bible-quiz-challenge",
+  "version": "1.0.0",
+  "description": "A modern, responsive, interactive Bible quiz web application featuring bilingual support (English & Tamil), progressive difficulty levels (Easy, Medium, Hard), real-time synthesised sound effects, celebratory confetti animations, local personal best tracking, and instant social sharing.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Samrajg/BIBLE-QUIZ-CHALLENGE.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Samrajg/BIBLE-QUIZ-CHALLENGE/issues"
+  },
+  "homepage": "https://github.com/Samrajg/BIBLE-QUIZ-CHALLENGE#readme",
+  "dependencies": {
+    "ws": "^8.22.0"
+  }
+}

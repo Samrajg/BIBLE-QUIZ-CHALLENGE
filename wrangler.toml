@@ -1,0 +1,16 @@
+name = "bible-quiz-leaderboard"
+main = "worker/index.js"
+compatibility_date = "2024-04-01"
+
+# Durable Object binding for coordinating live shared leaderboard state
+[durable_objects]
+bindings = [
+  { name = "LEADERBOARD_DO", class_name = "LeaderboardDurableObject" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["LeaderboardDurableObject"]
+
+[vars]
+CORS_ORIGIN = "*"

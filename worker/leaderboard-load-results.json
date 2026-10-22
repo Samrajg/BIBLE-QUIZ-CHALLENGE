@@ -1,0 +1,74 @@
+[
+  {
+    "concurrency": 100,
+    "webSockets": {
+      "attempted": 100,
+      "connected": 100,
+      "failed": 0,
+      "connectionSuccessRate": "100.00%",
+      "totalBroadcastsReceived": 200
+    },
+    "submissions": {
+      "total": 100,
+      "successful": 100,
+      "failed": 0,
+      "successRate": "100.00%",
+      "durationSec": "0.06",
+      "throughputRps": "1724.14",
+      "latencyMs": {
+        "avg": "47.77",
+        "p50": "48.03",
+        "p95": "49.61",
+        "p99": "49.65"
+      }
+    }
+  },
+  {
+    "concurrency": 250,
+    "webSockets": {
+      "attempted": 250,
+      "connected": 250,
+      "failed": 0,
+      "connectionSuccessRate": "100.00%",
+      "totalBroadcastsReceived": 500
+    },
+    "submissions": {
+      "total": 250,
+      "successful": 250,
+      "failed": 0,
+      "successRate": "100.00%",
+      "durationSec": "0.06",
+      "throughputRps": "4464.29",
+      "latencyMs": {
+        "avg": "42.97",
+        "p50": "46.11",
+        "p95": "47.29",
+        "p99": "47.31"
+      }
+    }
+  },
+  {
+    "concurrency": 500,
+    "webSockets": {
+      "attempted": 500,
+      "connected": 500,
+      "failed": 0,
+      "connectionSuccessRate": "100.00%",
+      "totalBroadcastsReceived": 1000
+    },
+    "submissions": {
+      "total": 500,
+      "successful": 500,
+      "failed": 0,
+      "successRate": "100.00%",
+      "durationSec": "0.11",
+      "throughputRps": "4629.63",
+      "latencyMs": {
+        "avg": "78.03",
+        "p50": "75.49",
+        "p95": "87.15",
+        "p99": "87.20"
+      }
+    }
+  }
+]
