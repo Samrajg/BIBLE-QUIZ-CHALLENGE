@@ -749,22 +749,30 @@ const ConfettiCannon = {
     const colors = ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#ff924c"];
     this.particles = [];
 
-    for (let i = 0; i < 110; i++) {
+    // Scale particle count for low-power / mobile devices to maintain smooth 60fps
+    const isMobile = window.innerWidth < 640;
+    const particleCount = isMobile ? 55 : 90;
+
+    for (let i = 0; i < particleCount; i++) {
       this.particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * -canvas.height * 0.8,
-        w: Math.random() * 10 + 6,
-        h: Math.random() * 6 + 4,
+        w: Math.random() * 8 + 5,
+        h: Math.random() * 5 + 3,
         color: colors[Math.floor(Math.random() * colors.length)],
-        vx: (Math.random() - 0.5) * 4,
-        vy: Math.random() * 4 + 3,
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 3.5 + 2.5,
         rot: Math.random() * 360,
-        vRot: (Math.random() - 0.5) * 8
+        vRot: (Math.random() - 0.5) * 6
       });
     }
 
-    cancelAnimationFrame(this.animFrameId);
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
     let frames = 0;
+    const maxFrames = isMobile ? 120 : 180; // 2-3 seconds max
 
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -782,14 +790,26 @@ const ConfettiCannon = {
       });
 
       frames++;
-      if (frames < 240) {
+      if (frames < maxFrames) {
         this.animFrameId = requestAnimationFrame(render);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.animFrameId = null;
       }
     };
 
     render();
+  },
+  stop() {
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
+    const canvas = DOM.confettiCanvas;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
   }
 };
 
@@ -1044,6 +1064,7 @@ function loadQuestion(index) {
 function handleAnswerSelection(chosenIndex) {
   if (gameState.isAnswerSubmitted) return;
   gameState.isAnswerSubmitted = true;
+  DOM.answerButtons.forEach(btn => btn.disabled = true);
   clearInterval(gameState.timerInterval);
 
   const elapsedMs = performance.now() - gameState.questionStartTime;
@@ -2264,7 +2285,7 @@ function initAdminModule() {
       AdminModule.renderAdminDashboard();
       showScreen("admin");
     } else {
-      DOM.adminLoginError.textContent = "Invalid username or password. (Hint: admin / jesus)";
+      DOM.adminLoginError.textContent = "Invalid username or password.";
     }
   });
 

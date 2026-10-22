@@ -1,0 +1,56 @@
+[
+  {
+    "concurrency": 100,
+    "durationSec": "10.30",
+    "totalRequests": 18276,
+    "successfulRequests": 18276,
+    "failedRequests": 0,
+    "successRate": "100.00%",
+    "rps": "1775.06",
+    "dataTransferredMB": "919.80",
+    "bandwidthMBps": "89.34",
+    "latencyMs": {
+      "avg": "5.21",
+      "p50": "3.02",
+      "p95": "14.47",
+      "p99": "59.25"
+    },
+    "errors": {}
+  },
+  {
+    "concurrency": 250,
+    "durationSec": "10.34",
+    "totalRequests": 29852,
+    "successfulRequests": 29852,
+    "failedRequests": 0,
+    "successRate": "100.00%",
+    "rps": "2886.20",
+    "dataTransferredMB": "1502.41",
+    "bandwidthMBps": "145.26",
+    "latencyMs": {
+      "avg": "32.93",
+      "p50": "28.67",
+      "p95": "74.93",
+      "p99": "119.08"
+    },
+    "errors": {}
+  },
+  {
+    "concurrency": 500,
+    "durationSec": "10.76",
+    "totalRequests": 20644,
+    "successfulRequests": 20644,
+    "failedRequests": 0,
+    "successRate": "100.00%",
+    "rps": "1918.77",
+    "dataTransferredMB": "1038.98",
+    "bandwidthMBps": "96.57",
+    "latencyMs": {
+      "avg": "197.06",
+      "p50": "200.00",
+      "p95": "293.25",
+      "p99": "341.00"
+    },
+    "errors": {}
+  }
+]
