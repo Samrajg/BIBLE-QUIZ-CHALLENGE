@@ -40,6 +40,11 @@ export class LeaderboardDurableObject {
         return new Response("Expected WebSocket Upgrade", { status: 426 });
       }
 
+      // DoS Protection: Connection ceiling
+      if (this.sessions.size >= 600) {
+        return new Response("Event capacity reached (max 600 active connections)", { status: 503 });
+      }
+
       const pair = new WebSocketPair();
       const [client, server] = Object.values(pair);
 
@@ -163,8 +168,17 @@ export class LeaderboardDurableObject {
       });
     }
 
-    // Validation rules
-    const playerName = String(body.playerName || "").trim().slice(0, 30);
+    // Validation rules: Strict Regex Whitelist for XSS prevention (English & Tamil characters only)
+    const rawPlayerName = String(body.playerName || "").trim().slice(0, 30);
+    const validNameRegex = /^[a-zA-Z0-9 _\-\u0B80-\u0BFF]{2,30}$/;
+    if (!rawPlayerName || !validNameRegex.test(rawPlayerName)) {
+      return new Response(JSON.stringify({ error: "Invalid player name. Only letters, numbers, spaces, and Tamil characters are allowed." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const playerName = rawPlayerName;
     const playerId = String(body.playerId || playerName || body.attemptId).trim().slice(0, 50);
     const score = Number(body.score);
     const totalTimeSec = Number(body.totalTimeSec || 0);
@@ -172,8 +186,11 @@ export class LeaderboardDurableObject {
     const correctCount = Number(body.correctCount || 0);
     const maxQuestions = Number(body.maxQuestions || 15);
 
-    if (!playerName || playerName.length < 2) {
-      return new Response(JSON.stringify({ error: "Player name must be between 2 and 30 characters." }), {
+    // Anti-Cheat / Impossible Speed Guard
+    // Minimum theoretical time required to read and answer a question is 0.5s per question
+    const minPhysicalTimeSec = Math.max(1, correctCount * 0.4);
+    if (correctCount > 0 && totalTimeSec < minPhysicalTimeSec) {
+      return new Response(JSON.stringify({ error: "Score rejected: completion time is physically impossible." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });

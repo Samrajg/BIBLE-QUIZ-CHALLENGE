@@ -1655,6 +1655,17 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Threat 3: Client-side XSS / Invalid character prevention (English & Tamil only)
+    const validNicknameRegex = /^[a-zA-Z0-9 _\-\u0B80-\u0BFF]{2,30}$/;
+    if (!validNicknameRegex.test(trimmed)) {
+      DOM.nicknameError.textContent = (currentLang === "ta")
+        ? "பெயர் 2 முதல் 30 எழுத்துகள் வரை இருக்க வேண்டும் (சிறப்பு எழுத்துக்கள் அனுமதிக்கப்படவில்லை)."
+        : "Nickname must be 2-30 characters (letters, numbers, spaces only; no special characters).";
+      DOM.nicknameInput.classList.add("input-error");
+      DOM.nicknameInput.focus();
+      return;
+    }
+
     DOM.nicknameError.textContent = "";
     DOM.nicknameInput.classList.remove("input-error");
     startQuiz(trimmed);
@@ -1714,6 +1725,16 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       if (e.key === "Enter" && !DOM.feedbackPanel.classList.contains("hidden")) {
         advanceToNextQuestion();
+      }
+    }
+  });
+
+  // Threat 1 & Anti-Cheating: Window blur / tab switch detection during active quiz
+  window.addEventListener("blur", () => {
+    if (DOM.screens.quiz && DOM.screens.quiz.classList.contains("active") && !gameState.isAnswerSubmitted) {
+      // User switched away to inspect DevTools or search answers
+      if (DOM.feedbackPanel && DOM.feedbackPanel.classList.contains("hidden")) {
+        console.warn("Anti-cheat warning: focus lost during active question.");
       }
     }
   });
@@ -2361,12 +2382,24 @@ function checkForSharedQuizInUrl() {
   const urlParams = new URLSearchParams(window.location.search);
   const quizParam = urlParams.get("quiz");
 
+  // Threat 4 Mitigation: Enforce URL query length limits to prevent DoS/payload injection
+  if (quizParam && quizParam.length > 8000) {
+    alert("⚠️ Quiz link is excessively long and cannot be safely parsed. Please use JSON file import instead.");
+    showScreen("unauthorized");
+    return;
+  }
+
   if (!quizParam) {
     // Also check hash fallback e.g. #quiz=...
     const hash = window.location.hash;
     if (hash && hash.includes("quiz=")) {
       const match = hash.match(/quiz=([^&]+)/);
       if (match && match[1]) {
+        if (match[1].length > 8000) {
+          alert("⚠️ Quiz link is excessively long and cannot be safely parsed.");
+          showScreen("unauthorized");
+          return;
+        }
         handleEncodedQuizParam(match[1]);
         return;
       }

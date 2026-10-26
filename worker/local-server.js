@@ -77,15 +77,23 @@ class LocalDurableObjectSession {
       };
     }
 
-    const playerName = String(body.playerName || "").trim().slice(0, 30);
+    const rawPlayerName = String(body.playerName || "").trim().slice(0, 30);
+    const validNameRegex = /^[a-zA-Z0-9 _\-\u0B80-\u0BFF]{2,30}$/;
+    if (!rawPlayerName || !validNameRegex.test(rawPlayerName)) {
+      return { status: 400, body: { error: "Invalid player name. Only letters, numbers, spaces, and Tamil characters are allowed." } };
+    }
+
+    const playerName = rawPlayerName;
     const playerId = String(body.playerId || playerName || body.attemptId).trim().slice(0, 50);
     const score = Number(body.score);
     const totalTimeSec = Number(body.totalTimeSec || 0);
     const correctCount = Number(body.correctCount || 0);
     const maxQuestions = Number(body.maxQuestions || 15);
 
-    if (!playerName || playerName.length < 2) {
-      return { status: 400, body: { error: "Player name must be between 2 and 30 characters." } };
+    // Anti-Cheat / Impossible Speed Guard
+    const minPhysicalTimeSec = Math.max(1, correctCount * 0.4);
+    if (correctCount > 0 && totalTimeSec < minPhysicalTimeSec) {
+      return { status: 400, body: { error: "Score rejected: completion time is physically impossible." } };
     }
 
     const maxPoints = maxQuestions * 1000;
@@ -223,6 +231,11 @@ const wss = new WebSocketServer({ noServer: true });
 server.on("upgrade", (req, socket, head) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost:8787"}`);
   if (url.pathname === "/ws") {
+    if (session.sessions.size >= 600) {
+      socket.write("HTTP/1.1 503 Service Unavailable\r\n\r\nEvent capacity reached");
+      socket.destroy();
+      return;
+    }
     wss.handleUpgrade(req, socket, head, (ws) => {
       const eventId = url.searchParams.get("event") || "default-event";
       const session = getEventSession(eventId);
