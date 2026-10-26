@@ -605,6 +605,11 @@ const DOM = {
   downloadQuizJsonBtn: document.getElementById("download-quiz-json-btn"),
   testQuizLinkBtn: document.getElementById("test-quiz-link-btn"),
   unauthorizedAdminBtn: document.getElementById("unauthorized-admin-btn"),
+  unauthorizedImportBtn: document.getElementById("unauthorized-import-btn"),
+  directImportFileInput: document.getElementById("direct-import-file-input"),
+  welcomeImportJsonBtn: document.getElementById("welcome-import-json-btn"),
+  editorImportJsonBtn: document.getElementById("editor-import-json-btn"),
+  editorImportFileInput: document.getElementById("editor-import-file-input"),
   // Phase 2: Live Leaderboard Elements
   leaderboardNavBtn: document.getElementById("leaderboard-nav-btn"),
   viewLeaderboardBtn: document.getElementById("view-leaderboard-btn"),
@@ -2200,7 +2205,7 @@ const AdminModule = {
   },
 
   // Import a previously exported JSON file
-  handleImportJson(file) {
+  handleImportJson(file, autoPlay = false) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -2213,15 +2218,57 @@ const AdminModule = {
         }
 
         // Generate fresh unique ID so it does not collide unexpectedly
-        parsed.id = `quiz_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        parsed.id = parsed.id || `quiz_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
         parsed.published = true;
         this.saveQuiz(parsed);
-        alert(`✅ Quiz "${parsed.title}" imported successfully with ${parsed.questions.length} questions!`);
+
+        const quizTitle = getLocalizedQuizProp(parsed, "title", currentLang) || "Imported Quiz";
+        const questionsList = getLocalizedQuizQuestions(parsed, currentLang);
+        alert(`✅ Quiz "${quizTitle}" imported successfully with ${questionsList.length} questions!`);
+
+        if (autoPlay) {
+          loadCustomQuizIntoGame(parsed);
+        } else if (DOM.screens.admin.classList.contains("active")) {
+          this.renderAdminDashboard();
+        } else {
+          loadCustomQuizIntoGame(parsed);
+        }
       } catch (err) {
         alert("Invalid JSON file: " + err.message);
       }
     };
     reader.readAsText(file);
+  },
+
+  // Populate editor form fields directly from imported JSON
+  populateEditorFromJson(parsed) {
+    const title = getLocalizedQuizProp(parsed, "title", currentLang) || "";
+    const desc = getLocalizedQuizProp(parsed, "description", currentLang) || "";
+    const diff = getLocalizedQuizProp(parsed, "difficulty", currentLang) || "Medium";
+    const time = String(parsed.timeLimit || 10);
+    const questions = getLocalizedQuizQuestions(parsed, currentLang);
+
+    DOM.editorQuizTitle.value = title;
+    DOM.editorQuizDesc.value = desc;
+    DOM.editorQuizDifficulty.value = diff;
+    DOM.editorQuizTime.value = time;
+    DOM.editorQuestionsList.innerHTML = "";
+
+    questions.forEach(rawQ => {
+      const resolved = resolveBilingualQuestion(rawQ, currentLang);
+      this.addQuestionToEditor({
+        question: resolved.text,
+        choices: resolved.choices,
+        correctIndex: resolved.correctIndex,
+        reference: resolved.reference
+      });
+    });
+
+    if (questions.length === 0) {
+      this.addQuestionToEditor();
+    }
+
+    alert(`✅ Loaded ${questions.length} questions directly into the editor! You can now edit, save, or publish.`);
   },
 
   // Generate & Show Share Link
@@ -2708,6 +2755,58 @@ function initAdminModule() {
 
   if (DOM.playDefaultQuizBtn) {
     DOM.playDefaultQuizBtn.addEventListener("click", revertToDefaultQuiz);
+  }
+
+  // Direct JSON Import from Unauthorized Screen or Welcome Screen
+  if (DOM.unauthorizedImportBtn && DOM.directImportFileInput) {
+    DOM.unauthorizedImportBtn.addEventListener("click", () => {
+      DOM.directImportFileInput.value = "";
+      DOM.directImportFileInput.click();
+    });
+
+    DOM.directImportFileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        AdminModule.handleImportJson(e.target.files[0], true);
+      }
+    });
+  }
+
+  if (DOM.welcomeImportJsonBtn) {
+    DOM.welcomeImportJsonBtn.addEventListener("click", () => {
+      if (DOM.directImportFileInput) {
+        DOM.directImportFileInput.value = "";
+        DOM.directImportFileInput.click();
+      }
+    });
+  }
+
+  // Import JSON inside Quiz Builder (loads questions directly into form)
+  if (DOM.editorImportJsonBtn && DOM.editorImportFileInput) {
+    DOM.editorImportJsonBtn.addEventListener("click", () => {
+      DOM.editorImportFileInput.value = "";
+      DOM.editorImportFileInput.click();
+    });
+
+    DOM.editorImportFileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const parsed = JSON.parse(evt.target.result);
+            const val = validateQuizData(parsed);
+            if (!val.valid) {
+              alert("Import failed: " + val.error);
+              return;
+            }
+            AdminModule.populateEditorFromJson(parsed);
+          } catch (err) {
+            alert("Invalid JSON: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
   }
 }
 

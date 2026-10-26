@@ -101,7 +101,11 @@
           </div>
         </div>
 
-        <div class="unauthorized-actions">
+        <div class="unauthorized-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" id="unauthorized-import-btn" class="btn btn-secondary btn-lg">
+            📥 Import Quiz JSON
+          </button>
+          <input type="file" id="direct-import-file-input" accept=".json,application/json" style="display:none;" />
           <button type="button" id="unauthorized-admin-btn" class="btn btn-primary btn-lg">
             🔐 Admin Login
           </button>
@@ -156,9 +160,14 @@
             <span id="nickname-error" class="error-msg" aria-live="polite"></span>
           </div>
 
-          <button type="submit" id="start-btn" class="btn btn-primary btn-lg">
-            Start Quiz 🚀
-          </button>
+          <div class="welcome-action-buttons" style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="submit" id="start-btn" class="btn btn-primary btn-lg" style="flex: 2;">
+              Start Quiz 🚀
+            </button>
+            <button type="button" id="welcome-import-json-btn" class="btn btn-secondary btn-lg" style="flex: 1;" title="Directly load another Quiz JSON file">
+              📥 Import JSON
+            </button>
+          </div>
         </form>
 
         <!-- Feature 3: Personal Best & Leaderboard Badge -->
@@ -477,6 +486,10 @@
             <p class="editor-subtitle">Define title, time limit, and add questions with 4 choices each.</p>
           </div>
           <div class="editor-header-actions">
+            <button type="button" id="editor-import-json-btn" class="btn btn-outline" title="Directly load JSON questions instead of typing one by one">
+              📥 Import JSON
+            </button>
+            <input type="file" id="editor-import-file-input" accept=".json,application/json" style="display:none;" />
             <button type="button" id="editor-cancel-btn" class="btn btn-outline">
               Cancel
             </button>
