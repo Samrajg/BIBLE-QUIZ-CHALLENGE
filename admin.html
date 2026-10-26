@@ -433,30 +433,63 @@
         }
 
         const questions = rawQs.map((q, idx) => {
-          let choices = q.choices || q.options || [];
-          if (!Array.isArray(choices) && choices && typeof choices === "object") {
-            choices = choices.en || choices.ta || Object.values(choices);
-          }
-          if (choices.length < 4) {
-            while (choices.length < 4) choices.push("");
+          let qText = q.question || q.question_text || q.questionText || q.title || q.q || "";
+          if (typeof qText === "object" && qText !== null) {
+            qText = qText.ta || qText.en || Object.values(qText)[0] || "";
           }
 
-          let correctIndex = (typeof q.correctIndex === "number") ? q.correctIndex : 0;
-          if (q.correctAnswer && choices.includes(q.correctAnswer)) {
-            correctIndex = choices.indexOf(q.correctAnswer);
-          } else if (typeof q.answer === "string" && choices.includes(q.answer)) {
-            correctIndex = choices.indexOf(q.answer);
-          } else if (typeof q.correct_index === "number") {
+          let rawChoices = q.choices || q.options || q.answers;
+          if (rawChoices && typeof rawChoices === "object" && !Array.isArray(rawChoices)) {
+            rawChoices = rawChoices.ta || rawChoices.en || Object.values(rawChoices);
+          }
+          let choices = [];
+          if (Array.isArray(rawChoices)) {
+            choices = [
+              String(rawChoices[0] ?? ""),
+              String(rawChoices[1] ?? ""),
+              String(rawChoices[2] ?? ""),
+              String(rawChoices[3] ?? "")
+            ];
+          } else {
+            choices = ["", "", "", ""];
+          }
+
+          let correctIndex = 0;
+          if (typeof q.correct_index === "number") {
             correctIndex = q.correct_index;
+          } else if (typeof q.correctIndex === "number") {
+            correctIndex = q.correctIndex;
+          } else if (typeof q.correct_answer === "number") {
+            correctIndex = q.correct_answer;
+          } else if (typeof q.correctAnswer === "number") {
+            correctIndex = q.correctAnswer;
+          } else if (typeof q.answer === "number") {
+            correctIndex = q.answer;
+          } else if (typeof q.correct_answer === "string") {
+            const fi = choices.indexOf(q.correct_answer);
+            if (fi !== -1) correctIndex = fi;
+          } else if (typeof q.correctAnswer === "string") {
+            const fi = choices.indexOf(q.correctAnswer);
+            if (fi !== -1) correctIndex = fi;
+          } else if (typeof q.answer === "string") {
+            const fi = choices.indexOf(q.answer);
+            if (fi !== -1) correctIndex = fi;
+          }
+
+          if (correctIndex < 0 || correctIndex > 3) correctIndex = 0;
+
+          let ref = q.reference || q.verse || q.scripture || q.scripture_reference || "Bible Reference";
+          if (typeof ref === "object" && ref !== null) {
+            ref = ref.ta || ref.en || Object.values(ref)[0] || "Bible Reference";
           }
 
           return {
             id: idx + 1,
-            question: q.question || q.questionText || q.title || "",
+            question: qText,
             choices: choices,
             correctIndex: correctIndex,
             correctAnswer: choices[correctIndex] || "",
-            reference: q.reference || q.verse || q.scripture || "Bible Reference"
+            reference: ref
           };
         });
 
