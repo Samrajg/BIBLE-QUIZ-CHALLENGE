@@ -210,20 +210,35 @@
       let correctIndex = 0;
       let ref = "";
 
+      // 0. Support bilingual nested structure per question: data.ta or data.en
+      const langSub = data.ta || data.en;
+      if (langSub && typeof langSub === "object") {
+        qText = langSub.question || langSub.question_text || langSub.title || langSub.q || "";
+        const rawSubChoices = langSub.options || langSub.choices || langSub.answers;
+        if (Array.isArray(rawSubChoices)) {
+          choices = rawSubChoices.map(c => String(c ?? "").trim());
+        }
+        ref = langSub.reference || langSub.verse || langSub.scripture || "";
+      }
+
       // 1. Direct standard keys
-      if (typeof data.question === "string") qText = data.question;
-      else if (typeof data.question_text === "string") qText = data.question_text;
-      else if (typeof data.questionText === "string") qText = data.questionText;
-      else if (typeof data.title === "string") qText = data.title;
-      else if (typeof data.q === "string") qText = data.q;
+      if (!qText) {
+        if (typeof data.question === "string") qText = data.question;
+        else if (typeof data.question_text === "string") qText = data.question_text;
+        else if (typeof data.questionText === "string") qText = data.questionText;
+        else if (typeof data.title === "string") qText = data.title;
+        else if (typeof data.q === "string") qText = data.q;
+      }
 
       // 2. Choices standard keys
-      let rawChoices = data.choices || data.options || data.options_list || data.answers || data.choices_list;
-      if (rawChoices && typeof rawChoices === "object" && !Array.isArray(rawChoices)) {
-        rawChoices = rawChoices.ta || rawChoices.en || Object.values(rawChoices);
-      }
-      if (Array.isArray(rawChoices)) {
-        choices = rawChoices.map(c => String(c ?? "").trim());
+      if (choices.length === 0) {
+        let rawChoices = data.choices || data.options || data.options_list || data.answers || data.choices_list;
+        if (rawChoices && typeof rawChoices === "object" && !Array.isArray(rawChoices)) {
+          rawChoices = rawChoices.ta || rawChoices.en || Object.values(rawChoices);
+        }
+        if (Array.isArray(rawChoices)) {
+          choices = rawChoices.map(c => String(c ?? "").trim());
+        }
       }
 
       // 3. Fuzzy search in all keys for ChatGPT / multilingual variations
@@ -263,19 +278,16 @@
       const candidateAnswer = data.correct_answer ?? data.correctAnswer ?? data.correct_index ?? data.correctIndex ?? data.correct ?? data.answer ?? data["சரியான_விடை"] ?? data["சரியானவிடை"];
       
       if (typeof candidateAnswer === "number") {
-        // Check if 1-indexed (e.g. 1, 2, 3, 4) vs 0-indexed (0, 1, 2, 3)
-        if (candidateAnswer >= 1 && candidateAnswer <= 4 && (candidateAnswer === 4 || !choices[candidateAnswer])) {
-          correctIndex = candidateAnswer - 1;
-        } else if (candidateAnswer >= 0 && candidateAnswer <= 3) {
+        if (candidateAnswer >= 0 && candidateAnswer <= 3) {
           correctIndex = candidateAnswer;
+        } else if (candidateAnswer >= 1 && candidateAnswer <= 4) {
+          correctIndex = candidateAnswer - 1;
         }
       } else if (typeof candidateAnswer === "string") {
         const trimmed = candidateAnswer.trim();
-        // Check "A", "B", "C", "D"
         if (/^[A-Da-d]$/.test(trimmed)) {
           correctIndex = trimmed.toUpperCase().charCodeAt(0) - 65;
         } else {
-          // Check matching text against choices
           const idx = choices.findIndex(c => c.toLowerCase() === trimmed.toLowerCase());
           if (idx !== -1) correctIndex = idx;
         }
@@ -287,7 +299,11 @@
         question: qText.trim(),
         choices: choices,
         correctIndex: correctIndex,
-        reference: (ref || "Bible Reference").trim()
+        reference: (ref || "Bible Reference").trim(),
+        rawBilingual: {
+          en: data.en,
+          ta: data.ta
+        }
       };
     }
 
