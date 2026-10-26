@@ -2368,19 +2368,37 @@ function decodeQuizFromUrl(encodedStr) {
 }
 
 function validateQuizData(data) {
-  if (!data || typeof data !== "object") {
-    return { valid: false, error: "Quiz data is missing or not a JSON object." };
+  if (!data) {
+    return { valid: false, error: "Quiz data is missing." };
+  }
+
+  // Support raw array of questions directly
+  if (Array.isArray(data)) {
+    if (data.length === 0) return { valid: false, error: "Questions array is empty." };
+    return { valid: true };
+  }
+
+  if (typeof data !== "object") {
+    return { valid: false, error: "Quiz data is not an object or array." };
   }
 
   // Bilingual wrapper support: { en: {...}, ta: {...} }
-  if (data.en && data.en.questions) {
+  if (data.en && (data.en.questions || data.en.difficultyLevels)) {
     const enVal = validateQuizData(data.en);
     if (!enVal.valid) return { valid: false, error: "English quiz invalid: " + enVal.error };
-    if (data.ta && data.ta.questions) {
+    if (data.ta && (data.ta.questions || data.ta.difficultyLevels)) {
       const taVal = validateQuizData(data.ta);
       if (!taVal.valid) return { valid: false, error: "Tamil quiz invalid: " + taVal.error };
     }
     return { valid: true, isBilingualContainer: true };
+  }
+
+  // Handle difficultyLevels format { difficultyLevels: [ { level: '...', questions: [...] } ] }
+  if (Array.isArray(data.difficultyLevels)) {
+    let count = 0;
+    data.difficultyLevels.forEach(d => { if (Array.isArray(d.questions)) count += d.questions.length; });
+    if (count === 0) return { valid: false, error: "No questions found inside difficulty levels." };
+    return { valid: true };
   }
 
   // Title validation: string or bilingual object { en: "...", ta: "..." }
@@ -2399,8 +2417,9 @@ function validateQuizData(data) {
   for (let i = 0; i < data.questions.length; i++) {
     const q = data.questions[i];
     
-    // Check question text (string, or { en, ta }, or question_en / question_ta)
+    // Check question text (string, or { en, ta }, or question_en / question_ta, questionText)
     const hasQText = (typeof q.question === "string" && q.question.trim().length > 0) ||
+      (typeof q.questionText === "string" && q.questionText.trim().length > 0) ||
       (q.question && typeof q.question === "object" && (q.question.en || q.question.ta)) ||
       (typeof q.question_en === "string") || (typeof q.question_ta === "string");
 
@@ -2409,9 +2428,9 @@ function validateQuizData(data) {
     }
 
     // Check choices
-    let choicesArray = q.choices;
-    if (!Array.isArray(choicesArray) && q.choices && typeof q.choices === "object") {
-      choicesArray = q.choices.en || q.choices.ta;
+    let choicesArray = q.choices || q.options;
+    if (!Array.isArray(choicesArray) && choicesArray && typeof choicesArray === "object") {
+      choicesArray = choicesArray.en || choicesArray.ta || Object.values(choicesArray);
     }
     if (!Array.isArray(choicesArray) && Array.isArray(q.choices_en)) {
       choicesArray = q.choices_en;
@@ -2419,11 +2438,6 @@ function validateQuizData(data) {
 
     if (!Array.isArray(choicesArray) || choicesArray.length < 2) {
       return { valid: false, error: `Question #${i + 1} must have at least 2 choices.` };
-    }
-
-    const cIdx = (typeof q.correctIndex === "number") ? q.correctIndex : 0;
-    if (cIdx < 0 || cIdx >= choicesArray.length) {
-      return { valid: false, error: `Question #${i + 1} has an out-of-range correctIndex.` };
     }
   }
 
@@ -2565,12 +2579,26 @@ function getLocalizedQuizQuestions(quizData, lang = currentLang) {
   const altLang = (lang === "ta") ? "en" : "ta";
 
   let rawQuestions = [];
-  if (quizData[lang] && Array.isArray(quizData[lang].questions)) {
+  if (Array.isArray(quizData)) {
+    rawQuestions = quizData;
+  } else if (quizData[lang] && Array.isArray(quizData[lang].questions)) {
     rawQuestions = quizData[lang].questions;
   } else if (Array.isArray(quizData.questions)) {
     rawQuestions = quizData.questions;
   } else if (quizData[altLang] && Array.isArray(quizData[altLang].questions)) {
     rawQuestions = quizData[altLang].questions;
+  } else if (quizData[lang] && Array.isArray(quizData[lang].difficultyLevels)) {
+    quizData[lang].difficultyLevels.forEach(lvl => {
+      if (Array.isArray(lvl.questions)) rawQuestions.push(...lvl.questions);
+    });
+  } else if (Array.isArray(quizData.difficultyLevels)) {
+    quizData.difficultyLevels.forEach(lvl => {
+      if (Array.isArray(lvl.questions)) rawQuestions.push(...lvl.questions);
+    });
+  } else if (quizData[altLang] && Array.isArray(quizData[altLang].difficultyLevels)) {
+    quizData[altLang].difficultyLevels.forEach(lvl => {
+      if (Array.isArray(lvl.questions)) rawQuestions.push(...lvl.questions);
+    });
   }
 
   return rawQuestions;

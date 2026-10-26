@@ -407,25 +407,56 @@
       }
       try {
         const parsed = JSON.parse(text);
-        if (!parsed || (!Array.isArray(parsed.questions) && !parsed.en && !parsed.ta)) {
-          importError.textContent = "Invalid format: JSON must contain a 'questions' array or bilingual {en, ta} structure.";
+        
+        let rawQs = [];
+        if (Array.isArray(parsed)) {
+          rawQs = parsed;
+        } else if (Array.isArray(parsed.questions)) {
+          rawQs = parsed.questions;
+        } else if (parsed.en && Array.isArray(parsed.en.questions)) {
+          rawQs = parsed.en.questions;
+        } else if (parsed.ta && Array.isArray(parsed.ta.questions)) {
+          rawQs = parsed.ta.questions;
+        } else if (Array.isArray(parsed.difficultyLevels)) {
+          parsed.difficultyLevels.forEach(lvl => {
+            if (Array.isArray(lvl.questions)) rawQs.push(...lvl.questions);
+          });
+        } else if (parsed.en && Array.isArray(parsed.en.difficultyLevels)) {
+          parsed.en.difficultyLevels.forEach(lvl => {
+            if (Array.isArray(lvl.questions)) rawQs.push(...lvl.questions);
+          });
+        }
+
+        if (rawQs.length === 0) {
+          importError.textContent = "Could not find any questions in the provided JSON. Make sure it contains questions.";
           return;
         }
 
-        const rawQs = parsed.questions || (parsed.en && parsed.en.questions) || [];
         const questions = rawQs.map((q, idx) => {
-          const choices = q.choices || [];
+          let choices = q.choices || q.options || [];
+          if (!Array.isArray(choices) && choices && typeof choices === "object") {
+            choices = choices.en || choices.ta || Object.values(choices);
+          }
+          if (choices.length < 4) {
+            while (choices.length < 4) choices.push("");
+          }
+
           let correctIndex = (typeof q.correctIndex === "number") ? q.correctIndex : 0;
           if (q.correctAnswer && choices.includes(q.correctAnswer)) {
             correctIndex = choices.indexOf(q.correctAnswer);
+          } else if (typeof q.answer === "string" && choices.includes(q.answer)) {
+            correctIndex = choices.indexOf(q.answer);
+          } else if (typeof q.correct_index === "number") {
+            correctIndex = q.correct_index;
           }
+
           return {
             id: idx + 1,
-            question: q.question || "",
+            question: q.question || q.questionText || q.title || "",
             choices: choices,
             correctIndex: correctIndex,
             correctAnswer: choices[correctIndex] || "",
-            reference: q.reference || "Bible Reference"
+            reference: q.reference || q.verse || q.scripture || "Bible Reference"
           };
         });
 
@@ -433,7 +464,7 @@
           id: (parsed.id && typeof parsed.id === "string") ? parsed.id : "quiz_" + Date.now(),
           title: parsed.title || (parsed.en && parsed.en.title) || "Imported Quiz",
           description: parsed.description || (parsed.en && parsed.en.description) || "Imported JSON Quiz",
-          difficulty: parsed.difficulty || "Medium",
+          difficulty: parsed.difficulty || (parsed.en && parsed.en.difficulty) || "Medium",
           timeLimit: parsed.timeLimit || 10,
           published: true,
           questions: questions
