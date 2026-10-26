@@ -605,11 +605,16 @@ const DOM = {
   downloadQuizJsonBtn: document.getElementById("download-quiz-json-btn"),
   testQuizLinkBtn: document.getElementById("test-quiz-link-btn"),
   unauthorizedAdminBtn: document.getElementById("unauthorized-admin-btn"),
-  unauthorizedImportBtn: document.getElementById("unauthorized-import-btn"),
-  directImportFileInput: document.getElementById("direct-import-file-input"),
-  welcomeImportJsonBtn: document.getElementById("welcome-import-json-btn"),
+  // Smart Import Modal Elements
+  smartImportModal: document.getElementById("smart-import-modal"),
+  closeImportModalBtn: document.getElementById("close-import-modal-btn"),
+  cancelImportModalBtn: document.getElementById("cancel-import-modal-btn"),
+  modalUploadFileBtn: document.getElementById("modal-upload-file-btn"),
+  modalFileInput: document.getElementById("modal-file-input"),
+  importJsonTextarea: document.getElementById("import-json-textarea"),
+  importJsonError: document.getElementById("import-json-error"),
+  processImportBtn: document.getElementById("process-import-btn"),
   editorImportJsonBtn: document.getElementById("editor-import-json-btn"),
-  editorImportFileInput: document.getElementById("editor-import-file-input"),
   // Phase 2: Live Leaderboard Elements
   leaderboardNavBtn: document.getElementById("leaderboard-nav-btn"),
   viewLeaderboardBtn: document.getElementById("view-leaderboard-btn"),
@@ -2667,16 +2672,120 @@ function initAdminModule() {
     AdminModule.openEditorForNew();
   });
 
-  DOM.adminImportJsonBtn.addEventListener("click", () => {
-    DOM.adminImportFileInput.value = "";
-    DOM.adminImportFileInput.click();
-  });
+  // Smart JSON Import Modal Logic (Dual: File Upload & ChatGPT Paste)
+  let importTargetContext = "admin"; // "admin" | "editor"
 
-  DOM.adminImportFileInput.addEventListener("change", (e) => {
-    if (e.target.files && e.target.files[0]) {
-      AdminModule.handleImportJson(e.target.files[0]);
+  const openSmartImportModal = (context) => {
+    importTargetContext = context;
+    if (DOM.importJsonTextarea) DOM.importJsonTextarea.value = "";
+    if (DOM.importJsonError) DOM.importJsonError.textContent = "";
+    if (DOM.modalFileInput) DOM.modalFileInput.value = "";
+    if (DOM.smartImportModal) {
+      DOM.smartImportModal.classList.remove("hidden");
+      if (DOM.importJsonTextarea) DOM.importJsonTextarea.focus();
     }
-  });
+  };
+
+  const closeSmartImportModal = () => {
+    if (DOM.smartImportModal) DOM.smartImportModal.classList.add("hidden");
+    if (DOM.importJsonError) DOM.importJsonError.textContent = "";
+  };
+
+  if (DOM.adminImportJsonBtn) {
+    DOM.adminImportJsonBtn.addEventListener("click", () => {
+      openSmartImportModal("admin");
+    });
+  }
+
+  if (DOM.editorImportJsonBtn) {
+    DOM.editorImportJsonBtn.addEventListener("click", () => {
+      openSmartImportModal("editor");
+    });
+  }
+
+  if (DOM.closeImportModalBtn) {
+    DOM.closeImportModalBtn.addEventListener("click", closeSmartImportModal);
+  }
+
+  if (DOM.cancelImportModalBtn) {
+    DOM.cancelImportModalBtn.addEventListener("click", closeSmartImportModal);
+  }
+
+  // Upload file inside modal
+  if (DOM.modalUploadFileBtn && DOM.modalFileInput) {
+    DOM.modalUploadFileBtn.addEventListener("click", () => {
+      DOM.modalFileInput.click();
+    });
+
+    DOM.modalFileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          if (DOM.importJsonTextarea) {
+            DOM.importJsonTextarea.value = evt.target.result;
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  // Process & Parse JSON button
+  if (DOM.processImportBtn) {
+    DOM.processImportBtn.addEventListener("click", () => {
+      const text = DOM.importJsonTextarea ? DOM.importJsonTextarea.value.trim() : "";
+      if (!text) {
+        if (DOM.importJsonError) DOM.importJsonError.textContent = "Please paste JSON code or upload a file first.";
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (err) {
+        if (DOM.importJsonError) DOM.importJsonError.textContent = "JSON Syntax Error: " + err.message;
+        return;
+      }
+
+      const val = validateQuizData(parsed);
+      if (!val.valid) {
+        if (DOM.importJsonError) DOM.importJsonError.textContent = "Validation Error: " + val.error;
+        return;
+      }
+
+      closeSmartImportModal();
+
+      if (importTargetContext === "editor") {
+        AdminModule.populateEditorFromJson(parsed);
+      } else {
+        // Saved as a quiz in custom quizzes list
+        const quizObj = {
+          id: (parsed.id && typeof parsed.id === "string") ? parsed.id : "quiz-" + Date.now(),
+          title: getLocalizedQuizProp(parsed, "title", "en") || "Imported Quiz",
+          description: getLocalizedQuizProp(parsed, "description", "en") || "Imported JSON Quiz",
+          difficulty: getLocalizedQuizProp(parsed, "difficulty", "en") || "Medium",
+          timeLimit: parsed.timeLimit || 10,
+          status: "published",
+          createdAt: new Date().toISOString(),
+          questions: getLocalizedQuizQuestions(parsed, "en"),
+          rawBilingual: parsed
+        };
+        AdminModule.saveQuiz(quizObj);
+        AdminModule.renderAdminDashboard();
+        alert(`✅ Quiz "${quizObj.title}" successfully imported and published!`);
+      }
+    });
+  }
+
+  // Fallback direct file input in admin (if used)
+  if (DOM.adminImportFileInput) {
+    DOM.adminImportFileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        AdminModule.handleImportJson(e.target.files[0]);
+      }
+    });
+  }
 
   DOM.adminLogoutBtn.addEventListener("click", () => {
     AdminModule.setAdminLoggedIn(false);
@@ -2757,57 +2866,7 @@ function initAdminModule() {
     DOM.playDefaultQuizBtn.addEventListener("click", revertToDefaultQuiz);
   }
 
-  // Direct JSON Import from Unauthorized Screen or Welcome Screen
-  if (DOM.unauthorizedImportBtn && DOM.directImportFileInput) {
-    DOM.unauthorizedImportBtn.addEventListener("click", () => {
-      DOM.directImportFileInput.value = "";
-      DOM.directImportFileInput.click();
-    });
-
-    DOM.directImportFileInput.addEventListener("change", (e) => {
-      if (e.target.files && e.target.files[0]) {
-        AdminModule.handleImportJson(e.target.files[0], true);
-      }
-    });
-  }
-
-  if (DOM.welcomeImportJsonBtn) {
-    DOM.welcomeImportJsonBtn.addEventListener("click", () => {
-      if (DOM.directImportFileInput) {
-        DOM.directImportFileInput.value = "";
-        DOM.directImportFileInput.click();
-      }
-    });
-  }
-
-  // Import JSON inside Quiz Builder (loads questions directly into form)
-  if (DOM.editorImportJsonBtn && DOM.editorImportFileInput) {
-    DOM.editorImportJsonBtn.addEventListener("click", () => {
-      DOM.editorImportFileInput.value = "";
-      DOM.editorImportFileInput.click();
-    });
-
-    DOM.editorImportFileInput.addEventListener("change", (e) => {
-      if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          try {
-            const parsed = JSON.parse(evt.target.result);
-            const val = validateQuizData(parsed);
-            if (!val.valid) {
-              alert("Import failed: " + val.error);
-              return;
-            }
-            AdminModule.populateEditorFromJson(parsed);
-          } catch (err) {
-            alert("Invalid JSON: " + err.message);
-          }
-        };
-        reader.readAsText(file);
-      }
-    });
-  }
+  // End of Admin & Editor bindings
 }
 
 // ==========================================

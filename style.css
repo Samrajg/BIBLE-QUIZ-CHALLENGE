@@ -2299,3 +2299,42 @@ body.projector-mode .td-score {
   font-size: 1.4rem;
 }
 
+/* Smart JSON Import Modal Styles */
+.import-upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.import-or-divider {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.8px;
+  margin-top: 4px;
+}
+
+#import-json-textarea {
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-family: monospace;
+  background: #f8fafc;
+  resize: vertical;
+  color: #1e293b;
+  line-height: 1.45;
+  transition: border-color 0.2s;
+}
+
+#import-json-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: #ffffff;
+}
+
