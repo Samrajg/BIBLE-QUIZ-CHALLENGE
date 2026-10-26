@@ -231,14 +231,15 @@ const wss = new WebSocketServer({ noServer: true });
 server.on("upgrade", (req, socket, head) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost:8787"}`);
   if (url.pathname === "/ws") {
+    const eventId = url.searchParams.get("event") || "default-event";
+    const session = getEventSession(eventId);
+
     if (session.sessions.size >= 600) {
       socket.write("HTTP/1.1 503 Service Unavailable\r\n\r\nEvent capacity reached");
       socket.destroy();
       return;
     }
     wss.handleUpgrade(req, socket, head, (ws) => {
-      const eventId = url.searchParams.get("event") || "default-event";
-      const session = getEventSession(eventId);
       session.sessions.add(ws);
 
       // Send initial snapshot

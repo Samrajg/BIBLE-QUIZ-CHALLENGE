@@ -364,7 +364,86 @@
       }
     });
 
-    // Smart Import Logic
+    function normalizeQuestionObject(data) {
+      if (!data || typeof data !== "object") return null;
+
+      let qText = "";
+      let choices = [];
+      let correctIndex = 0;
+      let ref = "";
+
+      // 1. Direct standard keys
+      if (typeof data.question === "string") qText = data.question;
+      else if (typeof data.question_text === "string") qText = data.question_text;
+      else if (typeof data.questionText === "string") qText = data.questionText;
+      else if (typeof data.title === "string") qText = data.title;
+      else if (typeof data.q === "string") qText = data.q;
+
+      // 2. Choices standard keys
+      let rawChoices = data.choices || data.options || data.options_list || data.answers || data.choices_list;
+      if (rawChoices && typeof rawChoices === "object" && !Array.isArray(rawChoices)) {
+        rawChoices = rawChoices.ta || rawChoices.en || Object.values(rawChoices);
+      }
+      if (Array.isArray(rawChoices)) {
+        choices = rawChoices.map(c => String(c ?? "").trim());
+      }
+
+      // 3. Fuzzy search in all keys
+      for (const [k, v] of Object.entries(data)) {
+        const key = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+        if (!qText) {
+          if (key.includes("question") || key.includes("kelvi") || k.includes("கேள்வி") || key === "q" || key === "prompt") {
+            if (typeof v === "string") qText = v;
+            else if (typeof v === "object" && v !== null) qText = v.ta || v.en || Object.values(v)[0] || "";
+          }
+        }
+
+        if (choices.length === 0) {
+          if (key.includes("choice") || key.includes("option") || key.includes("vidai") || k.includes("விடைகள்") || k.includes("தெரிவுகள்") || (key.includes("answer") && Array.isArray(v))) {
+            if (Array.isArray(v)) choices = v.map(c => String(c ?? "").trim());
+            else if (typeof v === "object" && v !== null) choices = Object.values(v).map(c => String(c ?? "").trim());
+          }
+        }
+
+        if (!ref) {
+          if (key.includes("ref") || key.includes("verse") || key.includes("scripture") || k.includes("குறிப்பு") || k.includes("வசனம்")) {
+            if (typeof v === "string") ref = v;
+            else if (typeof v === "object" && v !== null) ref = v.ta || v.en || Object.values(v)[0] || "";
+          }
+        }
+      }
+
+      while (choices.length < 4) choices.push("");
+      choices = choices.slice(0, 4);
+
+      const candidateAnswer = data.correct_answer ?? data.correctAnswer ?? data.correct_index ?? data.correctIndex ?? data.correct ?? data.answer ?? data["சரியான_விடை"] ?? data["சரியானவிடை"];
+      
+      if (typeof candidateAnswer === "number") {
+        if (candidateAnswer >= 1 && candidateAnswer <= 4 && (candidateAnswer === 4 || !choices[candidateAnswer])) {
+          correctIndex = candidateAnswer - 1;
+        } else if (candidateAnswer >= 0 && candidateAnswer <= 3) {
+          correctIndex = candidateAnswer;
+        }
+      } else if (typeof candidateAnswer === "string") {
+        const trimmed = candidateAnswer.trim();
+        if (/^[A-Da-d]$/.test(trimmed)) {
+          correctIndex = trimmed.toUpperCase().charCodeAt(0) - 65;
+        } else {
+          const idx = choices.findIndex(c => c.toLowerCase() === trimmed.toLowerCase());
+          if (idx !== -1) correctIndex = idx;
+        }
+      }
+
+      if (correctIndex < 0 || correctIndex > 3) correctIndex = 0;
+
+      return {
+        question: qText.trim(),
+        choices: choices,
+        correctIndex: correctIndex,
+        reference: (ref || "Bible Reference").trim()
+      };
+    }
     const importModal = document.getElementById("smart-import-modal");
     const importTextarea = document.getElementById("import-json-textarea");
     const importError = document.getElementById("import-json-error");
@@ -433,63 +512,14 @@
         }
 
         const questions = rawQs.map((q, idx) => {
-          let qText = q.question || q.question_text || q.questionText || q.title || q.q || "";
-          if (typeof qText === "object" && qText !== null) {
-            qText = qText.ta || qText.en || Object.values(qText)[0] || "";
-          }
-
-          let rawChoices = q.choices || q.options || q.answers;
-          if (rawChoices && typeof rawChoices === "object" && !Array.isArray(rawChoices)) {
-            rawChoices = rawChoices.ta || rawChoices.en || Object.values(rawChoices);
-          }
-          let choices = [];
-          if (Array.isArray(rawChoices)) {
-            choices = [
-              String(rawChoices[0] ?? ""),
-              String(rawChoices[1] ?? ""),
-              String(rawChoices[2] ?? ""),
-              String(rawChoices[3] ?? "")
-            ];
-          } else {
-            choices = ["", "", "", ""];
-          }
-
-          let correctIndex = 0;
-          if (typeof q.correct_index === "number") {
-            correctIndex = q.correct_index;
-          } else if (typeof q.correctIndex === "number") {
-            correctIndex = q.correctIndex;
-          } else if (typeof q.correct_answer === "number") {
-            correctIndex = q.correct_answer;
-          } else if (typeof q.correctAnswer === "number") {
-            correctIndex = q.correctAnswer;
-          } else if (typeof q.answer === "number") {
-            correctIndex = q.answer;
-          } else if (typeof q.correct_answer === "string") {
-            const fi = choices.indexOf(q.correct_answer);
-            if (fi !== -1) correctIndex = fi;
-          } else if (typeof q.correctAnswer === "string") {
-            const fi = choices.indexOf(q.correctAnswer);
-            if (fi !== -1) correctIndex = fi;
-          } else if (typeof q.answer === "string") {
-            const fi = choices.indexOf(q.answer);
-            if (fi !== -1) correctIndex = fi;
-          }
-
-          if (correctIndex < 0 || correctIndex > 3) correctIndex = 0;
-
-          let ref = q.reference || q.verse || q.scripture || q.scripture_reference || "Bible Reference";
-          if (typeof ref === "object" && ref !== null) {
-            ref = ref.ta || ref.en || Object.values(ref)[0] || "Bible Reference";
-          }
-
+          const norm = normalizeQuestionObject(q);
           return {
             id: idx + 1,
-            question: qText,
-            choices: choices,
-            correctIndex: correctIndex,
-            correctAnswer: choices[correctIndex] || "",
-            reference: ref
+            question: norm.question,
+            choices: norm.choices,
+            correctIndex: norm.correctIndex,
+            correctAnswer: norm.choices[norm.correctIndex] || "",
+            reference: norm.reference
           };
         });
 
