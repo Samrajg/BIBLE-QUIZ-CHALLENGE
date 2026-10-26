@@ -197,12 +197,15 @@
             <span class="timer-icon">⏳</span>
             <span id="timer-display" class="timer-count">10</span>s
           </div>
+          <button type="button" id="fullscreen-toggle-btn" class="hud-fullscreen-btn" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
+            ⛶
+          </button>
         </div>
 
         <div class="hud-right">
           <div class="score-display">
             <span class="score-label" id="lbl-score">Score</span>
-            <span id="hud-score" class="score-val">0</span>
+            <span class="score-val"><span id="hud-score">0</span> <span id="hud-score-max" class="hud-score-sub">/ 15,000</span></span>
           </div>
         </div>
       </header>
@@ -364,9 +367,6 @@
 
         <!-- Export Actions & Navigation (Includes Feature 5: Native Share) -->
         <div class="results-actions">
-          <button type="button" id="view-leaderboard-btn" class="btn btn-primary">
-            🏆 View Live Leaderboard
-          </button>
           <button type="button" id="share-card-btn" class="btn btn-share">
             📲 Share Card
           </button>
@@ -375,6 +375,9 @@
           </button>
           <button type="button" id="review-btn" class="btn btn-outline">
             📝 Review Answers
+          </button>
+          <button type="button" id="view-leaderboard-btn" class="btn btn-outline">
+            🏆 View Live Leaderboard
           </button>
           <button type="button" id="play-again-btn" class="btn btn-primary">
             🔄 Play Again

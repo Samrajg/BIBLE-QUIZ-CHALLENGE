@@ -431,7 +431,8 @@ const gameState = {
   isAnswerSubmitted: false,
   currentStreak: 0,
   // Custom quiz support (Phase 2)
-  activeCustomQuiz: null
+  activeCustomQuiz: null,
+  hasSharedResultCard: false
 };
 
 // ==========================================
@@ -494,6 +495,8 @@ const DOM = {
   timerDisplay: document.getElementById("timer-display"),
   lblScore: document.getElementById("lbl-score"),
   hudScore: document.getElementById("hud-score"),
+  hudScoreMax: document.getElementById("hud-score-max"),
+  fullscreenToggleBtn: document.getElementById("fullscreen-toggle-btn"),
   progressBar: document.getElementById("progress-bar"),
   streakIndicator: document.getElementById("streak-indicator"),
   streakCount: document.getElementById("streak-count"),
@@ -949,6 +952,62 @@ function generateAttemptId() {
   return `BQC-${randomPart}`;
 }
 
+function requestFullScreenMode() {
+  const elem = document.documentElement;
+  try {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen().catch(() => {});
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    }
+  } catch (err) {}
+}
+
+function toggleFullScreenMode() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    requestFullScreenMode();
+  } else {
+    try {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    } catch (err) {}
+  }
+}
+
+function updateResultsExitButtonsState() {
+  const isUnlocked = gameState.hasSharedResultCard;
+  if (DOM.backHomeBtn) {
+    DOM.backHomeBtn.disabled = !isUnlocked;
+    DOM.backHomeBtn.title = isUnlocked ? "" : "Please share or download your result card to unlock exit.";
+  }
+  if (DOM.playAgainBtn) {
+    DOM.playAgainBtn.disabled = !isUnlocked;
+    DOM.playAgainBtn.title = isUnlocked ? "" : "Please share or download your result card to unlock play again.";
+  }
+  if (DOM.lblExportNote) {
+    if (!isUnlocked) {
+      DOM.lblExportNote.innerHTML = `⚠️ <strong>Action Required:</strong> Please click <strong>"📲 Share Card"</strong> or <strong>"📸 Download Card (PNG)"</strong> to submit/save your answers before leaving.`;
+      DOM.lblExportNote.style.color = "#ea580c";
+    } else {
+      const dict = QUIZ_DATA[currentLang];
+      DOM.lblExportNote.innerHTML = `✅ <strong>Answers Saved/Shared!</strong> You can now view the review, play again, or return home.`;
+      DOM.lblExportNote.style.color = "#16a34a";
+    }
+  }
+}
+
+function markResultCardShared() {
+  gameState.hasSharedResultCard = true;
+  updateResultsExitButtonsState();
+}
+
 function showScreen(screenKey) {
   Object.values(DOM.screens).forEach(screen => screen.classList.remove("active"));
   if (DOM.screens[screenKey]) {
@@ -990,6 +1049,7 @@ function startQuiz(nickname) {
   gameState.userRecords = [];
   gameState.isAnswerSubmitted = false;
   gameState.currentStreak = 0;
+  gameState.hasSharedResultCard = false;
 
   if (!gameState.activeCustomQuiz) {
     showScreen("unauthorized");
@@ -1010,10 +1070,17 @@ function startQuiz(nickname) {
 
   gameState.selectedQuestions = allQuestions;
 
+  const maxTotalScore = totalQ * CONFIG.MAX_SCORE_PER_Q;
   DOM.hudPlayerName.textContent = gameState.playerName;
   DOM.totalQNum.textContent = totalQ;
   DOM.hudScore.textContent = "0";
+  if (DOM.hudScoreMax) {
+    DOM.hudScoreMax.textContent = `/ ${maxTotalScore.toLocaleString()}`;
+  }
   DOM.streakIndicator.classList.add("hidden");
+
+  // Automatically request fullscreen when quiz starts
+  requestFullScreenMode();
 
   showScreen("quiz");
   loadQuestion(0);
@@ -1301,6 +1368,9 @@ function completeQuiz() {
     attemptId: gameState.attemptId
   });
 
+  // Lock exit buttons until player shares or downloads result card
+  updateResultsExitButtonsState();
+
   showScreen("results");
 }
 
@@ -1321,10 +1391,11 @@ function populateAnswerReview() {
       statusLabel = `✗ ${dict.statIncorrect}`;
     }
 
+    const totalCount = gameState.selectedQuestions.length || CONFIG.TOTAL_QUESTIONS;
     card.className = `review-card ${statusClass}`;
     card.innerHTML = `
       <div class="review-top-bar">
-        <span class="review-q-num">${dict.hudQuestion} ${rec.questionNumber} ${dict.hudOf} ${CONFIG.TOTAL_QUESTIONS} • ${rec.levelDisplay}</span>
+        <span class="review-q-num">${dict.hudQuestion} ${rec.questionNumber} ${dict.hudOf} ${totalCount} • ${rec.levelDisplay}</span>
         <span class="review-status-pill">${statusLabel} (+${rec.points} pts in ${rec.responseTimeSec.toFixed(1)}s)</span>
       </div>
       <div class="review-question-text">${rec.questionText}</div>
@@ -1398,7 +1469,8 @@ function renderCardCanvas() {
   ctx.font = "bold 44px 'Fredoka', sans-serif";
   ctx.fillText(`${gameState.cumulativeScore.toLocaleString()}`, 50, 235);
 
-  const maxPossibleScore = (CONFIG.TOTAL_QUESTIONS * CONFIG.MAX_SCORE_PER_Q).toLocaleString();
+  const totalQCount = gameState.selectedQuestions.length || CONFIG.TOTAL_QUESTIONS;
+  const maxPossibleScore = (totalQCount * CONFIG.MAX_SCORE_PER_Q).toLocaleString();
   ctx.fillStyle = "#cbd5e1";
   ctx.font = "18px 'Inter', sans-serif";
   ctx.fillText(`/ ${maxPossibleScore} pts`, 220, 230);
@@ -1462,8 +1534,10 @@ function exportCardAsImage() {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+    markResultCardShared();
   } catch (err) {
     alert("Result card generated! Please take a quick screenshot of the card.");
+    markResultCardShared();
   }
 }
 
@@ -1493,6 +1567,7 @@ async function shareResultCard() {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share(shareData);
+        markResultCardShared();
         return;
       } catch (err) {
         if (err.name !== "AbortError") {
@@ -1510,6 +1585,7 @@ async function shareResultCard() {
           text: shareText,
           url: window.location.href
         });
+        markResultCardShared();
       } catch (e) {
         exportCardAsImage();
       }
@@ -1588,6 +1664,11 @@ document.addEventListener("DOMContentLoaded", () => {
     advanceToNextQuestion();
   });
 
+  // Fullscreen Toggle Button in HUD
+  if (DOM.fullscreenToggleBtn) {
+    DOM.fullscreenToggleBtn.addEventListener("click", toggleFullScreenMode);
+  }
+
   // Keyboard navigation
   window.addEventListener("keydown", (e) => {
     if (!DOM.screens.quiz.classList.contains("active")) return;
@@ -1608,11 +1689,19 @@ document.addEventListener("DOMContentLoaded", () => {
   DOM.downloadCardBtn.addEventListener("click", exportCardAsImage);
 
   DOM.backHomeBtn.addEventListener("click", () => {
+    if (!gameState.hasSharedResultCard) {
+      alert("⚠️ Please share or download your result card before returning home.");
+      return;
+    }
     displayWelcomeBestScore();
     showScreen("welcome");
   });
 
   DOM.playAgainBtn.addEventListener("click", () => {
+    if (!gameState.hasSharedResultCard) {
+      alert("⚠️ Please share or download your result card before playing again.");
+      return;
+    }
     if (gameState.playerName) {
       startQuiz(gameState.playerName);
     } else {
@@ -1628,11 +1717,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   DOM.reviewHomeBtn.addEventListener("click", () => {
+    if (!gameState.hasSharedResultCard) {
+      alert("⚠️ Please share or download your result card before returning home.");
+      showScreen("results");
+      return;
+    }
     displayWelcomeBestScore();
     showScreen("welcome");
   });
 
   DOM.reviewPlayAgainBtn.addEventListener("click", () => {
+    if (!gameState.hasSharedResultCard) {
+      alert("⚠️ Please share or download your result card before playing again.");
+      showScreen("results");
+      return;
+    }
     if (gameState.playerName) {
       startQuiz(gameState.playerName);
     } else {
