@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create / Edit Bible Quiz | Admin</title>
+  
+  <link rel="icon" type="image/avif" href="logo.avif">
+  <link rel="apple-touch-icon" href="logo.avif">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=2.1.0">
+  <style>
+    body {
+      background: var(--color-bg);
+      padding: 24px 0;
+      min-height: 100vh;
+    }
+    .creator-standalone-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating Background Elements -->
+  <div class="floating-elements-bg" aria-hidden="true">
+    <div class="float-item float-1">🚢</div>
+    <div class="float-item float-2">🕊️</div>
+    <div class="float-item float-3">🦁</div>
+    <div class="float-item float-6">📖</div>
+    <div class="float-item float-9">👑</div>
+  </div>
+
+  <div class="creator-standalone-container">
+    <div class="editor-layout card">
+      <div class="editor-header">
+        <div>
+          <span class="brand-badge" id="editor-mode-badge">✏️ Quiz Builder</span>
+          <h2 id="editor-page-title" class="editor-title">Create Custom Bible Quiz</h2>
+          <p class="editor-subtitle">Define title, time limit, and add questions with 4 choices each.</p>
+        </div>
+        <div class="editor-header-actions">
+          <button type="button" id="editor-import-json-btn" class="btn btn-secondary" title="Paste ChatGPT JSON or upload file to auto-populate quiz">
+            ⚡ Paste / Import JSON
+          </button>
+          <a href="admin.html" class="btn btn-outline" id="editor-cancel-link">
+            Cancel
+          </a>
+          <button type="button" id="editor-save-draft-btn" class="btn btn-secondary">
+            💾 Save Draft
+          </button>
+          <button type="button" id="editor-publish-btn" class="btn btn-primary">
+            🚀 Save & Publish
+          </button>
+        </div>
+      </div>
+
+      <form id="quiz-editor-form" class="quiz-editor-form" novalidate>
+        <input type="hidden" id="editor-quiz-id" value="" />
+
+        <!-- Quiz Meta Details -->
+        <div class="editor-meta-grid">
+          <div class="input-group">
+            <label for="editor-quiz-title">Quiz Title <span class="required">*</span></label>
+            <input type="text" id="editor-quiz-title" placeholder="e.g. Gospel of Luke Quiz" required maxlength="80" />
+          </div>
+
+          <div class="input-group">
+            <label for="editor-quiz-difficulty">Difficulty Level</label>
+            <select id="editor-quiz-difficulty" class="editor-select">
+              <option value="Easy">Easy (ஆரம்ப நிலை)</option>
+              <option value="Medium" selected>Medium (நடுத்தரம்)</option>
+              <option value="Hard">Hard (கடினம்)</option>
+              <option value="Mixed">Mixed (கலவையான)</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="editor-quiz-time">Time Per Question (Seconds)</label>
+            <select id="editor-quiz-time" class="editor-select">
+              <option value="5">5 Seconds (Ultra Fast)</option>
+              <option value="10" selected>10 Seconds (Standard)</option>
+              <option value="15">15 Seconds</option>
+              <option value="20">20 Seconds</option>
+              <option value="30">30 Seconds</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-top: 14px;">
+          <label for="editor-quiz-desc">Quiz Description (Optional)</label>
+          <input type="text" id="editor-quiz-desc" placeholder="Brief note or instructions for players..." maxlength="150" />
+        </div>
+
+        <!-- Questions List Section -->
+        <div class="editor-questions-section">
+          <div class="editor-questions-header">
+            <h3>Questions (<span id="editor-questions-count">0</span>)</h3>
+            <button type="button" id="editor-add-q-btn" class="btn btn-outline btn-sm">
+              ➕ Add Question
+            </button>
+          </div>
+
+          <div id="editor-questions-list" class="editor-questions-list">
+            <!-- Dynamic Question Cards -->
+          </div>
+
+          <div class="editor-bottom-actions">
+            <button type="button" id="editor-add-q-bottom-btn" class="btn btn-outline">
+              ➕ Add Another Question
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Smart JSON Import Modal -->
+  <div id="smart-import-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-import-title">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header">
+        <h3 id="modal-import-title">📥 Import Quiz JSON</h3>
+        <button type="button" id="close-import-modal-btn" class="modal-close-btn" aria-label="Close modal">✕</button>
+      </div>
+
+      <p class="modal-subtext">
+        Paste JSON generated by ChatGPT / Claude below, or upload a <code>.json</code> file.
+      </p>
+
+      <div class="import-upload-zone" id="import-upload-zone">
+        <button type="button" id="modal-upload-file-btn" class="btn btn-secondary">
+          📁 Choose JSON File From Computer
+        </button>
+        <input type="file" id="modal-file-input" accept=".json,application/json" style="display:none;" />
+        <span class="import-or-divider">OR PASTE DIRECTLY</span>
+      </div>
+
+      <div class="input-group" style="margin-top: 14px;">
+        <label for="import-json-textarea"><strong>Paste JSON Code:</strong></label>
+        <textarea id="import-json-textarea" rows="8" placeholder='{\n  "title": "Gospel Quiz",\n  "questions": [\n    {\n      "question": "In which city was Jesus born?",\n      "choices": ["Nazareth", "Bethlehem", "Jerusalem", "Rome"],\n      "correctIndex": 1,\n      "reference": "Matthew 2:1"\n    }\n  ]\n}' style="font-family: monospace; font-size: 0.85rem; width: 100%;"></textarea>
+      </div>
+      <span id="import-json-error" class="error-msg" aria-live="polite"></span>
+
+      <div class="modal-actions">
+        <button type="button" id="cancel-import-modal-btn" class="btn btn-outline">Cancel</button>
+        <button type="button" id="process-import-btn" class="btn btn-primary btn-lg">
+          ⚡ Parse & Auto-Fill Questions
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      STORAGE_KEY_CUSTOM_QUIZZES: "BIBLE_QUIZ_ADMIN_QUIZZES",
+      STORAGE_KEY_ADMIN_SESSION: "BIBLE_QUIZ_ADMIN_AUTH"
+    };
+
+    if (localStorage.getItem(CONFIG.STORAGE_KEY_ADMIN_SESSION) !== "true") {
+      window.location.replace("login.html");
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getAllQuizzes() {
+      try {
+        const stored = localStorage.getItem(CONFIG.STORAGE_KEY_CUSTOM_QUIZZES);
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveQuiz(quizObj) {
+      const quizzes = getAllQuizzes();
+      const existingIdx = quizzes.findIndex(q => q.id === quizObj.id);
+      if (existingIdx >= 0) {
+        quizzes[existingIdx] = quizObj;
+      } else {
+        quizzes.unshift(quizObj);
+      }
+      localStorage.setItem(CONFIG.STORAGE_KEY_CUSTOM_QUIZZES, JSON.stringify(quizzes));
+    }
+
+    const titleInput = document.getElementById("editor-quiz-title");
+    const diffSelect = document.getElementById("editor-quiz-difficulty");
+    const timeSelect = document.getElementById("editor-quiz-time");
+    const descInput = document.getElementById("editor-quiz-desc");
+    const quizIdInput = document.getElementById("editor-quiz-id");
+    const questionsList = document.getElementById("editor-questions-list");
+    const questionsCountEl = document.getElementById("editor-questions-count");
+
+    function addQuestionCard(initialData = null) {
+      const qIndex = questionsList.children.length;
+      const qCard = document.createElement("div");
+      qCard.className = "editor-q-card";
+      qCard.dataset.index = qIndex;
+
+      const initialQText = initialData ? escapeHtml(initialData.question || "") : "";
+      const initialChoices = (initialData && Array.isArray(initialData.choices)) ? initialData.choices : ["", "", "", ""];
+      const initialCorrectIndex = (initialData && typeof initialData.correctIndex === "number") ? initialData.correctIndex : 0;
+      const initialRef = initialData ? escapeHtml(initialData.reference || "") : "";
+
+      const choiceRowsHtml = [0, 1, 2, 3].map(cIdx => {
+        const label = String.fromCharCode(65 + cIdx);
+        const val = escapeHtml(initialChoices[cIdx] || "");
+        const isChecked = (cIdx === initialCorrectIndex) ? "checked" : "";
+        const rowClass = (cIdx === initialCorrectIndex) ? "choice-input-row is-correct-choice" : "choice-input-row";
+
+        return `
+          <div class="${rowClass}" data-choice-row="${cIdx}">
+            <label class="choice-radio-label">
+              <input type="radio" name="correct_q_${qIndex}" value="${cIdx}" ${isChecked} onchange="onRadioChange(this)" />
+              <span>${label}</span>
+            </label>
+            <input type="text" class="choice-text-input" placeholder="Option ${label} text" value="${val}" required />
+          </div>
+        `;
+      }).join("");
+
+      qCard.innerHTML = `
+        <div class="editor-q-card-header">
+          <span class="editor-q-number">Question #${qIndex + 1}</span>
+          <div class="editor-q-actions">
+            <button type="button" class="btn-icon-danger" onclick="removeQuestionCard(this)" title="Delete this question">
+              ✕ Remove
+            </button>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom: 10px;">
+          <input type="text" class="editor-q-text" placeholder="Enter Bible question text (e.g. In which city was Jesus born?)" value="${initialQText}" required />
+        </div>
+
+        <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 8px;">
+          Choices (Select the radio button next to the CORRECT answer):
+        </div>
+
+        <div class="editor-choices-grid">
+          ${choiceRowsHtml}
+        </div>
+
+        <div class="editor-q-ref-row">
+          <label>Scripture Reference:</label>
+          <input type="text" class="editor-q-ref" placeholder="e.g. Luke 2:4 or Genesis 1:1" value="${initialRef}" />
+        </div>
+      `;
+
+      questionsList.appendChild(qCard);
+      updateQuestionNumbers();
+    }
+
+    function onRadioChange(radio) {
+      const card = radio.closest(".editor-q-card");
+      if (!card) return;
+      card.querySelectorAll(".choice-input-row").forEach(row => {
+        const r = row.querySelector('input[type="radio"]');
+        if (r && r.checked) {
+          row.classList.add("is-correct-choice");
+        } else {
+          row.classList.remove("is-correct-choice");
+        }
+      });
+    }
+
+    function removeQuestionCard(btn) {
+      if (questionsList.children.length <= 1) {
+        alert("A quiz must have at least one question.");
+        return;
+      }
+      btn.closest(".editor-q-card").remove();
+      updateQuestionNumbers();
+    }
+
+    function updateQuestionNumbers() {
+      const cards = questionsList.querySelectorAll(".editor-q-card");
+      cards.forEach((card, idx) => {
+        card.dataset.index = idx;
+        const numSpan = card.querySelector(".editor-q-number");
+        if (numSpan) numSpan.textContent = `Question #${idx + 1}`;
+        card.querySelectorAll('input[type="radio"]').forEach(r => {
+          r.name = `correct_q_${idx}`;
+        });
+      });
+      questionsCountEl.textContent = cards.length;
+    }
+
+    function collectFormData(isPublishing) {
+      const title = titleInput.value.trim();
+      if (!title) {
+        alert("Please provide a Quiz Title.");
+        titleInput.focus();
+        return null;
+      }
+
+      const cards = questionsList.querySelectorAll(".editor-q-card");
+      if (cards.length === 0) {
+        alert("Please add at least one question.");
+        return null;
+      }
+
+      const questions = [];
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        const qText = card.querySelector(".editor-q-text").value.trim();
+        if (!qText) {
+          alert(`Question #${i + 1} has empty question text.`);
+          card.querySelector(".editor-q-text").focus();
+          return null;
+        }
+
+        const choiceInputs = card.querySelectorAll(".choice-text-input");
+        const choices = [];
+        for (let j = 0; j < choiceInputs.length; j++) {
+          const val = choiceInputs[j].value.trim();
+          if (!val) {
+            alert(`Question #${i + 1}, Option ${String.fromCharCode(65 + j)} is empty.`);
+            choiceInputs[j].focus();
+            return null;
+          }
+          choices.push(val);
+        }
+
+        const checkedRadio = card.querySelector('input[type="radio"]:checked');
+        const correctIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : 0;
+        const refInput = card.querySelector(".editor-q-ref");
+        const refText = refInput ? refInput.value.trim() : "";
+
+        questions.push({
+          id: i + 1,
+          question: qText,
+          choices: choices,
+          correctIndex: correctIndex,
+          correctAnswer: choices[correctIndex],
+          reference: refText || "Bible Reference"
+        });
+      }
+
+      const quizId = quizIdInput.value || `quiz_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      return {
+        v: 1,
+        id: quizId,
+        title: title,
+        description: descInput.value.trim(),
+        difficulty: diffSelect.value,
+        timeLimit: parseInt(timeSelect.value, 10) || 10,
+        published: Boolean(isPublishing),
+        questions: questions
+      };
+    }
+
+    function saveAndRedirect(isPublishing) {
+      const data = collectFormData(isPublishing);
+      if (!data) return;
+      saveQuiz(data);
+      alert(isPublishing ? "🎉 Quiz published successfully!" : "💾 Quiz draft saved!");
+      window.location.href = "admin.html";
+    }
+
+    document.getElementById("editor-add-q-btn").addEventListener("click", () => addQuestionCard());
+    document.getElementById("editor-add-q-bottom-btn").addEventListener("click", () => addQuestionCard());
+    document.getElementById("editor-save-draft-btn").addEventListener("click", () => saveAndRedirect(false));
+    document.getElementById("editor-publish-btn").addEventListener("click", () => saveAndRedirect(true));
+
+    // Smart Import Logic
+    const importModal = document.getElementById("smart-import-modal");
+    const importTextarea = document.getElementById("import-json-textarea");
+    const importError = document.getElementById("import-json-error");
+    const fileInput = document.getElementById("modal-file-input");
+
+    document.getElementById("editor-import-json-btn").addEventListener("click", () => {
+      importTextarea.value = "";
+      importError.textContent = "";
+      fileInput.value = "";
+      importModal.classList.remove("hidden");
+      importTextarea.focus();
+    });
+
+    const closeImport = () => {
+      importModal.classList.add("hidden");
+      importError.textContent = "";
+    };
+
+    document.getElementById("close-import-modal-btn").addEventListener("click", closeImport);
+    document.getElementById("cancel-import-modal-btn").addEventListener("click", closeImport);
+    document.getElementById("modal-upload-file-btn").addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          importTextarea.value = evt.target.result;
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    document.getElementById("process-import-btn").addEventListener("click", () => {
+      const text = importTextarea.value.trim();
+      if (!text) {
+        importError.textContent = "Please paste JSON code or upload a file first.";
+        return;
+      }
+      try {
+        const parsed = JSON.parse(text);
+        if (!parsed || (!Array.isArray(parsed.questions) && !parsed.en && !parsed.ta)) {
+          importError.textContent = "Invalid format: JSON must contain a 'questions' array or bilingual {en, ta} structure.";
+          return;
+        }
+
+        const title = parsed.title || (parsed.en && parsed.en.title) || "";
+        const desc = parsed.description || (parsed.en && parsed.en.description) || "";
+        const diff = parsed.difficulty || (parsed.en && parsed.en.difficulty) || "Medium";
+        const time = parsed.timeLimit || 10;
+        const rawQs = parsed.questions || (parsed.en && parsed.en.questions) || [];
+
+        if (title) titleInput.value = title;
+        if (desc) descInput.value = desc;
+        if (diff) diffSelect.value = diff;
+        if (time) timeSelect.value = String(time);
+
+        questionsList.innerHTML = "";
+        rawQs.forEach((q, idx) => {
+          const choices = q.choices || [];
+          let correctIndex = (typeof q.correctIndex === "number") ? q.correctIndex : 0;
+          if (q.correctAnswer && choices.includes(q.correctAnswer)) {
+            correctIndex = choices.indexOf(q.correctAnswer);
+          }
+          addQuestionCard({
+            question: q.question || "",
+            choices: choices,
+            correctIndex: correctIndex,
+            reference: q.reference || ""
+          });
+        });
+
+        if (rawQs.length === 0) {
+          addQuestionCard();
+        }
+
+        closeImport();
+        alert(`✅ Loaded ${rawQs.length} questions directly into the builder! Review and click Save.`);
+      } catch (err) {
+        importError.textContent = "JSON Error: " + err.message;
+      }
+    });
+
+    // Check if editing existing quiz (?id=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get("id");
+    if (editId) {
+      const quizzes = getAllQuizzes();
+      const existing = quizzes.find(q => q.id === editId);
+      if (existing) {
+        document.getElementById("editor-page-title").textContent = `Edit "${existing.title}"`;
+        document.getElementById("editor-mode-badge").textContent = "✏️ Edit Quiz";
+        quizIdInput.value = existing.id;
+        titleInput.value = existing.title || "";
+        descInput.value = existing.description || "";
+        diffSelect.value = existing.difficulty || "Medium";
+        timeSelect.value = String(existing.timeLimit || 10);
+        questionsList.innerHTML = "";
+        (existing.questions || []).forEach(q => addQuestionCard(q));
+      }
+    } else {
+      // Default new quiz with 1 empty question
+      addQuestionCard();
+    }
+  </script>
+</body>
+</html>

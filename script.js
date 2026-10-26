@@ -2629,43 +2629,46 @@ function escapeHtml(text) {
 // ==========================================
 function initAdminModule() {
   // Topbar Admin Button Trigger
-  DOM.adminPortalBtn.addEventListener("click", () => {
-    if (AdminModule.isAdminLoggedIn()) {
-      AdminModule.renderAdminDashboard();
-      showScreen("admin");
-    } else {
-      DOM.adminUserInput.value = "";
-      DOM.adminPassInput.value = "";
-      DOM.adminLoginError.textContent = "";
-      DOM.adminLoginModal.classList.remove("hidden");
-      DOM.adminUserInput.focus();
-    }
-  });
+  if (DOM.adminPortalBtn) {
+    DOM.adminPortalBtn.addEventListener("click", (e) => {
+      // If clicked, redirect to dedicated login or admin page
+      e.preventDefault();
+      if (AdminModule.isAdminLoggedIn()) {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+  }
 
   // Admin Login Modal Handlers
-  DOM.closeLoginModalBtn.addEventListener("click", () => {
-    DOM.adminLoginModal.classList.add("hidden");
-  });
+  if (DOM.closeLoginModalBtn) {
+    DOM.closeLoginModalBtn.addEventListener("click", () => {
+      if (DOM.adminLoginModal) DOM.adminLoginModal.classList.add("hidden");
+    });
+  }
 
-  DOM.cancelLoginBtn.addEventListener("click", () => {
-    DOM.adminLoginModal.classList.add("hidden");
-  });
+  if (DOM.cancelLoginBtn) {
+    DOM.cancelLoginBtn.addEventListener("click", () => {
+      if (DOM.adminLoginModal) DOM.adminLoginModal.classList.add("hidden");
+    });
+  }
 
-  DOM.adminLoginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const user = DOM.adminUserInput.value.trim();
-    const pass = DOM.adminPassInput.value.trim();
+  if (DOM.adminLoginForm) {
+    DOM.adminLoginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const user = DOM.adminUserInput.value.trim();
+      const pass = DOM.adminPassInput.value.trim();
 
-    if (user === ADMIN_DEMO_CREDENTIALS.user && pass === ADMIN_DEMO_CREDENTIALS.pass) {
-      AdminModule.setAdminLoggedIn(true);
-      DOM.adminLoginModal.classList.add("hidden");
-      DOM.adminLoginError.textContent = "";
-      AdminModule.renderAdminDashboard();
-      showScreen("admin");
-    } else {
-      DOM.adminLoginError.textContent = "Invalid username or password.";
-    }
-  });
+      if (user === ADMIN_DEMO_CREDENTIALS.user && pass === ADMIN_DEMO_CREDENTIALS.pass) {
+        AdminModule.setAdminLoggedIn(true);
+        if (DOM.adminLoginModal) DOM.adminLoginModal.classList.add("hidden");
+        window.location.href = "admin.html";
+      } else {
+        if (DOM.adminLoginError) DOM.adminLoginError.textContent = "Invalid username or password.";
+      }
+    });
+  }
 
   // Admin Dashboard Actions
   DOM.adminCreateQuizBtn.addEventListener("click", () => {
