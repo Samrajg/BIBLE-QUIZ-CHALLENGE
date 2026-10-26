@@ -133,6 +133,21 @@
         </button>
       </div>
 
+      <!-- Clean Hyperlink Format -->
+      <div id="share-hyperlink-box" style="margin-top: 14px; padding: 12px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Clickable Hyperlink (Title Linked):</span>
+          <div style="margin-top: 4px;">
+            <a id="share-title-hyperlink" href="#" target="_blank" style="font-weight: 800; font-size: 1.05rem; color: var(--color-primary); text-decoration: underline;">
+              🎮 Play Quiz Now
+            </a>
+          </div>
+        </div>
+        <button type="button" id="copy-hyperlink-btn" class="btn btn-secondary btn-sm" title="Copy clean formatted title hyperlink for WhatsApp/Emails">
+          📎 Copy Hyperlink
+        </button>
+      </div>
+
       <div class="share-modal-actions">
         <button type="button" id="download-quiz-json-btn" class="btn btn-secondary">
           💾 Download Quiz JSON File
@@ -258,15 +273,17 @@
       }).join("");
     }
 
-    // URL Encoding for Share Link
+    // URL Encoding for Share Link (uses LZString high-compression)
     function encodeQuizForUrl(quizObj) {
       try {
+        if (typeof compressQuizPayload === "function") {
+          return compressQuizPayload(quizObj);
+        }
         const jsonStr = JSON.stringify(quizObj);
         const utf8Bytes = encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
           return String.fromCharCode(parseInt(p1, 16));
         });
-        const base64 = btoa(utf8Bytes);
-        return encodeURIComponent(base64);
+        return encodeURIComponent(btoa(utf8Bytes));
       } catch (err) {
         return "";
       }
@@ -278,7 +295,7 @@
       if (!quiz) return;
 
       const payload = {
-        v: 1,
+        v: 2,
         id: quiz.id,
         title: quiz.title,
         description: quiz.description,
@@ -300,6 +317,8 @@
       const shareInput = document.getElementById("share-url-input");
       const charCount = document.getElementById("share-url-char-count");
       const warning = document.getElementById("share-url-warning");
+      const hyperlinkEl = document.getElementById("share-title-hyperlink");
+      const copyHyperlinkBtn = document.getElementById("copy-hyperlink-btn");
 
       shareInput.value = shareUrl;
       charCount.textContent = shareUrl.length;
@@ -309,12 +328,49 @@
         warning.classList.add("hidden");
       }
 
+      // Format clean Hyperlink with Quiz Title
+      const quizTitleText = quiz.title || "Bible Quiz Challenge";
+      hyperlinkEl.href = shareUrl;
+      hyperlinkEl.textContent = `🎮 Play "${quizTitleText}"`;
+
+      if (copyHyperlinkBtn) {
+        copyHyperlinkBtn.onclick = () => {
+          const htmlLink = `<a href="${shareUrl}">🎮 Play ${quizTitleText}</a>`;
+          const plainText = `🎮 Play ${quizTitleText}: ${shareUrl}`;
+
+          if (navigator.clipboard && window.ClipboardItem) {
+            const blobHtml = new Blob([htmlLink], { type: "text/html" });
+            const blobText = new Blob([plainText], { type: "text/plain" });
+            const item = new ClipboardItem({ "text/html": blobHtml, "text/plain": blobText });
+            navigator.clipboard.write([item]).then(() => {
+              const orig = copyHyperlinkBtn.textContent;
+              copyHyperlinkBtn.textContent = "✅ Copied Hyperlink!";
+              setTimeout(() => { copyHyperlinkBtn.textContent = orig; }, 2500);
+            }).catch(() => {
+              copyPlainShareText(plainText);
+            });
+          } else {
+            copyPlainShareText(plainText);
+          }
+        };
+      }
+
       document.getElementById("download-quiz-json-btn").onclick = () => exportQuizAsJson(quiz.id);
       document.getElementById("test-quiz-link-btn").onclick = () => {
         window.location.href = shareUrl;
       };
 
       document.getElementById("share-link-modal").classList.remove("hidden");
+    }
+
+    function copyPlainShareText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert("Hyperlink copied to clipboard!");
+        });
+      } else {
+        prompt("Copy this link:", text);
+      }
     }
 
     function exportQuizAsJson(quizId) {
@@ -570,5 +626,6 @@
     // Initial render
     renderAdminDashboard();
   </script>
+  <script src="lz-quiz.js"></script>
 </body>
 </html>

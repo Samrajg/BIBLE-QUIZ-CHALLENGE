@@ -2340,13 +2340,14 @@ const AdminModule = {
 // ==========================================
 function encodeQuizForUrl(quizObj) {
   try {
+    if (typeof compressQuizPayload === "function") {
+      return compressQuizPayload(quizObj);
+    }
     const jsonStr = JSON.stringify(quizObj);
-    // Safely encode Unicode UTF-8 string to Base64
     const utf8Bytes = encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
       return String.fromCharCode(parseInt(p1, 16));
     });
-    const base64 = btoa(utf8Bytes);
-    return encodeURIComponent(base64);
+    return encodeURIComponent(btoa(utf8Bytes));
   } catch (err) {
     console.error("URL encoding error:", err);
     return "";
@@ -2355,6 +2356,10 @@ function encodeQuizForUrl(quizObj) {
 
 function decodeQuizFromUrl(encodedStr) {
   try {
+    if (typeof decompressQuizPayload === "function") {
+      const decomp = decompressQuizPayload(encodedStr);
+      if (decomp) return decomp;
+    }
     const base64 = decodeURIComponent(encodedStr);
     const decodedBytes = atob(base64);
     const jsonStr = decodeURIComponent(Array.prototype.map.call(decodedBytes, (c) => {
