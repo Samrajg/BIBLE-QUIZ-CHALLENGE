@@ -933,6 +933,32 @@ function setLanguage(lang) {
   DOM.reviewPlayAgainBtn.textContent = dict.btnPlayAgain;
 
   displayWelcomeBestScore();
+
+  // If a custom quiz is loaded, refresh its banner and active question if currently in-quiz
+  if (gameState.activeCustomQuiz) {
+    const custom = gameState.activeCustomQuiz;
+    const title = getLocalizedQuizProp(custom, "title", lang);
+    const desc = getLocalizedQuizProp(custom, "description", lang);
+    const diff = getLocalizedQuizProp(custom, "difficulty", lang) || "Custom";
+    if (DOM.sharedQuizTitle) DOM.sharedQuizTitle.textContent = title;
+    if (DOM.sharedQuizDesc && desc) DOM.sharedQuizDesc.textContent = desc;
+    if (DOM.sharedQuizDifficulty) DOM.sharedQuizDifficulty.textContent = diff;
+    if (DOM.valPillCategory) DOM.valPillCategory.textContent = title;
+    if (DOM.valPillLevels) DOM.valPillLevels.textContent = diff;
+
+    // If quiz is currently active on screen, refresh the current question in the newly selected language
+    if (DOM.screens.quiz && DOM.screens.quiz.classList.contains("active") && gameState.selectedQuestions.length > 0) {
+      const currIdx = gameState.currentQuestionIndex;
+      const qObj = gameState.selectedQuestions[currIdx];
+      if (qObj && qObj.raw) {
+        const resolved = resolveBilingualQuestion(qObj.raw, lang);
+        qObj.question = resolved.text;
+        qObj.reference = resolved.reference;
+        // Re-display question text
+        DOM.questionText.textContent = resolved.text;
+      }
+    }
+  }
 }
 
 // ==========================================
@@ -1057,16 +1083,24 @@ function startQuiz(nickname) {
   }
 
   const custom = gameState.activeCustomQuiz;
-  const totalQ = custom.questions.length;
-  const allQuestions = custom.questions.map((q, idx) => ({
-    id: q.id || idx + 1,
-    question: q.question,
-    choices: q.choices,
-    correctAnswer: q.correctAnswer || q.choices[q.correctIndex || 0],
-    reference: q.reference || "Bible Scripture",
-    levelDisplay: custom.difficulty || "Custom",
-    shuffledOptions: shuffleArray(q.choices)
-  }));
+  const rawQuestions = getLocalizedQuizQuestions(custom, currentLang);
+  const totalQ = rawQuestions.length;
+
+  const allQuestions = rawQuestions.map((rawQ, idx) => {
+    const resolved = resolveBilingualQuestion(rawQ, currentLang);
+    // Shuffle options while preserving which option text matches the correct answer
+    const shuffled = shuffleArray(resolved.choices);
+    return {
+      id: rawQ.id || idx + 1,
+      raw: rawQ, // Keep raw item so language switch mid-quiz can re-render if needed
+      question: resolved.text,
+      choices: resolved.choices,
+      correctAnswer: resolved.correctAnswer,
+      reference: resolved.reference,
+      levelDisplay: getLocalizedQuizProp(custom, "difficulty", currentLang) || "Custom",
+      shuffledOptions: shuffled
+    };
+  });
 
   gameState.selectedQuestions = allQuestions;
 
@@ -2264,23 +2298,58 @@ function validateQuizData(data) {
   if (!data || typeof data !== "object") {
     return { valid: false, error: "Quiz data is missing or not a JSON object." };
   }
-  if (!data.title || typeof data.title !== "string") {
+
+  // Bilingual wrapper support: { en: {...}, ta: {...} }
+  if (data.en && data.en.questions) {
+    const enVal = validateQuizData(data.en);
+    if (!enVal.valid) return { valid: false, error: "English quiz invalid: " + enVal.error };
+    if (data.ta && data.ta.questions) {
+      const taVal = validateQuizData(data.ta);
+      if (!taVal.valid) return { valid: false, error: "Tamil quiz invalid: " + taVal.error };
+    }
+    return { valid: true, isBilingualContainer: true };
+  }
+
+  // Title validation: string or bilingual object { en: "...", ta: "..." }
+  const hasValidTitle = (typeof data.title === "string" && data.title.trim().length > 0) ||
+    (typeof data.title_en === "string") ||
+    (data.title && typeof data.title === "object" && (data.title.en || data.title.ta));
+
+  if (!hasValidTitle) {
     return { valid: false, error: "Quiz title is missing." };
   }
+
   if (!Array.isArray(data.questions) || data.questions.length === 0) {
     return { valid: false, error: "Quiz contains no valid questions." };
   }
 
   for (let i = 0; i < data.questions.length; i++) {
     const q = data.questions[i];
-    if (!q.question || typeof q.question !== "string") {
+    
+    // Check question text (string, or { en, ta }, or question_en / question_ta)
+    const hasQText = (typeof q.question === "string" && q.question.trim().length > 0) ||
+      (q.question && typeof q.question === "object" && (q.question.en || q.question.ta)) ||
+      (typeof q.question_en === "string") || (typeof q.question_ta === "string");
+
+    if (!hasQText) {
       return { valid: false, error: `Question #${i + 1} has invalid text.` };
     }
-    if (!Array.isArray(q.choices) || q.choices.length < 2) {
+
+    // Check choices
+    let choicesArray = q.choices;
+    if (!Array.isArray(choicesArray) && q.choices && typeof q.choices === "object") {
+      choicesArray = q.choices.en || q.choices.ta;
+    }
+    if (!Array.isArray(choicesArray) && Array.isArray(q.choices_en)) {
+      choicesArray = q.choices_en;
+    }
+
+    if (!Array.isArray(choicesArray) || choicesArray.length < 2) {
       return { valid: false, error: `Question #${i + 1} must have at least 2 choices.` };
     }
+
     const cIdx = (typeof q.correctIndex === "number") ? q.correctIndex : 0;
-    if (cIdx < 0 || cIdx >= q.choices.length) {
+    if (cIdx < 0 || cIdx >= choicesArray.length) {
       return { valid: false, error: `Question #${i + 1} has an out-of-range correctIndex.` };
     }
   }
@@ -2328,22 +2397,123 @@ function handleEncodedQuizParam(encodedStr) {
   loadCustomQuizIntoGame(decoded);
 }
 
+function getLocalizedQuizProp(quizData, prop, lang = currentLang) {
+  if (!quizData) return "";
+  const altLang = (lang === "ta") ? "en" : "ta";
+
+  // Check bilingual container { en: {...}, ta: {...} }
+  if (quizData[lang] && quizData[lang][prop]) {
+    return quizData[lang][prop];
+  }
+  if (quizData[altLang] && quizData[altLang][prop]) {
+    return quizData[altLang][prop];
+  }
+
+  // Check object property e.g. quizData.title = { en: "...", ta: "..." }
+  if (quizData[prop] && typeof quizData[prop] === "object") {
+    if (quizData[prop][lang]) return quizData[prop][lang];
+    if (quizData[prop][altLang]) return quizData[prop][altLang];
+  }
+
+  // Check suffix e.g. quizData.title_en or quizData.title_ta
+  const specificKey = `${prop}_${lang}`;
+  if (quizData[specificKey]) return quizData[specificKey];
+  const altKey = `${prop}_${altLang}`;
+  if (quizData[altKey]) return quizData[altKey];
+
+  // Fallback to direct property
+  return quizData[prop] || "";
+}
+
+function resolveBilingualQuestion(q, lang = currentLang) {
+  const altLang = (lang === "ta") ? "en" : "ta";
+
+  // 1. Resolve Question Text
+  let text = "";
+  if (q.question && typeof q.question === "object") {
+    text = q.question[lang] || q.question[altLang] || "";
+  } else if (lang === "ta" && (q.question_ta || q.tamil_question)) {
+    text = q.question_ta || q.tamil_question;
+  } else if (lang === "en" && (q.question_en || q.english_question)) {
+    text = q.question_en || q.english_question;
+  } else {
+    text = q.question || q.question_en || q.question_ta || "";
+  }
+
+  // 2. Resolve Choices Array
+  let choices = [];
+  if (q.choices && typeof q.choices === "object" && !Array.isArray(q.choices)) {
+    choices = q.choices[lang] || q.choices[altLang] || [];
+  } else if (lang === "ta" && (Array.isArray(q.choices_ta) || Array.isArray(q.tamil_choices))) {
+    choices = q.choices_ta || q.tamil_choices;
+  } else if (lang === "en" && (Array.isArray(q.choices_en) || Array.isArray(q.english_choices))) {
+    choices = q.choices_en || q.english_choices;
+  } else if (Array.isArray(q.choices)) {
+    choices = q.choices;
+  }
+
+  // 3. Resolve Reference
+  let ref = "Bible Scripture";
+  if (q.reference && typeof q.reference === "object") {
+    ref = q.reference[lang] || q.reference[altLang] || ref;
+  } else if (lang === "ta" && (q.reference_ta || q.tamil_reference)) {
+    ref = q.reference_ta || q.tamil_reference;
+  } else if (q.reference) {
+    ref = q.reference;
+  }
+
+  // 4. Resolve Correct Index & Answer
+  const correctIndex = (typeof q.correctIndex === "number") ? q.correctIndex : 0;
+  const correctAnswer = choices[correctIndex] || q.correctAnswer || choices[0] || "";
+
+  return {
+    text,
+    choices,
+    correctIndex,
+    correctAnswer,
+    reference: ref
+  };
+}
+
+function getLocalizedQuizQuestions(quizData, lang = currentLang) {
+  if (!quizData) return [];
+  const altLang = (lang === "ta") ? "en" : "ta";
+
+  let rawQuestions = [];
+  if (quizData[lang] && Array.isArray(quizData[lang].questions)) {
+    rawQuestions = quizData[lang].questions;
+  } else if (Array.isArray(quizData.questions)) {
+    rawQuestions = quizData.questions;
+  } else if (quizData[altLang] && Array.isArray(quizData[altLang].questions)) {
+    rawQuestions = quizData[altLang].questions;
+  }
+
+  return rawQuestions;
+}
+
 function loadCustomQuizIntoGame(quizData) {
   gameState.activeCustomQuiz = quizData;
 
+  const title = getLocalizedQuizProp(quizData, "title", currentLang);
+  const desc = getLocalizedQuizProp(quizData, "description", currentLang) || 
+    (currentLang === "ta" ? "ஒருங்கிணைப்பாளரால் உருவாக்கப்பட்ட வேதாகம வினாடி வினா." : "Custom Bible Quiz challenge created by quiz organizer.");
+  const questions = getLocalizedQuizQuestions(quizData, currentLang);
+  const timeLimit = quizData.timeLimit || (quizData[currentLang] && quizData[currentLang].timeLimit) || 10;
+  const difficulty = getLocalizedQuizProp(quizData, "difficulty", currentLang) || "Custom";
+
   // Show customized banner on welcome screen
   DOM.sharedQuizBanner.classList.remove("hidden");
-  DOM.sharedQuizTitle.textContent = quizData.title;
-  DOM.sharedQuizDesc.textContent = quizData.description || "Custom Bible Quiz challenge created by quiz organizer.";
-  DOM.sharedQuizQCount.textContent = `${quizData.questions.length} Questions`;
-  DOM.sharedQuizTime.textContent = `${quizData.timeLimit || 10}s/Q`;
-  DOM.sharedQuizDifficulty.textContent = `${quizData.difficulty || "Custom"}`;
+  DOM.sharedQuizTitle.textContent = title;
+  DOM.sharedQuizDesc.textContent = desc;
+  DOM.sharedQuizQCount.textContent = `${questions.length} Questions`;
+  DOM.sharedQuizTime.textContent = `${timeLimit}s/Q`;
+  DOM.sharedQuizDifficulty.textContent = difficulty;
 
-  DOM.valPillCategory.textContent = quizData.title;
-  DOM.valPillLevels.textContent = quizData.difficulty || "Custom";
-  DOM.valPillQuestions.textContent = quizData.questions.length;
-  DOM.valPillTime.textContent = `${quizData.timeLimit || 10}s/Q`;
-  const maxPts = quizData.questions.length * 1000;
+  DOM.valPillCategory.textContent = title;
+  DOM.valPillLevels.textContent = difficulty;
+  DOM.valPillQuestions.textContent = questions.length;
+  DOM.valPillTime.textContent = `${timeLimit}s/Q`;
+  const maxPts = questions.length * 1000;
   DOM.valPillScore.textContent = `${maxPts.toLocaleString()} pts`;
 
   showScreen("welcome");
