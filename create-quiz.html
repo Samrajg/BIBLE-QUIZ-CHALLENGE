@@ -208,10 +208,64 @@
       qCard.className = "editor-q-card";
       qCard.dataset.index = qIndex;
 
-      const initialQText = initialData ? escapeHtml(initialData.question || "") : "";
-      const initialChoices = (initialData && Array.isArray(initialData.choices)) ? initialData.choices : ["", "", "", ""];
-      const initialCorrectIndex = (initialData && typeof initialData.correctIndex === "number") ? initialData.correctIndex : 0;
-      const initialRef = initialData ? escapeHtml(initialData.reference || "") : "";
+      // Extract raw data supporting multiple naming conventions from ChatGPT / Claude
+      let initialQText = "";
+      let initialChoices = ["", "", "", ""];
+      let initialCorrectIndex = 0;
+      let initialRef = "";
+
+      if (initialData) {
+        // Question text
+        initialQText = initialData.question || initialData.question_text || initialData.questionText || initialData.title || initialData.q || "";
+        if (typeof initialQText === "object" && initialQText !== null) {
+          initialQText = initialQText.ta || initialQText.en || Object.values(initialQText)[0] || "";
+        }
+
+        // Choices
+        let rawChoices = initialData.choices || initialData.options || initialData.answers;
+        if (rawChoices && typeof rawChoices === "object" && !Array.isArray(rawChoices)) {
+          rawChoices = rawChoices.ta || rawChoices.en || Object.values(rawChoices);
+        }
+        if (Array.isArray(rawChoices)) {
+          initialChoices = [
+            String(rawChoices[0] ?? ""),
+            String(rawChoices[1] ?? ""),
+            String(rawChoices[2] ?? ""),
+            String(rawChoices[3] ?? "")
+          ];
+        }
+
+        // Correct Index
+        if (typeof initialData.correct_index === "number") {
+          initialCorrectIndex = initialData.correct_index;
+        } else if (typeof initialData.correctIndex === "number") {
+          initialCorrectIndex = initialData.correctIndex;
+        } else if (typeof initialData.correct_answer === "number") {
+          initialCorrectIndex = initialData.correct_answer;
+        } else if (typeof initialData.correctAnswer === "number") {
+          initialCorrectIndex = initialData.correctAnswer;
+        } else if (typeof initialData.answer === "number") {
+          initialCorrectIndex = initialData.answer;
+        } else if (typeof initialData.correct_answer === "string") {
+          const idx = initialChoices.indexOf(initialData.correct_answer);
+          if (idx !== -1) initialCorrectIndex = idx;
+        } else if (typeof initialData.correctAnswer === "string") {
+          const idx = initialChoices.indexOf(initialData.correctAnswer);
+          if (idx !== -1) initialCorrectIndex = idx;
+        } else if (typeof initialData.answer === "string") {
+          const idx = initialChoices.indexOf(initialData.answer);
+          if (idx !== -1) initialCorrectIndex = idx;
+        }
+
+        // Scripture reference
+        initialRef = initialData.reference || initialData.verse || initialData.scripture || initialData.scripture_reference || "";
+        if (typeof initialRef === "object" && initialRef !== null) {
+          initialRef = initialRef.ta || initialRef.en || Object.values(initialRef)[0] || "";
+        }
+      }
+
+      // Safeguard correctIndex within 0..3
+      if (initialCorrectIndex < 0 || initialCorrectIndex > 3) initialCorrectIndex = 0;
 
       const choiceRowsHtml = [0, 1, 2, 3].map(cIdx => {
         const label = String.fromCharCode(65 + cIdx);
@@ -241,7 +295,7 @@
         </div>
 
         <div class="input-group" style="margin-bottom: 10px;">
-          <input type="text" class="editor-q-text" placeholder="Enter Bible question text (e.g. In which city was Jesus born?)" value="${initialQText}" required />
+          <input type="text" class="editor-q-text" placeholder="Enter Bible question text (e.g. In which city was Jesus born?)" value="${escapeHtml(initialQText)}" required />
         </div>
 
         <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 8px;">
@@ -254,7 +308,7 @@
 
         <div class="editor-q-ref-row">
           <label>Scripture Reference:</label>
-          <input type="text" class="editor-q-ref" placeholder="e.g. Luke 2:4 or Genesis 1:1" value="${initialRef}" />
+          <input type="text" class="editor-q-ref" placeholder="e.g. Luke 2:4 or Genesis 1:1" value="${escapeHtml(initialRef)}" />
         </div>
       `;
 
@@ -416,15 +470,7 @@
       }
       try {
         const parsed = JSON.parse(text);
-        if (!parsed || (!Array.isArray(parsed.questions) && !parsed.en && !parsed.ta)) {
-          importError.textContent = "Invalid format: JSON must contain a 'questions' array or bilingual {en, ta} structure.";
-          return;
-        }
 
-        const title = parsed.title || (parsed.en && parsed.en.title) || "";
-        const desc = parsed.description || (parsed.en && parsed.en.description) || "";
-        const diff = parsed.difficulty || (parsed.en && parsed.en.difficulty) || "Medium";
-        const time = parsed.timeLimit || 10;
         // Universal question extractor (supports plain array, { questions: [...] }, { en: { questions: [...] } }, or { difficultyLevels: [...] })
         let rawQs = [];
         if (Array.isArray(parsed)) {
@@ -452,6 +498,11 @@
           return;
         }
 
+        const title = parsed.title || (parsed.en && parsed.en.title) || "";
+        const desc = parsed.description || (parsed.en && parsed.en.description) || "";
+        const diff = parsed.difficulty || (parsed.en && parsed.en.difficulty) || "Medium";
+        const time = parsed.timeLimit || 10;
+
         if (title) titleInput.value = title;
         if (desc) descInput.value = desc;
         if (diff) diffSelect.value = diff;
@@ -459,29 +510,7 @@
 
         questionsList.innerHTML = "";
         rawQs.forEach((q, idx) => {
-          let choices = q.choices || q.options || [];
-          if (!Array.isArray(choices) && choices && typeof choices === "object") {
-            choices = choices.en || choices.ta || Object.values(choices);
-          }
-          if (choices.length < 4) {
-            while (choices.length < 4) choices.push("");
-          }
-
-          let correctIndex = (typeof q.correctIndex === "number") ? q.correctIndex : 0;
-          if (q.correctAnswer && choices.includes(q.correctAnswer)) {
-            correctIndex = choices.indexOf(q.correctAnswer);
-          } else if (typeof q.answer === "string" && choices.includes(q.answer)) {
-            correctIndex = choices.indexOf(q.answer);
-          } else if (typeof q.correct_index === "number") {
-            correctIndex = q.correct_index;
-          }
-
-          addQuestionCard({
-            question: q.question || q.questionText || q.title || "",
-            choices: choices,
-            correctIndex: correctIndex,
-            reference: q.reference || q.verse || q.scripture || ""
-          });
+          addQuestionCard(q);
         });
 
         if (rawQs.length === 0) {
