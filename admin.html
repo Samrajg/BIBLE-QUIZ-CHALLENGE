@@ -513,38 +513,29 @@
 
       container.innerHTML = "";
 
-      let qrSuccess = false;
+      const qrEngine = (typeof QRCodeBundle !== "undefined") ? QRCodeBundle : ((typeof QRCode !== "undefined") ? QRCode : null);
 
-      // 1. Primary: Use client-side QRCode library
-      if (typeof QRCode !== "undefined") {
-        try {
-          const qrcodeObj = new QRCode(container, {
-            text: url,
-            width: 220,
-            height: 220,
-            colorDark: "#1e293b",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.L
-          });
-          qrSuccess = true;
-        } catch (err) {
-          console.warn("Client QRCode render error:", err);
-          qrSuccess = false;
-        }
-      }
-
-      // 2. Fallback: High-res QR image service with graceful fallback
-      if (!qrSuccess) {
-        container.innerHTML = "";
-        const img = document.createElement("img");
-        img.alt = `QR Code for ${title}`;
-        img.style.maxWidth = "220px";
-        img.style.maxHeight = "220px";
-        img.style.borderRadius = "8px";
-        img.style.display = "block";
-        img.style.margin = "0 auto";
-        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
-        container.appendChild(img);
+      if (qrEngine && typeof qrEngine.toCanvas === "function") {
+        const canvas = document.createElement("canvas");
+        qrEngine.toCanvas(canvas, url, {
+          width: 240,
+          margin: 2,
+          errorCorrectionLevel: "L",
+          color: {
+            dark: "#0f172a",
+            light: "#ffffff"
+          }
+        }, function (err) {
+          if (err) {
+            console.warn("QR canvas render error:", err);
+            renderQRImageFallback(container, url, title);
+          } else {
+            container.innerHTML = "";
+            container.appendChild(canvas);
+          }
+        });
+      } else {
+        renderQRImageFallback(container, url, title);
       }
 
       // Download QR Code image button handler
@@ -579,6 +570,19 @@
           }
         };
       }
+    }
+
+    function renderQRImageFallback(container, url, title) {
+      container.innerHTML = "";
+      const img = document.createElement("img");
+      img.alt = `QR Code for ${title}`;
+      img.style.maxWidth = "240px";
+      img.style.maxHeight = "240px";
+      img.style.borderRadius = "8px";
+      img.style.display = "block";
+      img.style.margin = "0 auto";
+      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(url)}`;
+      container.appendChild(img);
     }
 
     function copyPlainShareText(text) {
