@@ -1,0 +1,916 @@
+[
+  {
+    "id": 1,
+    "chapter": 1,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "Who appeared in the wilderness preaching a baptism of repentance?",
+      "choices": [
+        "Peter",
+        "John the Baptist",
+        "Andrew",
+        "James"
+      ],
+      "correctAnswer": "John the Baptist",
+      "reference": "Mark 1:4"
+    },
+    "ta": {
+      "question": "மனந்திரும்புதலுக்கான ஞானஸ்நானத்தைப் பிரசங்கித்துக்கொண்டு வனாந்தரத்தில் தோன்றியவர் யார்?",
+      "choices": [
+        "பேதுரு",
+        "யோவான் ஸ்நானகன்",
+        "அந்திரேயா",
+        "யாக்கோபு"
+      ],
+      "correctAnswer": "யோவான் ஸ்நானகன்",
+      "reference": "மாற்கு 1:4"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 2,
+    "chapter": 1,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did John the Baptist eat in the wilderness?",
+      "choices": [
+        "Bread and fish",
+        "Fruits and milk",
+        "Locusts and wild honey",
+        "Manna and quail"
+      ],
+      "correctAnswer": "Locusts and wild honey",
+      "reference": "Mark 1:6"
+    },
+    "ta": {
+      "question": "யோவான் ஸ்நானகன் வனாந்தரத்தில் எதை உணவாக உட்கொண்டார்?",
+      "choices": [
+        "அப்பமும் மீனும்",
+        "பழங்களும் பாலும்",
+        "வெட்டுக்கிளிகளும் காட்டுத்தேனும்",
+        "மன்னாவும் காடையும்"
+      ],
+      "correctAnswer": "வெட்டுக்கிளிகளும் காட்டுத்தேனும்",
+      "reference": "மாற்கு 1:6"
+    },
+    "correctIndex": 2
+  },
+  {
+    "id": 3,
+    "chapter": 1,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "In which river was Jesus baptized by John?",
+      "choices": [
+        "Nile River",
+        "Jordan River",
+        "Euphrates River",
+        "Tigris River"
+      ],
+      "correctAnswer": "Jordan River",
+      "reference": "Mark 1:9"
+    },
+    "ta": {
+      "question": "இயேசு யோவானால் எந்த நதியில் ஞானஸ்நானம் பெற்றார்?",
+      "choices": [
+        "நைல் நதி",
+        "யோர்தான் நதி",
+        "ஐபிராத்து நதி",
+        "திக்ரிஸ் நதி"
+      ],
+      "correctAnswer": "யோர்தான் நதி",
+      "reference": "மாற்கு 1:9"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 4,
+    "chapter": 1,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did the voice from heaven say when Jesus was baptized?",
+      "choices": [
+        "This is the King of Israel",
+        "You are my Son, whom I love; with you I am well pleased",
+        "You are the chosen prophet",
+        "This is the Lamb of God"
+      ],
+      "correctAnswer": "You are my Son, whom I love; with you I am well pleased",
+      "reference": "Mark 1:11"
+    },
+    "ta": {
+      "question": "இயேசு ஞானஸ்நானம் பெற்றபோது வானத்திலிருந்து வந்த சத்தம் என்ன கூறியது?",
+      "choices": [
+        "இவரே இஸ்ரவேலின் ராஜா.",
+        "நீர் என்னுடைய நேசகுமாரன், உம்மில் பிரியமாயிருக்கிறேன்.",
+        "நீர் தெரிந்துகொள்ளப்பட்ட தீர்க்கதரிசி.",
+        "இவரே தேவ ஆட்டுக்குட்டி."
+      ],
+      "correctAnswer": "நீர் என்னுடைய நேசகுமாரன், உம்மில் பிரியமாயிருக்கிறேன்.",
+      "reference": "மாற்கு 1:11"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 5,
+    "chapter": 1,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "Whom did Jesus first call while they were casting their nets into the Sea of Galilee?",
+      "choices": [
+        "James and John",
+        "Philip and Thomas",
+        "Simon and Andrew",
+        "Matthew and Peter"
+      ],
+      "correctAnswer": "Simon and Andrew",
+      "reference": "Mark 1:16–18"
+    },
+    "ta": {
+      "question": "கலிலேயாக் கடலில் வலை வீசிக்கொண்டிருந்தபோது இயேசு முதலில் யாரை அழைத்தார்?",
+      "choices": [
+        "யாக்கோபும் யோவானும்",
+        "பிலிப்பும் தோமாவும்",
+        "சீமோனும் அந்திரேயாவும்",
+        "மத்தேயுவும் பேதுருவும்"
+      ],
+      "correctAnswer": "சீமோனும் அந்திரேயாவும்",
+      "reference": "மாற்கு 1:16–18"
+    },
+    "correctIndex": 2
+  },
+  {
+    "id": 6,
+    "chapter": 1,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "Where did Jesus go early in the morning to pray?",
+      "choices": [
+        "Synagogue",
+        "A solitary place",
+        "Seashore",
+        "Temple"
+      ],
+      "correctAnswer": "A solitary place",
+      "reference": "Mark 1:35"
+    },
+    "ta": {
+      "question": "இயேசு அதிகாலையில் ஜெபம் செய்வதற்காக எங்கு சென்றார்?",
+      "choices": [
+        "ஜெப ஆலயம்",
+        "தனிமையான ஓர் இடம்",
+        "கடற்கரை",
+        "தேவாலயம்"
+      ],
+      "correctAnswer": "தனிமையான ஓர் இடம்",
+      "reference": "மாற்கு 1:35"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 7,
+    "chapter": 1,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "true_false",
+    "timeLimit": 30,
+    "en": {
+      "question": "True or False: Jesus healed Simon's mother-in-law, and she began to serve them.",
+      "choices": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": "True",
+      "reference": "Mark 1:29–31"
+    },
+    "ta": {
+      "question": "உண்மையா அல்லது பொய்யா? இயேசு சீமோனின் மாமியை குணமாக்கினார்; அவள் அவர்களுக்குப் பணிவிடை செய்யத் தொடங்கினாள்.",
+      "choices": [
+        "உண்மை",
+        "பொய்"
+      ],
+      "correctAnswer": "உண்மை",
+      "reference": "மாற்கு 1:29–31"
+    },
+    "correctIndex": 0
+  },
+  {
+    "id": 8,
+    "chapter": 1,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did Jesus preach after John was put in prison?",
+      "choices": [
+        "The good news of God",
+        "The laws of Rome",
+        "The history of Israel",
+        "The teachings of Moses only"
+      ],
+      "correctAnswer": "The good news of God",
+      "reference": "Mark 1:14"
+    },
+    "ta": {
+      "question": "யோவான் சிறையில் அடைக்கப்பட்ட பிறகு இயேசு எதைப் பிரசங்கித்தார்?",
+      "choices": [
+        "தேவனுடைய சுவிசேஷம்",
+        "ரோமர்களின் சட்டங்கள்",
+        "இஸ்ரவேலின் வரலாறு",
+        "மோசேயின் போதனைகள் மட்டும்"
+      ],
+      "correctAnswer": "தேவனுடைய சுவிசேஷம்",
+      "reference": "மாற்கு 1:14"
+    },
+    "correctIndex": 0
+  },
+  {
+    "id": 9,
+    "chapter": 1,
+    "difficulty": "Difficult",
+    "difficultyTa": "கடினம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "For how many days was Jesus in the wilderness being tempted by Satan?",
+      "choices": [
+        "7 days",
+        "12 days",
+        "30 days",
+        "40 days"
+      ],
+      "correctAnswer": "40 days",
+      "reference": "Mark 1:12–13"
+    },
+    "ta": {
+      "question": "சாத்தானால் சோதிக்கப்பட்டுக்கொண்டிருந்த இயேசு வனாந்தரத்தில் எத்தனை நாட்கள் இருந்தார்?",
+      "choices": [
+        "7 நாட்கள்",
+        "12 நாட்கள்",
+        "30 நாட்கள்",
+        "40 நாட்கள்"
+      ],
+      "correctAnswer": "40 நாட்கள்",
+      "reference": "மாற்கு 1:12–13"
+    },
+    "correctIndex": 3
+  },
+  {
+    "id": 10,
+    "chapter": 1,
+    "difficulty": "Difficult",
+    "difficultyTa": "கடினம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did Jesus instruct the man healed of leprosy to do?",
+      "choices": [
+        "Return home immediately",
+        "Show himself to the priest and offer the sacrifices commanded by Moses",
+        "Tell everyone about the miracle",
+        "Follow Jesus to Galilee"
+      ],
+      "correctAnswer": "Show himself to the priest and offer the sacrifices commanded by Moses",
+      "reference": "Mark 1:43–44"
+    },
+    "ta": {
+      "question": "தொழுநோயிலிருந்து குணமாக்கப்பட்ட மனிதனிடம் இயேசு என்ன செய்யும்படி கட்டளையிட்டார்?",
+      "choices": [
+        "உடனடியாக வீட்டிற்குத் திரும்பிச் செல்லும்படி.",
+        "ஆசாரியனிடம் தன்னைக் காண்பித்து, மோசே கட்டளையிட்ட காணிக்கைகளைச் செலுத்தும்படி.",
+        "அற்புதத்தைப் பற்றி அனைவரிடமும் சொல்லும்படி.",
+        "இயேசுவைப் பின்பற்றி கலிலேயாவிற்குச் செல்லும்படி."
+      ],
+      "correctAnswer": "ஆசாரியனிடம் தன்னைக் காண்பித்து, மோசே கட்டளையிட்ட காணிக்கைகளைச் செலுத்தும்படி.",
+      "reference": "மாற்கு 1:43–44"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 11,
+    "chapter": 2,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "How many men carried the paralyzed man to Jesus?",
+      "choices": [
+        "Two",
+        "Three",
+        "Four",
+        "Five"
+      ],
+      "correctAnswer": "Four",
+      "reference": "Mark 2:3"
+    },
+    "ta": {
+      "question": "திமிர்வாதக்காரனை இயேசுவிடம் தூக்கிக்கொண்டு வந்தவர்கள் எத்தனை பேர்?",
+      "choices": [
+        "இரண்டு பேர்",
+        "மூன்று பேர்",
+        "நான்கு பேர்",
+        "ஐந்து பேர்"
+      ],
+      "correctAnswer": "நான்கு பேர்",
+      "reference": "மாற்கு 2:3"
+    },
+    "correctIndex": 2
+  },
+  {
+    "id": 12,
+    "chapter": 2,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "Where did the men make an opening to lower the paralyzed man?",
+      "choices": [
+        "Wall",
+        "Roof",
+        "Door",
+        "Window"
+      ],
+      "correctAnswer": "Roof",
+      "reference": "Mark 2:4"
+    },
+    "ta": {
+      "question": "திமிர்வாதக்காரனைக் கீழே இறக்குவதற்காக அந்த மனிதர்கள் எங்கு திறப்பை உண்டாக்கினார்கள்?",
+      "choices": [
+        "சுவர்",
+        "கூரை",
+        "கதவு",
+        "ஜன்னல்"
+      ],
+      "correctAnswer": "கூரை",
+      "reference": "மாற்கு 2:4"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 13,
+    "chapter": 2,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What was Levi doing when Jesus called him?",
+      "choices": [
+        "Fishing",
+        "Teaching",
+        "Sitting at the tax collector's booth",
+        "Praying"
+      ],
+      "correctAnswer": "Sitting at the tax collector's booth",
+      "reference": "Mark 2:14"
+    },
+    "ta": {
+      "question": "இயேசு லேவியை அழைத்தபோது அவன் என்ன செய்துகொண்டிருந்தான்?",
+      "choices": [
+        "மீன்பிடித்துக் கொண்டிருந்தான்",
+        "போதித்துக் கொண்டிருந்தான்",
+        "ஆயத்துறையில் உட்கார்ந்திருந்தான்",
+        "ஜெபித்துக் கொண்டிருந்தான்"
+      ],
+      "correctAnswer": "ஆயத்துறையில் உட்கார்ந்திருந்தான்",
+      "reference": "மாற்கு 2:14"
+    },
+    "correctIndex": 2
+  },
+  {
+    "id": 14,
+    "chapter": 2,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did Jesus say to the paralyzed man before healing him?",
+      "choices": [
+        "Your faith has made you well",
+        "Son, your sins are forgiven",
+        "Rise and follow me",
+        "Do not be afraid"
+      ],
+      "correctAnswer": "Son, your sins are forgiven",
+      "reference": "Mark 2:5"
+    },
+    "ta": {
+      "question": "திமிர்வாதக்காரனைக் குணமாக்குவதற்கு முன்பு இயேசு அவனிடம் என்ன கூறினார்?",
+      "choices": [
+        "உன் விசுவாசம் உன்னைச் சுகமாக்கியது.",
+        "மகனே, உன் பாவங்கள் உனக்கு மன்னிக்கப்பட்டது.",
+        "எழுந்து என்னைப் பின்பற்றி வா.",
+        "பயப்படாதே."
+      ],
+      "correctAnswer": "மகனே, உன் பாவங்கள் உனக்கு மன்னிக்கப்பட்டது.",
+      "reference": "மாற்கு 2:5"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 15,
+    "chapter": 2,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did Jesus compare himself to when explaining why he ate with tax collectors and sinners?",
+      "choices": [
+        "Teacher",
+        "Shepherd",
+        "Doctor",
+        "King"
+      ],
+      "correctAnswer": "Doctor",
+      "reference": "Mark 2:17"
+    },
+    "ta": {
+      "question": "ஆயக்காரர்களோடும் பாவிகளோடும் ஏன் சாப்பிடுகிறீர்கள் என்று கேட்டபோது, இயேசு தம்மை எதற்கு ஒப்பிட்டுக் கூறினார்?",
+      "choices": [
+        "போதகர்",
+        "மேய்ப்பன்",
+        "வைத்தியர்",
+        "ராஜா"
+      ],
+      "correctAnswer": "வைத்தியர்",
+      "reference": "மாற்கு 2:17"
+    },
+    "correctIndex": 2
+  },
+  {
+    "id": 16,
+    "chapter": 2,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "According to Jesus, what should new wine be poured into?",
+      "choices": [
+        "Old wineskins",
+        "New wineskins",
+        "Clay pots",
+        "Wooden containers"
+      ],
+      "correctAnswer": "New wineskins",
+      "reference": "Mark 2:22"
+    },
+    "ta": {
+      "question": "இயேசுவின் கூற்றுப்படி, புதிய திராட்சரசத்தை எதில் ஊற்ற வேண்டும்?",
+      "choices": [
+        "பழைய தோற்பைகள்",
+        "புதிய தோற்பைகள்",
+        "மண்பானைகள்",
+        "மரப் பாத்திரங்கள்"
+      ],
+      "correctAnswer": "புதிய தோற்பைகள்",
+      "reference": "மாற்கு 2:22"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 17,
+    "chapter": 2,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "true_false",
+    "timeLimit": 30,
+    "en": {
+      "question": "True or False: Jesus' disciples were fasting when people questioned Jesus about fasting.",
+      "choices": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": "False",
+      "reference": "Mark 2:18–19"
+    },
+    "ta": {
+      "question": "உண்மையா அல்லது பொய்யா? உபவாசத்தைக் குறித்து மக்கள் இயேசுவிடம் கேள்வி கேட்டபோது, இயேசுவின் சீஷர்கள் உபவாசம் இருந்துகொண்டிருந்தார்கள்.",
+      "choices": [
+        "உண்மை",
+        "பொய்"
+      ],
+      "correctAnswer": "பொய்",
+      "reference": "மாற்கு 2:18–19"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 18,
+    "chapter": 2,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "Who questioned Jesus when his disciples picked heads of grain on the Sabbath?",
+      "choices": [
+        "Romans",
+        "Pharisees",
+        "Sadducees",
+        "Samaritans"
+      ],
+      "correctAnswer": "Pharisees",
+      "reference": "Mark 2:23–24"
+    },
+    "ta": {
+      "question": "ஓய்வுநாளில் இயேசுவின் சீஷர்கள் கதிர்களைக் கொய்தபோது இயேசுவிடம் கேள்வி கேட்டவர்கள் யார்?",
+      "choices": [
+        "ரோமர்கள்",
+        "பரிசேயர்கள்",
+        "சதுசேயர்கள்",
+        "சமாரியர்கள்"
+      ],
+      "correctAnswer": "பரிசேயர்கள்",
+      "reference": "மாற்கு 2:23–24"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 19,
+    "chapter": 2,
+    "difficulty": "Difficult",
+    "difficultyTa": "கடினம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "According to Jesus, what did David eat when he and his companions were hungry?",
+      "choices": [
+        "Manna from heaven",
+        "Bread given by fishermen",
+        "Consecrated bread that was lawful only for priests to eat",
+        "Bread prepared by the Pharisees"
+      ],
+      "correctAnswer": "Consecrated bread that was lawful only for priests to eat",
+      "reference": "Mark 2:25–26"
+    },
+    "ta": {
+      "question": "தாவீதும் அவனோடிருந்தவர்களும் பசியாயிருந்தபோது எதைச் சாப்பிட்டார்கள் என்று இயேசு கூறினார்?",
+      "choices": [
+        "பரலோகத்திலிருந்து வந்த மன்னா",
+        "மீனவர்களால் கொடுக்கப்பட்ட அப்பம்",
+        "ஆசாரியர்கள் மட்டுமே சாப்பிடுவதற்கு அனுமதிக்கப்பட்ட பரிசுத்த அப்பம்",
+        "பரிசேயர்களால் தயாரிக்கப்பட்ட அப்பம்"
+      ],
+      "correctAnswer": "ஆசாரியர்கள் மட்டுமே சாப்பிடுவதற்கு அனுமதிக்கப்பட்ட பரிசுத்த அப்பம்",
+      "reference": "மாற்கு 2:25–26"
+    },
+    "correctIndex": 2
+  },
+  {
+    "id": 20,
+    "chapter": 2,
+    "difficulty": "Difficult",
+    "difficultyTa": "கடினம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did Jesus say about the Son of Man and the Sabbath?",
+      "choices": [
+        "The Son of Man is a servant of the Sabbath",
+        "The Son of Man is Lord even of the Sabbath",
+        "The Son of Man must avoid the Sabbath",
+        "The Son of Man created the Pharisees"
+      ],
+      "correctAnswer": "The Son of Man is Lord even of the Sabbath",
+      "reference": "Mark 2:28"
+    },
+    "ta": {
+      "question": "மனுஷகுமாரனையும் ஓய்வுநாளையும் குறித்து இயேசு என்ன கூறினார்?",
+      "choices": [
+        "மனுஷகுமாரன் ஓய்வுநாளின் ஊழியக்காரன்.",
+        "மனுஷகுமாரன் ஓய்வுநாளுக்கும் ஆண்டவராயிருக்கிறார்.",
+        "மனுஷகுமாரன் ஓய்வுநாளைத் தவிர்க்க வேண்டும்.",
+        "மனுஷகுமாரன் பரிசேயர்களை உருவாக்கினார்."
+      ],
+      "correctAnswer": "மனுஷகுமாரன் ஓய்வுநாளுக்கும் ஆண்டவராயிருக்கிறார்.",
+      "reference": "மாற்கு 2:28"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 21,
+    "chapter": 3,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What was the problem with the man whom Jesus saw in the synagogue?",
+      "choices": [
+        "He was blind",
+        "He had a shriveled hand",
+        "He was deaf",
+        "He had leprosy"
+      ],
+      "correctAnswer": "He had a shriveled hand",
+      "reference": "Mark 3:1"
+    },
+    "ta": {
+      "question": "ஜெப ஆலயத்தில் இயேசு சந்தித்த மனிதனுக்கு என்ன பிரச்சினை இருந்தது?",
+      "choices": [
+        "அவன் குருடனாக இருந்தான்.",
+        "அவனுக்கு சூம்பின கை இருந்தது.",
+        "அவன் செவிடனாக இருந்தான்.",
+        "அவனுக்குத் தொழுநோய் இருந்தது."
+      ],
+      "correctAnswer": "அவனுக்கு சூம்பின கை இருந்தது.",
+      "reference": "மாற்கு 3:1"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 22,
+    "chapter": 3,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "How many disciples did Jesus appoint?",
+      "choices": [
+        "Seven",
+        "Ten",
+        "Twelve",
+        "Seventy"
+      ],
+      "correctAnswer": "Twelve",
+      "reference": "Mark 3:14"
+    },
+    "ta": {
+      "question": "இயேசு எத்தனை சீஷர்களைத் தெரிந்துகொண்டு நியமித்தார்?",
+      "choices": [
+        "ஏழு பேர்",
+        "பத்து பேர்",
+        "பன்னிரண்டு பேர்",
+        "எழுபது பேர்"
+      ],
+      "correctAnswer": "பன்னிரண்டு பேர்",
+      "reference": "மாற்கு 3:14"
+    },
+    "correctIndex": 2
+  },
+  {
+    "id": 23,
+    "chapter": 3,
+    "difficulty": "Easy",
+    "difficultyTa": "எளிது",
+    "type": "true_false",
+    "timeLimit": 30,
+    "en": {
+      "question": "True or False: Jesus gave James and John the name \"Boanerges,\" which means \"Sons of Thunder.\"",
+      "choices": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": "True",
+      "reference": "Mark 3:17"
+    },
+    "ta": {
+      "question": "உண்மையா அல்லது பொய்யா? யாக்கோபுக்கும் யோவானுக்கும் இயேசு \"போவனெர்கேஸ்\" என்ற பெயரைக் கொடுத்தார். அதன் அர்த்தம் \"இடிமுழக்கத்தின் மக்கள்\" என்பதாகும்.",
+      "choices": [
+        "உண்மை",
+        "பொய்"
+      ],
+      "correctAnswer": "உண்மை",
+      "reference": "மாற்கு 3:17"
+    },
+    "correctIndex": 0
+  },
+  {
+    "id": 24,
+    "chapter": 3,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "With whom did the Pharisees plot to kill Jesus after he healed the man with the shriveled hand?",
+      "choices": [
+        "Sadducees",
+        "Herodians",
+        "Romans",
+        "Samaritans"
+      ],
+      "correctAnswer": "Herodians",
+      "reference": "Mark 3:6"
+    },
+    "ta": {
+      "question": "சூம்பின கையுடைய மனிதனை இயேசு குணமாக்கிய பிறகு, அவரைக் கொலை செய்யப் பரிசேயர்கள் யாருடன் ஆலோசனை செய்தார்கள்?",
+      "choices": [
+        "சதுசேயர்கள்",
+        "ஏரோதியர்கள்",
+        "ரோமர்கள்",
+        "சமாரியர்கள்"
+      ],
+      "correctAnswer": "ஏரோதியர்கள்",
+      "reference": "மாற்கு 3:6"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 25,
+    "chapter": 3,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did the teachers of the law accuse Jesus of?",
+      "choices": [
+        "Breaking the Sabbath",
+        "Stealing from the temple",
+        "Being possessed by Beelzebul and driving out demons by the prince of demons",
+        "Refusing to teach"
+      ],
+      "correctAnswer": "Being possessed by Beelzebul and driving out demons by the prince of demons",
+      "reference": "Mark 3:22"
+    },
+    "ta": {
+      "question": "வேதபாரகர்கள் இயேசுவைக் குறித்து என்ன குற்றம் சாட்டினார்கள்?",
+      "choices": [
+        "ஓய்வுநாளை மீறுகிறார் என்று.",
+        "தேவாலயத்திலிருந்து திருடுகிறார் என்று.",
+        "பெயல்செபூல் பிடித்திருக்கிறார் என்றும், பிசாசுகளின் தலைவனால் பிசாசுகளைத் துரத்துகிறார் என்றும்.",
+        "போதிக்க மறுக்கிறார் என்று."
+      ],
+      "correctAnswer": "பெயல்செபூல் பிடித்திருக்கிறார் என்றும், பிசாசுகளின் தலைவனால் பிசாசுகளைத் துரத்துகிறார் என்றும்.",
+      "reference": "மாற்கு 3:22"
+    },
+    "correctIndex": 2
+  },
+  {
+    "id": 26,
+    "chapter": 3,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What name did Jesus give to Simon?",
+      "choices": [
+        "Andrew",
+        "Peter",
+        "James",
+        "Thaddaeus"
+      ],
+      "correctAnswer": "Peter",
+      "reference": "Mark 3:16"
+    },
+    "ta": {
+      "question": "சீமோனுக்கு இயேசு கொடுத்த பெயர் என்ன?",
+      "choices": [
+        "அந்திரேயா",
+        "பேதுரு",
+        "யாக்கோபு",
+        "ததேயு"
+      ],
+      "correctAnswer": "பேதுரு",
+      "reference": "மாற்கு 3:16"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 27,
+    "chapter": 3,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "true_false",
+    "timeLimit": 30,
+    "en": {
+      "question": "True or False: Jesus' family said that he was out of his mind.",
+      "choices": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": "True",
+      "reference": "Mark 3:20–21"
+    },
+    "ta": {
+      "question": "உண்மையா அல்லது பொய்யா? இயேசுவின் குடும்பத்தினர் அவர் மதிமயங்கியிருக்கிறார் என்று கூறினார்கள்.",
+      "choices": [
+        "உண்மை",
+        "பொய்"
+      ],
+      "correctAnswer": "உண்மை",
+      "reference": "மாற்கு 3:20–21"
+    },
+    "correctIndex": 0
+  },
+  {
+    "id": 28,
+    "chapter": 3,
+    "difficulty": "Average",
+    "difficultyTa": "நடுத்தரம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What did Jesus ask his disciples to have ready because of the large crowd?",
+      "choices": [
+        "A horse",
+        "A small boat",
+        "A house",
+        "A tent"
+      ],
+      "correctAnswer": "A small boat",
+      "reference": "Mark 3:9"
+    },
+    "ta": {
+      "question": "பெரிய கூட்டம் கூடியிருந்ததால் இயேசு தமது சீஷர்களிடம் எதைத் தயாராக வைத்திருக்கும்படி கூறினார்?",
+      "choices": [
+        "குதிரை",
+        "ஒரு சிறிய படகு",
+        "ஒரு வீடு",
+        "ஒரு கூடாரம்"
+      ],
+      "correctAnswer": "ஒரு சிறிய படகு",
+      "reference": "மாற்கு 3:9"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 29,
+    "chapter": 3,
+    "difficulty": "Difficult",
+    "difficultyTa": "கடினம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "What does the name \"Boanerges\" mean?",
+      "choices": [
+        "Sons of God",
+        "Sons of Thunder",
+        "Sons of Light",
+        "Sons of Peace"
+      ],
+      "correctAnswer": "Sons of Thunder",
+      "reference": "Mark 3:17"
+    },
+    "ta": {
+      "question": "\"போவனெர்கேஸ்\" என்ற பெயரின் அர்த்தம் என்ன?",
+      "choices": [
+        "தேவனுடைய புத்திரர்கள்",
+        "இடிமுழக்கத்தின் மக்கள்",
+        "ஒளியின் மக்கள்",
+        "சமாதானத்தின் மக்கள்"
+      ],
+      "correctAnswer": "இடிமுழக்கத்தின் மக்கள்",
+      "reference": "மாற்கு 3:17"
+    },
+    "correctIndex": 1
+  },
+  {
+    "id": 30,
+    "chapter": 3,
+    "difficulty": "Difficult",
+    "difficultyTa": "கடினம்",
+    "type": "mcq",
+    "timeLimit": 30,
+    "en": {
+      "question": "According to Jesus, who are his brother, sister and mother?",
+      "choices": [
+        "Only his biological family",
+        "Everyone who follows him physically",
+        "Whoever does God's will",
+        "Only the twelve disciples"
+      ],
+      "correctAnswer": "Whoever does God's will",
+      "reference": "Mark 3:33–35"
+    },
+    "ta": {
+      "question": "இயேசுவின் கூற்றுப்படி, அவருடைய சகோதரனும் சகோதரியும் தாயும் யார்?",
+      "choices": [
+        "அவருடைய சொந்த குடும்பத்தினர் மட்டுமே.",
+        "அவரைப் பின்தொடர்ந்து வருகிற அனைவரும்.",
+        "தேவனுடைய சித்தத்தின்படி செய்கிறவர்கள்.",
+        "பன்னிரண்டு சீஷர்கள் மட்டுமே."
+      ],
+      "correctAnswer": "தேவனுடைய சித்தத்தின்படி செய்கிறவர்கள்.",
+      "reference": "மாற்கு 3:33–35"
+    },
+    "correctIndex": 2
+  }
+]
