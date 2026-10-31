@@ -1099,14 +1099,17 @@ function startQuiz(nickname) {
 
   const allQuestions = rawQuestions.map((rawQ, idx) => {
     const resolved = resolveBilingualQuestion(rawQ, currentLang);
-    // Shuffle options while preserving which option text matches the correct answer
-    const shuffled = shuffleArray(resolved.choices);
+    const isTF = (rawQ.type === "true_false" || rawQ.type === "boolean" || (Array.isArray(resolved.choices) && resolved.choices.length === 2));
+    const choices = isTF ? resolved.choices.slice(0, 2) : resolved.choices;
+    // Don't shuffle True/False; keep standard order True, False
+    const shuffled = isTF ? [...choices] : shuffleArray(choices);
     const qTime = (rawQ.timeLimit && parseInt(rawQ.timeLimit, 10) > 0) ? parseInt(rawQ.timeLimit, 10) : null;
     return {
       id: rawQ.id || idx + 1,
+      type: isTF ? "true_false" : "mcq",
       raw: rawQ, // Keep raw item so language switch mid-quiz can re-render if needed
       question: resolved.text,
-      choices: resolved.choices,
+      choices: choices,
       correctAnswer: resolved.correctAnswer,
       reference: resolved.reference,
       timeLimit: qTime,
@@ -1152,13 +1155,20 @@ function loadQuestion(index) {
 
   DOM.questionText.textContent = qData.question;
 
+  const numChoices = (qData.shuffledOptions && qData.shuffledOptions.length) ? qData.shuffledOptions.length : 4;
   DOM.answerButtons.forEach((btn, idx) => {
-    btn.disabled = false;
-    btn.classList.remove("is-correct", "is-incorrect", "is-dimmed");
-    btn.setAttribute("data-index", idx);
-    const optionTextEl = btn.querySelector(".option-text");
-    if (optionTextEl) {
-      optionTextEl.textContent = qData.shuffledOptions[idx] || "";
+    if (idx < numChoices) {
+      btn.style.display = "";
+      btn.disabled = false;
+      btn.classList.remove("is-correct", "is-incorrect", "is-dimmed");
+      btn.setAttribute("data-index", idx);
+      const optionTextEl = btn.querySelector(".option-text");
+      if (optionTextEl) {
+        optionTextEl.textContent = qData.shuffledOptions[idx] || "";
+      }
+    } else {
+      btn.style.display = "none";
+      btn.disabled = true;
     }
   });
 
@@ -1242,6 +1252,7 @@ function handleAnswerSelection(chosenIndex) {
   DOM.answerButtons.forEach(btn => btn.disabled = true);
 
   DOM.answerButtons.forEach((btn, idx) => {
+    if (btn.style.display === "none") return;
     const text = qData.shuffledOptions[idx];
     if (text === qData.correctAnswer) {
       btn.classList.add("is-correct");
@@ -1292,6 +1303,7 @@ function handleTimeout() {
 
   DOM.answerButtons.forEach((btn, idx) => {
     btn.disabled = true;
+    if (btn.style.display === "none") return;
     const text = qData.shuffledOptions[idx];
     if (text === qData.correctAnswer) {
       btn.classList.add("is-correct");

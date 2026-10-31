@@ -2557,5 +2557,25 @@ body.projector-mode .td-score {
   cursor: pointer;
 }
 
+.q-type-picker-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+}
+
+.editor-q-type-select {
+  border: none;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+  outline: none;
+  cursor: pointer;
+}
+
+
 
 

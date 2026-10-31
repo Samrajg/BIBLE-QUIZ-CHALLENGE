@@ -916,12 +916,18 @@ ${jsonSchema}`;
         const questions = rawQs.map((q, idx) => {
           const norm = normalizeQuestionObject(q);
           const qTime = (q.timeLimit && parseInt(q.timeLimit, 10) > 0) ? parseInt(q.timeLimit, 10) : null;
+          const isTF = (q.type === "true_false" || q.type === "boolean" || (Array.isArray(norm.choices) && norm.choices.length === 2));
+          const choices = isTF ? norm.choices.slice(0, 2) : norm.choices;
+          let correctIndex = norm.correctIndex;
+          if (isTF && correctIndex > 1) correctIndex = 0;
+
           return {
             id: idx + 1,
+            type: isTF ? "true_false" : "mcq",
             question: norm.question,
-            choices: norm.choices,
-            correctIndex: norm.correctIndex,
-            correctAnswer: norm.choices[norm.correctIndex] || "",
+            choices: choices,
+            correctIndex: correctIndex,
+            correctAnswer: choices[correctIndex] || "",
             reference: norm.reference,
             timeLimit: qTime,
             en: q.en || (norm.rawBilingual && norm.rawBilingual.en) || null,

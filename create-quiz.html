@@ -479,8 +479,14 @@
           : "Enter Bible question text (e.g. In which city was Jesus born?)";
       }
 
+      const isTF = (card._bilingual.questionType === "true_false");
       choiceInputs.forEach((inp, idx) => {
-        inp.value = (data.choices && data.choices[idx]) || "";
+        let val = (data.choices && data.choices[idx]) || "";
+        if (isTF && !val) {
+          if (idx === 0) val = (lang === "ta") ? "சரி (True)" : "True";
+          if (idx === 1) val = (lang === "ta") ? "தவறு (False)" : "False";
+        }
+        inp.value = val;
         inp.placeholder = (lang === "ta")
           ? `தெரிவு ${String.fromCharCode(65 + idx)} உரை`
           : `Option ${String.fromCharCode(65 + idx)} text`;
@@ -513,6 +519,55 @@
       updateCardLangIndicators(card);
     }
 
+    function onQuestionTypeChange(select) {
+      const card = select.closest(".editor-q-card");
+      if (!card || !card._bilingual) return;
+      const newType = select.value;
+      card._bilingual.questionType = newType;
+
+      const rows = card.querySelectorAll(".choice-input-row");
+      const rowC = rows[2];
+      const rowD = rows[3];
+
+      if (newType === "true_false") {
+        if (rowC) rowC.style.display = "none";
+        if (rowD) rowD.style.display = "none";
+
+        const lang = card._bilingual.activeLang;
+        const choiceInputs = card.querySelectorAll(".choice-text-input");
+        
+        // Auto-fill default True / False labels if blank
+        if (choiceInputs[0] && (!choiceInputs[0].value.trim() || choiceInputs[0].value.includes("Option A"))) {
+          choiceInputs[0].value = (lang === "ta") ? "சரி (True)" : "True";
+        }
+        if (choiceInputs[1] && (!choiceInputs[1].value.trim() || choiceInputs[1].value.includes("Option B"))) {
+          choiceInputs[1].value = (lang === "ta") ? "தவறு (False)" : "False";
+        }
+
+        // Set bilingual defaults if empty or 4-choices
+        if (!card._bilingual.en.choices[0] || card._bilingual.en.choices.length > 2) {
+          card._bilingual.en.choices = ["True", "False"];
+        }
+        if (!card._bilingual.ta.choices[0] || card._bilingual.ta.choices.length > 2) {
+          card._bilingual.ta.choices = ["சரி (True)", "தவறு (False)"];
+        }
+
+        // Ensure checked radio is 0 or 1
+        const radios = card.querySelectorAll('input[type="radio"]');
+        const checked = card.querySelector('input[type="radio"]:checked');
+        if (checked && parseInt(checked.value, 10) > 1) {
+          radios[0].checked = true;
+          onRadioChange(radios[0]);
+        }
+      } else {
+        if (rowC) rowC.style.display = "";
+        if (rowD) rowD.style.display = "";
+      }
+
+      saveCardInputsToActiveLang(card);
+      updateCardLangIndicators(card);
+    }
+
     function addQuestionCard(initialData = null) {
       const qIndex = questionsList.children.length;
       const qCard = document.createElement("div");
@@ -524,6 +579,7 @@
       const taData = { question: "", choices: ["", "", "", ""], reference: "" };
       let correctIndex = 0;
       let timeLimit = 0;
+      let qType = (initialData && (initialData.type === "true_false" || initialData.type === "boolean" || (Array.isArray(initialData.choices) && initialData.choices.length === 2))) ? "true_false" : "mcq";
 
       if (initialData) {
         // Extract English
@@ -566,6 +622,11 @@
           }
         }
 
+        if (qType === "true_false") {
+          if (!enData.choices[0]) enData.choices = ["True", "False"];
+          if (!taData.choices[0]) taData.choices = ["சரி (True)", "தவறு (False)"];
+        }
+
         while (enData.choices.length < 4) enData.choices.push("");
         while (taData.choices.length < 4) taData.choices.push("");
         enData.choices = enData.choices.slice(0, 4);
@@ -587,6 +648,10 @@
           }
         }
 
+        if (qType === "true_false" && correctIndex > 1) {
+          correctIndex = 0;
+        }
+
         if (initialData.timeLimit) {
           timeLimit = parseInt(initialData.timeLimit, 10) || 0;
         }
@@ -605,7 +670,8 @@
       qCard._bilingual = {
         en: enData,
         ta: taData,
-        activeLang: initialLang
+        activeLang: initialLang,
+        questionType: qType
       };
 
       const currData = qCard._bilingual[initialLang];
@@ -616,9 +682,10 @@
         const isChecked = (cIdx === correctIndex) ? "checked" : "";
         const rowClass = (cIdx === correctIndex) ? "choice-input-row is-correct-choice" : "choice-input-row";
         const placeholder = (initialLang === "ta") ? `தெரிவு ${label} உரை` : `Option ${label} text`;
+        const hiddenAttr = (qType === "true_false" && cIdx >= 2) ? 'style="display:none;"' : '';
 
         return `
-          <div class="${rowClass}" data-choice-row="${cIdx}">
+          <div class="${rowClass}" data-choice-row="${cIdx}" ${hiddenAttr}>
             <label class="choice-radio-label">
               <input type="radio" name="correct_q_${qIndex}" value="${cIdx}" ${isChecked} onchange="onRadioChange(this)" />
               <span>${label}</span>
@@ -633,7 +700,7 @@
 
       qCard.innerHTML = `
         <div class="editor-q-card-header">
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <span class="editor-q-number">Question #${qIndex + 1}</span>
             
             <!-- Bilingual Toggle Switcher -->
@@ -647,7 +714,16 @@
             </div>
           </div>
 
-          <div class="editor-q-actions">
+          <div class="editor-q-actions" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <!-- Question Type Selector -->
+            <div class="q-type-picker-wrap" title="Select Multiple Choice (4 options) or True / False (2 options)">
+              <label for="q_type_${qIndex}" style="font-size: 0.74rem; font-weight: 700; color: #64748b; margin-right: 4px;">Type:</label>
+              <select class="editor-q-type-select" id="q_type_${qIndex}" onchange="onQuestionTypeChange(this)">
+                <option value="mcq" ${qType === "mcq" ? "selected" : ""}>🔘 MCQ</option>
+                <option value="true_false" ${qType === "true_false" ? "selected" : ""}>⚖️ True/False</option>
+              </select>
+            </div>
+
             <!-- Per-Question Time Limit Selector -->
             <div class="q-time-picker-wrap" title="Custom time limit for this question alone">
               <label for="q_time_${qIndex}" style="font-size: 0.74rem; font-weight: 700; color: #64748b; margin-right: 4px;">⏱️ Timer:</label>
@@ -762,12 +838,15 @@
         const hasEn = Boolean(enQ);
         const hasTa = Boolean(taQ);
 
+        const isTF = (card._bilingual.questionType === "true_false");
+        const requiredCount = isTF ? 2 : 4;
+
         // Check choices for whichever language is filled
         const activeLang = hasEn ? "en" : "ta";
         const primaryData = hasEn ? enData : taData;
         const choices = [];
 
-        for (let j = 0; j < 4; j++) {
+        for (let j = 0; j < requiredCount; j++) {
           const val = (primaryData.choices[j] || "").trim();
           if (!val) {
             alert(`Question #${i + 1} (${activeLang.toUpperCase()}), Option ${String.fromCharCode(65 + j)} is empty.`);
@@ -777,20 +856,22 @@
         }
 
         const checkedRadio = card.querySelector('input[type="radio"]:checked');
-        const correctIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : 0;
+        let correctIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : 0;
+        if (isTF && correctIndex > 1) correctIndex = 0;
         
         // Per-question timer
         const qTimeSelect = card.querySelector(".editor-q-time-select");
         const qTimeLimit = qTimeSelect ? parseInt(qTimeSelect.value, 10) : 0;
 
-        const enChoices = (hasEn ? enData.choices : taData.choices).map(c => String(c || "").trim());
-        const taChoices = (hasTa ? taData.choices : enData.choices).map(c => String(c || "").trim());
+        const enChoices = (hasEn ? enData.choices : taData.choices).slice(0, requiredCount).map(c => String(c || "").trim());
+        const taChoices = (hasTa ? taData.choices : enData.choices).slice(0, requiredCount).map(c => String(c || "").trim());
 
         const primaryQuestion = hasEn ? enQ : taQ;
         const primaryRef = (hasEn ? enData.reference : taData.reference) || "Bible Reference";
 
         questions.push({
           id: i + 1,
+          type: isTF ? "true_false" : "mcq",
           question: primaryQuestion,
           choices: choices,
           correctIndex: correctIndex,
