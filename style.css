@@ -2338,3 +2338,224 @@ body.projector-mode .td-score {
   background: #ffffff;
 }
 
+/* ==========================================
+   AI Prompt Generator Modal Styles
+   ========================================== */
+.modal-card-extra-wide {
+  max-width: 780px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.prompt-workflow-banner {
+  background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);
+  border: 1px solid #c7d2fe;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.prompt-workflow-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #3730a3;
+}
+
+.prompt-workflow-arrow {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.prompt-builder-controls {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.prompt-controls-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.2fr 1.2fr;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .prompt-controls-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.prompt-control-item label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.prompt-control-item input,
+.prompt-control-item select {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.prompt-quick-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.prompt-quick-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.topic-chip {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-pill);
+  padding: 3px 9px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.topic-chip:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.prompt-preview-container {
+  position: relative;
+  margin-top: 6px;
+}
+
+.prompt-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.prompt-preview-header span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.prompt-preview-textarea {
+  width: 100%;
+  height: 220px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  background: #0f172a;
+  color: #e2e8f0;
+  resize: vertical;
+  white-space: pre;
+}
+
+.prompt-copy-banner {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #166534;
+}
+
+.prompt-action-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Question Card Bilingual Language Toggle & Timer */
+.q-lang-toggle-group {
+  display: inline-flex;
+  background: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-pill);
+  padding: 2px;
+  gap: 2px;
+}
+
+.q-lang-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #64748b;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.q-lang-btn:hover {
+  color: var(--color-primary);
+}
+
+.q-lang-btn.active {
+  background: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.q-lang-indicator {
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.q-time-picker-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+}
+
+.editor-q-time-select {
+  border: none;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+  outline: none;
+  cursor: pointer;
+}
+
+
+

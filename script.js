@@ -1052,10 +1052,11 @@ function showScreen(screenKey) {
   }
 }
 
-function calculateQuestionPoints(isCorrect, responseTimeSeconds) {
+function calculateQuestionPoints(isCorrect, responseTimeSeconds, maxTime = CONFIG.TIME_LIMIT_SECONDS) {
   if (!isCorrect) return 0;
-  const clampedTime = Math.max(0, Math.min(responseTimeSeconds, CONFIG.TIME_LIMIT_SECONDS));
-  const speedBonus = Math.round(CONFIG.SPEED_BONUS_MAX * (1 - (clampedTime / CONFIG.TIME_LIMIT_SECONDS)));
+  const limit = (maxTime && maxTime > 0) ? maxTime : CONFIG.TIME_LIMIT_SECONDS;
+  const clampedTime = Math.max(0, Math.min(responseTimeSeconds, limit));
+  const speedBonus = Math.round(CONFIG.SPEED_BONUS_MAX * (1 - (clampedTime / limit)));
   const totalPoints = CONFIG.BASE_POINTS + speedBonus;
   return Math.min(CONFIG.MAX_SCORE_PER_Q, Math.max(CONFIG.BASE_POINTS, totalPoints));
 }
@@ -1100,6 +1101,7 @@ function startQuiz(nickname) {
     const resolved = resolveBilingualQuestion(rawQ, currentLang);
     // Shuffle options while preserving which option text matches the correct answer
     const shuffled = shuffleArray(resolved.choices);
+    const qTime = (rawQ.timeLimit && parseInt(rawQ.timeLimit, 10) > 0) ? parseInt(rawQ.timeLimit, 10) : null;
     return {
       id: rawQ.id || idx + 1,
       raw: rawQ, // Keep raw item so language switch mid-quiz can re-render if needed
@@ -1107,6 +1109,7 @@ function startQuiz(nickname) {
       choices: resolved.choices,
       correctAnswer: resolved.correctAnswer,
       reference: resolved.reference,
+      timeLimit: qTime,
       levelDisplay: getLocalizedQuizProp(custom, "difficulty", currentLang) || "Custom",
       shuffledOptions: shuffled
     };
@@ -1161,9 +1164,11 @@ function loadQuestion(index) {
 
   DOM.feedbackPanel.classList.add("hidden");
 
-  const questionTimeLimit = (gameState.activeCustomQuiz && gameState.activeCustomQuiz.timeLimit) 
-    ? gameState.activeCustomQuiz.timeLimit 
-    : CONFIG.TIME_LIMIT_SECONDS;
+  const questionTimeLimit = (qData && qData.timeLimit && qData.timeLimit > 0)
+    ? qData.timeLimit
+    : ((gameState.activeCustomQuiz && gameState.activeCustomQuiz.timeLimit) 
+        ? gameState.activeCustomQuiz.timeLimit 
+        : CONFIG.TIME_LIMIT_SECONDS);
 
   let timeLeft = questionTimeLimit;
   DOM.timerDisplay.textContent = timeLeft;
@@ -1192,13 +1197,17 @@ function handleAnswerSelection(chosenIndex) {
   DOM.answerButtons.forEach(btn => btn.disabled = true);
   clearInterval(gameState.timerInterval);
 
-  const elapsedMs = performance.now() - gameState.questionStartTime;
-  const elapsedSec = Math.min(CONFIG.TIME_LIMIT_SECONDS, Math.max(0.1, elapsedMs / 1000));
-
   const qData = gameState.selectedQuestions[gameState.currentQuestionIndex];
+  const qTimeLimit = (qData && qData.timeLimit && qData.timeLimit > 0)
+    ? qData.timeLimit
+    : ((gameState.activeCustomQuiz && gameState.activeCustomQuiz.timeLimit) ? gameState.activeCustomQuiz.timeLimit : CONFIG.TIME_LIMIT_SECONDS);
+
+  const elapsedMs = performance.now() - gameState.questionStartTime;
+  const elapsedSec = Math.min(qTimeLimit, Math.max(0.1, elapsedMs / 1000));
+
   const chosenAnswer = qData.shuffledOptions[chosenIndex];
   const isCorrect = (chosenAnswer === qData.correctAnswer);
-  const pointsAwarded = calculateQuestionPoints(isCorrect, elapsedSec);
+  const pointsAwarded = calculateQuestionPoints(isCorrect, elapsedSec, qTimeLimit);
 
   if (isCorrect) {
     gameState.currentStreak++;
@@ -1257,7 +1266,10 @@ function handleTimeout() {
   gameState.isAnswerSubmitted = true;
 
   const qData = gameState.selectedQuestions[gameState.currentQuestionIndex];
-  const elapsedSec = CONFIG.TIME_LIMIT_SECONDS;
+  const qTimeLimit = (qData && qData.timeLimit && qData.timeLimit > 0)
+    ? qData.timeLimit
+    : ((gameState.activeCustomQuiz && gameState.activeCustomQuiz.timeLimit) ? gameState.activeCustomQuiz.timeLimit : CONFIG.TIME_LIMIT_SECONDS);
+  const elapsedSec = qTimeLimit;
   const dict = QUIZ_DATA[currentLang];
 
   gameState.currentStreak = 0;
@@ -2530,11 +2542,23 @@ function getLocalizedQuizProp(quizData, prop, lang = currentLang) {
 }
 
 function resolveBilingualQuestion(q, lang = currentLang) {
+  if (!q) return { text: "", choices: [], correctIndex: 0, correctAnswer: "", reference: "" };
   const altLang = (lang === "ta") ? "en" : "ta";
+
+  // Check language sub-object e.g. q.en / q.ta or q.rawBilingual.en / q.rawBilingual.ta
+  const langObj = q[lang] || (q.rawBilingual && q.rawBilingual[lang]);
+  const altObj = q[altLang] || (q.rawBilingual && q.rawBilingual[altLang]);
+
+  // Pick active sub-object: use preferred lang if it has question text/choices, else fallback to alt lang
+  const activeSub = (langObj && (langObj.question || (Array.isArray(langObj.options) && langObj.options.length) || (Array.isArray(langObj.choices) && langObj.choices.length)))
+    ? langObj
+    : ((altObj && (altObj.question || (Array.isArray(altObj.options) && altObj.options.length) || (Array.isArray(altObj.choices) && altObj.choices.length))) ? altObj : null);
 
   // 1. Resolve Question Text
   let text = "";
-  if (q.question && typeof q.question === "object") {
+  if (activeSub && (activeSub.question || activeSub.question_text || activeSub.title)) {
+    text = activeSub.question || activeSub.question_text || activeSub.title;
+  } else if (q.question && typeof q.question === "object") {
     text = q.question[lang] || q.question[altLang] || "";
   } else if (lang === "ta" && (q.question_ta || q.tamil_question)) {
     text = q.question_ta || q.tamil_question;
@@ -2546,7 +2570,10 @@ function resolveBilingualQuestion(q, lang = currentLang) {
 
   // 2. Resolve Choices Array
   let choices = [];
-  if (q.choices && typeof q.choices === "object" && !Array.isArray(q.choices)) {
+  if (activeSub && (activeSub.options || activeSub.choices || activeSub.answers)) {
+    const rawOpts = activeSub.options || activeSub.choices || activeSub.answers;
+    if (Array.isArray(rawOpts)) choices = rawOpts.map(c => String(c ?? "").trim());
+  } else if (q.choices && typeof q.choices === "object" && !Array.isArray(q.choices)) {
     choices = q.choices[lang] || q.choices[altLang] || [];
   } else if (lang === "ta" && (Array.isArray(q.choices_ta) || Array.isArray(q.tamil_choices))) {
     choices = q.choices_ta || q.tamil_choices;
@@ -2556,9 +2583,18 @@ function resolveBilingualQuestion(q, lang = currentLang) {
     choices = q.choices;
   }
 
+  // Fallback choices if choices is empty but top-level has choices
+  if (choices.length === 0 && Array.isArray(q.choices)) {
+    choices = q.choices;
+  } else if (choices.length === 0 && Array.isArray(q.options)) {
+    choices = q.options;
+  }
+
   // 3. Resolve Reference
-  let ref = "Bible Scripture";
-  if (q.reference && typeof q.reference === "object") {
+  let ref = (lang === "ta") ? "வேதாகம ஆதாரம்" : "Bible Scripture";
+  if (activeSub && (activeSub.reference || activeSub.verse || activeSub.scripture)) {
+    ref = activeSub.reference || activeSub.verse || activeSub.scripture;
+  } else if (q.reference && typeof q.reference === "object") {
     ref = q.reference[lang] || q.reference[altLang] || ref;
   } else if (lang === "ta" && (q.reference_ta || q.tamil_reference)) {
     ref = q.reference_ta || q.tamil_reference;

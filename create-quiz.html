@@ -44,6 +44,9 @@
           <p class="editor-subtitle">Define title, time limit, and add questions with 4 choices each.</p>
         </div>
         <div class="editor-header-actions">
+          <button type="button" id="editor-ai-prompt-btn" class="btn btn-outline" style="border-color: #6366f1; color: #6366f1; font-weight: 700;" title="Generate AI Prompt for ChatGPT/Claude">
+            ✨ AI Prompt Generator
+          </button>
           <button type="button" id="editor-import-json-btn" class="btn btn-secondary" title="Paste ChatGPT JSON or upload file to auto-populate quiz">
             ⚡ Paste / Import JSON
           </button>
@@ -132,7 +135,7 @@
           Paste JSON from ChatGPT / Claude or upload a <code>.json</code> file.
         </p>
         <button type="button" id="copy-chatgpt-prompt-btn" class="btn btn-outline btn-sm" style="border-color: #6366f1; color: #6366f1; font-weight: 700;">
-          📋 Copy ChatGPT Prompt Template
+          ✨ Open AI Prompt Generator
         </button>
       </div>
 
@@ -168,6 +171,98 @@
         <button type="button" id="process-import-btn" class="btn btn-primary btn-lg">
           ⚡ Parse & Auto-Fill Questions
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Prompt Generator Modal -->
+  <div id="ai-prompt-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-prompt-title">
+    <div class="modal-card modal-card-extra-wide">
+      <div class="modal-header">
+        <h3 id="modal-prompt-title">✨ AI Quiz Prompt Generator</h3>
+        <button type="button" id="close-prompt-modal-btn" class="modal-close-btn" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="prompt-workflow-banner">
+        <span class="prompt-workflow-step">1️⃣ Configure & Copy Prompt</span>
+        <span class="prompt-workflow-arrow">➜</span>
+        <span class="prompt-workflow-step">2️⃣ Paste in ChatGPT / Claude</span>
+        <span class="prompt-workflow-arrow">➜</span>
+        <span class="prompt-workflow-step">3️⃣ Paste JSON into Quiz Builder</span>
+      </div>
+
+      <p class="modal-subtext" style="margin-bottom: 12px;">
+        Use this generator to create the exact prompt for ChatGPT, Claude, or Gemini. The generated JSON follows the official <strong>Bible Quiz Challenge</strong> format with accurate distractors, scripture citations, and bilingual support.
+      </p>
+
+      <div class="prompt-builder-controls">
+        <div class="prompt-controls-grid">
+          <div class="prompt-control-item">
+            <label for="prompt-topic-input">📖 Bible Book / Passage / Topic:</label>
+            <input type="text" id="prompt-topic-input" placeholder="e.g. Gospel of Mark Chapter 1" value="Gospel of Mark Chapter 1" />
+          </div>
+
+          <div class="prompt-control-item">
+            <label for="prompt-count-select">🔢 Question Count:</label>
+            <select id="prompt-count-select">
+              <option value="5">5 Questions</option>
+              <option value="10">10 Questions</option>
+              <option value="15" selected>15 Questions (Standard)</option>
+              <option value="20">20 Questions</option>
+            </select>
+          </div>
+
+          <div class="prompt-control-item">
+            <label for="prompt-lang-select">🌐 Language Format:</label>
+            <select id="prompt-lang-select">
+              <option value="bilingual" selected>🌐 Bilingual (EN + TA)</option>
+              <option value="ta">🇮🇳 Tamil (தமிழ் மட்டும்)</option>
+              <option value="en">🇬🇧 English Only</option>
+            </select>
+          </div>
+
+          <div class="prompt-control-item">
+            <label for="prompt-diff-select">🎯 Difficulty:</label>
+            <select id="prompt-diff-select">
+              <option value="Mixed" selected>Progressive (Easy ➜ Hard)</option>
+              <option value="Easy">Easy (Beginner)</option>
+              <option value="Medium">Medium (Standard)</option>
+              <option value="Hard">Hard (Deep Bible Knowledge)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="prompt-quick-chips">
+          <span class="prompt-quick-label">⚡ Quick Presets:</span>
+          <button type="button" class="topic-chip" data-topic="Gospel of Mark Chapter 1">📖 Mark 1</button>
+          <button type="button" class="topic-chip" data-topic="Gospel of John Chapter 3">✝️ John 3</button>
+          <button type="button" class="topic-chip" data-topic="Life of King David (1 Samuel)">👑 King David</button>
+          <button type="button" class="topic-chip" data-topic="Exodus and The Ten Plagues">🌊 Exodus & Moses</button>
+          <button type="button" class="topic-chip" data-topic="Parables of Jesus (Gospels)">🌾 Parables</button>
+          <button type="button" class="topic-chip" data-topic="Book of Acts Chapter 2">🕊️ Pentecost (Acts 2)</button>
+        </div>
+      </div>
+
+      <div class="prompt-preview-container">
+        <div class="prompt-preview-header">
+          <span>📋 Generated AI Prompt (Ready to paste into ChatGPT / Claude / Gemini):</span>
+          <span style="font-size: 0.75rem; color: #64748b;">Updates automatically as you change options</span>
+        </div>
+        <textarea id="prompt-preview-textarea" class="prompt-preview-textarea" readonly></textarea>
+      </div>
+
+      <div class="modal-actions" style="justify-content: space-between; align-items: center; margin-top: 14px;">
+        <span id="prompt-copy-status" style="font-size: 0.84rem; font-weight: 700; color: #16a34a; display: none;">
+          ✅ Prompt copied to clipboard! Paste it into ChatGPT.
+        </span>
+        <div class="prompt-action-btn-group">
+          <button type="button" id="prompt-copy-clipboard-btn" class="btn btn-primary">
+            📋 Copy Prompt to Clipboard
+          </button>
+          <button type="button" id="prompt-switch-to-import-btn" class="btn btn-secondary">
+            📥 Switch to Paste JSON
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -332,24 +427,195 @@
       };
     }
 
+    function switchQuestionCardLang(btn, newLang) {
+      const card = btn.closest(".editor-q-card");
+      if (!card || !card._bilingual) return;
+
+      // 1. Save current view to active lang
+      saveCardInputsToActiveLang(card);
+
+      // 2. Set new active lang
+      card._bilingual.activeLang = newLang;
+
+      // 3. Update buttons
+      card.querySelectorAll(".q-lang-btn").forEach(b => {
+        if (b.dataset.lang === newLang) {
+          b.classList.add("active");
+        } else {
+          b.classList.remove("active");
+        }
+      });
+
+      // 4. Load inputs for new lang
+      loadCardInputsFromLang(card, newLang);
+      updateCardLangIndicators(card);
+    }
+
+    function saveCardInputsToActiveLang(card) {
+      if (!card || !card._bilingual) return;
+      const lang = card._bilingual.activeLang;
+      const qInput = card.querySelector(".editor-q-text");
+      const refInput = card.querySelector(".editor-q-ref");
+      const choiceInputs = card.querySelectorAll(".choice-text-input");
+
+      card._bilingual[lang] = {
+        question: qInput ? qInput.value.trim() : "",
+        choices: Array.from(choiceInputs).map(inp => inp.value.trim()),
+        reference: refInput ? refInput.value.trim() : ""
+      };
+    }
+
+    function loadCardInputsFromLang(card, lang) {
+      if (!card || !card._bilingual) return;
+      const data = card._bilingual[lang] || { question: "", choices: ["", "", "", ""], reference: "" };
+      const qInput = card.querySelector(".editor-q-text");
+      const refInput = card.querySelector(".editor-q-ref");
+      const choiceInputs = card.querySelectorAll(".choice-text-input");
+
+      if (qInput) {
+        qInput.value = data.question || "";
+        qInput.placeholder = (lang === "ta")
+          ? "தமிழில் கேள்வி உள்ளிடவும் (எ.கா. இயேசு எந்த ஊரில் பிறந்தார்?)"
+          : "Enter Bible question text (e.g. In which city was Jesus born?)";
+      }
+
+      choiceInputs.forEach((inp, idx) => {
+        inp.value = (data.choices && data.choices[idx]) || "";
+        inp.placeholder = (lang === "ta")
+          ? `தெரிவு ${String.fromCharCode(65 + idx)} உரை`
+          : `Option ${String.fromCharCode(65 + idx)} text`;
+      });
+
+      if (refInput) {
+        refInput.value = data.reference || "";
+        refInput.placeholder = (lang === "ta")
+          ? "எ.கா. மத்தேயு 2:1 அல்லது லூக்கா 6:13"
+          : "e.g. Luke 2:4 or Genesis 1:1";
+      }
+    }
+
+    function updateCardLangIndicators(card) {
+      if (!card || !card._bilingual) return;
+      const enInd = card.querySelector('.q-lang-indicator[data-ind="en"]');
+      const taInd = card.querySelector('.q-lang-indicator[data-ind="ta"]');
+      
+      const enHas = Boolean(card._bilingual.en && card._bilingual.en.question);
+      const taHas = Boolean(card._bilingual.ta && card._bilingual.ta.question);
+
+      if (enInd) enInd.textContent = enHas ? "✓" : "";
+      if (taInd) taInd.textContent = taHas ? "✓" : "";
+    }
+
+    function onCardFieldInput(input) {
+      const card = input.closest(".editor-q-card");
+      if (!card || !card._bilingual) return;
+      saveCardInputsToActiveLang(card);
+      updateCardLangIndicators(card);
+    }
+
     function addQuestionCard(initialData = null) {
       const qIndex = questionsList.children.length;
       const qCard = document.createElement("div");
       qCard.className = "editor-q-card";
       qCard.dataset.index = qIndex;
 
-      const norm = normalizeQuestionObject(initialData) || {
-        question: "",
-        choices: ["", "", "", ""],
-        correctIndex: 0,
-        reference: ""
+      // Extract bilingual data from initialData if provided
+      const enData = { question: "", choices: ["", "", "", ""], reference: "" };
+      const taData = { question: "", choices: ["", "", "", ""], reference: "" };
+      let correctIndex = 0;
+      let timeLimit = 0;
+
+      if (initialData) {
+        // Extract English
+        const rawEn = initialData.en || (initialData.rawBilingual && initialData.rawBilingual.en);
+        if (rawEn && typeof rawEn === "object") {
+          enData.question = rawEn.question || rawEn.question_text || rawEn.title || "";
+          const c = rawEn.options || rawEn.choices || rawEn.answers;
+          if (Array.isArray(c)) enData.choices = c.map(x => String(x ?? "").trim());
+          enData.reference = rawEn.reference || rawEn.verse || "";
+        }
+
+        // Extract Tamil
+        const rawTa = initialData.ta || (initialData.rawBilingual && initialData.rawBilingual.ta);
+        if (rawTa && typeof rawTa === "object") {
+          taData.question = rawTa.question || rawTa.question_text || rawTa.title || "";
+          const c = rawTa.options || rawTa.choices || rawTa.answers;
+          if (Array.isArray(c)) taData.choices = c.map(x => String(x ?? "").trim());
+          taData.reference = rawTa.reference || rawTa.verse || "";
+        }
+
+        // Top level fallbacks
+        const topQ = initialData.question || initialData.question_text || initialData.title || "";
+        const topChoices = initialData.choices || initialData.options || [];
+        const topRef = initialData.reference || initialData.verse || "";
+
+        if (topQ) {
+          const isTamil = /[\u0B80-\u0BFF]/.test(topQ);
+          if (isTamil && !taData.question) {
+            taData.question = topQ;
+            if (Array.isArray(topChoices) && taData.choices.filter(Boolean).length === 0) {
+              taData.choices = topChoices.map(x => String(x ?? "").trim());
+            }
+            if (topRef && !taData.reference) taData.reference = topRef;
+          } else if (!enData.question) {
+            enData.question = topQ;
+            if (Array.isArray(topChoices) && enData.choices.filter(Boolean).length === 0) {
+              enData.choices = topChoices.map(x => String(x ?? "").trim());
+            }
+            if (topRef && !enData.reference) enData.reference = topRef;
+          }
+        }
+
+        while (enData.choices.length < 4) enData.choices.push("");
+        while (taData.choices.length < 4) taData.choices.push("");
+        enData.choices = enData.choices.slice(0, 4);
+        taData.choices = taData.choices.slice(0, 4);
+
+        // Detect correctIndex
+        const candidateAnswer = initialData.correct_answer ?? initialData.correctAnswer ?? initialData.correct_index ?? initialData.correctIndex ?? initialData.answer;
+        if (typeof candidateAnswer === "number") {
+          if (candidateAnswer >= 0 && candidateAnswer <= 3) correctIndex = candidateAnswer;
+          else if (candidateAnswer >= 1 && candidateAnswer <= 4) correctIndex = candidateAnswer - 1;
+        } else if (typeof candidateAnswer === "string") {
+          const trimmed = candidateAnswer.trim();
+          if (/^[A-Da-d]$/.test(trimmed)) {
+            correctIndex = trimmed.toUpperCase().charCodeAt(0) - 65;
+          } else {
+            const pool = enData.choices.concat(taData.choices);
+            const idx = pool.findIndex(c => c && c.toLowerCase() === trimmed.toLowerCase());
+            if (idx !== -1) correctIndex = idx % 4;
+          }
+        }
+
+        if (initialData.timeLimit) {
+          timeLimit = parseInt(initialData.timeLimit, 10) || 0;
+        }
+      }
+
+      // Default active lang: prefer Tamil if only Tamil is present, else English (or user's preferred lang)
+      let initialLang = "en";
+      if (taData.question && !enData.question) {
+        initialLang = "ta";
+      } else if (enData.question && !taData.question) {
+        initialLang = "en";
+      } else {
+        initialLang = getSelectedImportLang();
+      }
+
+      qCard._bilingual = {
+        en: enData,
+        ta: taData,
+        activeLang: initialLang
       };
+
+      const currData = qCard._bilingual[initialLang];
 
       const choiceRowsHtml = [0, 1, 2, 3].map(cIdx => {
         const label = String.fromCharCode(65 + cIdx);
-        const val = escapeHtml(norm.choices[cIdx] || "");
-        const isChecked = (cIdx === norm.correctIndex) ? "checked" : "";
-        const rowClass = (cIdx === norm.correctIndex) ? "choice-input-row is-correct-choice" : "choice-input-row";
+        const val = escapeHtml(currData.choices[cIdx] || "");
+        const isChecked = (cIdx === correctIndex) ? "checked" : "";
+        const rowClass = (cIdx === correctIndex) ? "choice-input-row is-correct-choice" : "choice-input-row";
+        const placeholder = (initialLang === "ta") ? `தெரிவு ${label} உரை` : `Option ${label} text`;
 
         return `
           <div class="${rowClass}" data-choice-row="${cIdx}">
@@ -357,15 +623,46 @@
               <input type="radio" name="correct_q_${qIndex}" value="${cIdx}" ${isChecked} onchange="onRadioChange(this)" />
               <span>${label}</span>
             </label>
-            <input type="text" class="choice-text-input" placeholder="Option ${label} text" value="${val}" required />
+            <input type="text" class="choice-text-input" placeholder="${placeholder}" value="${val}" oninput="onCardFieldInput(this)" />
           </div>
         `;
       }).join("");
 
+      const isEnActive = (initialLang === "en") ? "active" : "";
+      const isTaActive = (initialLang === "ta") ? "active" : "";
+
       qCard.innerHTML = `
         <div class="editor-q-card-header">
-          <span class="editor-q-number">Question #${qIndex + 1}</span>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span class="editor-q-number">Question #${qIndex + 1}</span>
+            
+            <!-- Bilingual Toggle Switcher -->
+            <div class="q-lang-toggle-group" title="Switch to edit English or Tamil translation">
+              <button type="button" class="q-lang-btn ${isEnActive}" data-lang="en" onclick="switchQuestionCardLang(this, 'en')">
+                🇬🇧 EN <span class="q-lang-indicator" data-ind="en"></span>
+              </button>
+              <button type="button" class="q-lang-btn ${isTaActive}" data-lang="ta" onclick="switchQuestionCardLang(this, 'ta')">
+                🇮🇳 தமிழ் <span class="q-lang-indicator" data-ind="ta"></span>
+              </button>
+            </div>
+          </div>
+
           <div class="editor-q-actions">
+            <!-- Per-Question Time Limit Selector -->
+            <div class="q-time-picker-wrap" title="Custom time limit for this question alone">
+              <label for="q_time_${qIndex}" style="font-size: 0.74rem; font-weight: 700; color: #64748b; margin-right: 4px;">⏱️ Timer:</label>
+              <select class="editor-q-time-select" id="q_time_${qIndex}">
+                <option value="0" ${timeLimit === 0 ? "selected" : ""}>Default (Quiz)</option>
+                <option value="5" ${timeLimit === 5 ? "selected" : ""}>5s (Fast)</option>
+                <option value="10" ${timeLimit === 10 ? "selected" : ""}>10s</option>
+                <option value="15" ${timeLimit === 15 ? "selected" : ""}>15s</option>
+                <option value="20" ${timeLimit === 20 ? "selected" : ""}>20s</option>
+                <option value="30" ${timeLimit === 30 ? "selected" : ""}>30s</option>
+                <option value="45" ${timeLimit === 45 ? "selected" : ""}>45s</option>
+                <option value="60" ${timeLimit === 60 ? "selected" : ""}>60s</option>
+              </select>
+            </div>
+
             <button type="button" class="btn-icon-danger" onclick="removeQuestionCard(this)" title="Delete this question">
               ✕ Remove
             </button>
@@ -373,7 +670,7 @@
         </div>
 
         <div class="input-group" style="margin-bottom: 10px;">
-          <input type="text" class="editor-q-text" placeholder="Enter Bible question text (e.g. In which city was Jesus born?)" value="${escapeHtml(norm.question)}" required />
+          <input type="text" class="editor-q-text" placeholder="${initialLang === 'ta' ? 'தமிழில் கேள்வி உள்ளிடவும் (எ.கா. இயேசு எந்த ஊரில் பிறந்தார்?)' : 'Enter Bible question text (e.g. In which city was Jesus born?)'}" value="${escapeHtml(currData.question)}" oninput="onCardFieldInput(this)" />
         </div>
 
         <div style="font-size: 0.8rem; font-weight: 600; color: #64748b; margin-top: 8px;">
@@ -386,11 +683,12 @@
 
         <div class="editor-q-ref-row">
           <label>Scripture Reference:</label>
-          <input type="text" class="editor-q-ref" placeholder="e.g. Luke 2:4 or Genesis 1:1" value="${escapeHtml(norm.reference)}" />
+          <input type="text" class="editor-q-ref" placeholder="${initialLang === 'ta' ? 'எ.கா. மத்தேயு 2:1 அல்லது லூக்கா 6:13' : 'e.g. Luke 2:4 or Genesis 1:1'}" value="${escapeHtml(currData.reference)}" oninput="onCardFieldInput(this)" />
         </div>
       `;
 
       questionsList.appendChild(qCard);
+      updateCardLangIndicators(qCard);
       updateQuestionNumbers();
     }
 
@@ -446,20 +744,33 @@
       const questions = [];
       for (let i = 0; i < cards.length; i++) {
         const card = cards[i];
-        const qText = card.querySelector(".editor-q-text").value.trim();
-        if (!qText) {
-          alert(`Question #${i + 1} has empty question text.`);
+        saveCardInputsToActiveLang(card);
+
+        const enData = card._bilingual.en || { question: "", choices: ["","","",""], reference: "" };
+        const taData = card._bilingual.ta || { question: "", choices: ["","","",""], reference: "" };
+
+        const enQ = (enData.question || "").trim();
+        const taQ = (taData.question || "").trim();
+
+        // Non-compulsory rule: at least ONE language must have question text
+        if (!enQ && !taQ) {
+          alert(`Question #${i + 1} has empty question text. Please provide question in English or Tamil.`);
           card.querySelector(".editor-q-text").focus();
           return null;
         }
 
-        const choiceInputs = card.querySelectorAll(".choice-text-input");
+        const hasEn = Boolean(enQ);
+        const hasTa = Boolean(taQ);
+
+        // Check choices for whichever language is filled
+        const activeLang = hasEn ? "en" : "ta";
+        const primaryData = hasEn ? enData : taData;
         const choices = [];
-        for (let j = 0; j < choiceInputs.length; j++) {
-          const val = choiceInputs[j].value.trim();
+
+        for (let j = 0; j < 4; j++) {
+          const val = (primaryData.choices[j] || "").trim();
           if (!val) {
-            alert(`Question #${i + 1}, Option ${String.fromCharCode(65 + j)} is empty.`);
-            choiceInputs[j].focus();
+            alert(`Question #${i + 1} (${activeLang.toUpperCase()}), Option ${String.fromCharCode(65 + j)} is empty.`);
             return null;
           }
           choices.push(val);
@@ -467,16 +778,51 @@
 
         const checkedRadio = card.querySelector('input[type="radio"]:checked');
         const correctIndex = checkedRadio ? parseInt(checkedRadio.value, 10) : 0;
-        const refInput = card.querySelector(".editor-q-ref");
-        const refText = refInput ? refInput.value.trim() : "";
+        
+        // Per-question timer
+        const qTimeSelect = card.querySelector(".editor-q-time-select");
+        const qTimeLimit = qTimeSelect ? parseInt(qTimeSelect.value, 10) : 0;
+
+        const enChoices = (hasEn ? enData.choices : taData.choices).map(c => String(c || "").trim());
+        const taChoices = (hasTa ? taData.choices : enData.choices).map(c => String(c || "").trim());
+
+        const primaryQuestion = hasEn ? enQ : taQ;
+        const primaryRef = (hasEn ? enData.reference : taData.reference) || "Bible Reference";
 
         questions.push({
           id: i + 1,
-          question: qText,
+          question: primaryQuestion,
           choices: choices,
           correctIndex: correctIndex,
-          correctAnswer: choices[correctIndex],
-          reference: refText || "Bible Reference"
+          correctAnswer: choices[correctIndex] || "",
+          reference: primaryRef,
+          timeLimit: (qTimeLimit > 0) ? qTimeLimit : null,
+          en: hasEn ? {
+            question: enQ,
+            options: enChoices,
+            choices: enChoices,
+            reference: enData.reference || primaryRef
+          } : {
+            question: primaryQuestion,
+            options: choices,
+            choices: choices,
+            reference: primaryRef
+          },
+          ta: hasTa ? {
+            question: taQ,
+            options: taChoices,
+            choices: taChoices,
+            reference: taData.reference || primaryRef
+          } : {
+            question: primaryQuestion,
+            options: choices,
+            choices: choices,
+            reference: primaryRef
+          },
+          rawBilingual: {
+            en: hasEn ? enData : taData,
+            ta: hasTa ? taData : enData
+          }
         });
       }
 
@@ -512,48 +858,214 @@
     const importError = document.getElementById("import-json-error");
     const fileInput = document.getElementById("modal-file-input");
 
-    // Copy ChatGPT prompt template helper
-    const chatGptPromptBtn = document.getElementById("copy-chatgpt-prompt-btn");
-    if (chatGptPromptBtn) {
-      chatGptPromptBtn.addEventListener("click", () => {
-        const promptTemplate = `Generate a 15-question Bible quiz in JSON format based on [Insert Book & Chapter here, e.g. Mark Chapter 1].
+    // AI Prompt Generator Logic
+    const promptModal = document.getElementById("ai-prompt-modal");
+    const promptTopicInput = document.getElementById("prompt-topic-input");
+    const promptCountSelect = document.getElementById("prompt-count-select");
+    const promptLangSelect = document.getElementById("prompt-lang-select");
+    const promptDiffSelect = document.getElementById("prompt-diff-select");
+    const promptPreviewArea = document.getElementById("prompt-preview-textarea");
+    const promptCopyBtn = document.getElementById("prompt-copy-clipboard-btn");
+    const promptCopyStatus = document.getElementById("prompt-copy-status");
+    const promptSwitchBtn = document.getElementById("prompt-switch-to-import-btn");
 
-Format MUST strictly follow this JSON schema:
-{
-  "title": "Title of Quiz",
+    function buildAiQuizPrompt() {
+      const topic = (promptTopicInput.value || "").trim() || "Gospel of Mark Chapter 1";
+      const count = parseInt(promptCountSelect.value, 10) || 15;
+      const langMode = promptLangSelect.value;
+      const diffMode = promptDiffSelect.value;
+
+      let langInstruction = "";
+      let jsonSchema = "";
+
+      if (langMode === "bilingual") {
+        langInstruction = `Language Output: BILINGUAL (Parallel English and Tamil translations for every question, option, and Scripture reference).`;
+        jsonSchema = `{
+  "title": "${topic} Quiz",
+  "description": "${count} progressive questions based on ${topic} in English & Tamil",
+  "difficulty": "${diffMode}",
+  "timeLimit": 10,
   "questions": [
     {
       "question_number": 1,
+      "difficulty": "Easy",
       "en": {
         "question": "Question text in English?",
-        "options": ["Option A", "Option B", "Option C", "Option D"]
+        "options": ["Plausible Option A", "Plausible Option B", "Plausible Option C", "Plausible Option D"],
+        "reference": "Book Chapter:Verse (e.g. Mark 1:15)"
       },
       "ta": {
         "question": "தமிழில் கேள்வி?",
-        "options": ["தெரிவு A", "தெரிவு B", "தெரிவு C", "தெரிவு D"]
+        "options": ["பொருத்தமான தெரிவு A", "பொருத்தமான தெரிவு B", "பொருத்தமான தெரிவு C", "பொருத்தமான தெரிவு D"],
+        "reference": "வேதாகம ஆதாரம் (எ.கா. மாற்கு 1:15)"
       },
-      "correct_answer": 1,
-      "reference": "Bible Reference"
+      "correct_answer": 1
     }
   ]
-}
+}`;
+      } else if (langMode === "ta") {
+        langInstruction = `Language Output: TAMIL ONLY (தூய எளிய தமிழ் வேதாகம மொழிநடை).`;
+        jsonSchema = `{
+  "title": "${topic} - வேதாகம வினாடி வினா",
+  "description": "${topic}-லிருந்து ${count} வினாக்கள்",
+  "difficulty": "${diffMode}",
+  "timeLimit": 10,
+  "questions": [
+    {
+      "id": 1,
+      "difficulty": "Easy",
+      "question": "தமிழில் கேள்வி?",
+      "choices": ["பொருத்தமான தெரிவு A", "பொருத்தமான தெரிவு B", "பொருத்தமான தெரிவு C", "பொருத்தமான தெரிவு D"],
+      "correctIndex": 1,
+      "reference": "வேதாகம ஆதாரம் (எ.கா. மாற்கு 1:15)"
+    }
+  ]
+}`;
+      } else {
+        langInstruction = `Language Output: ENGLISH ONLY.`;
+        jsonSchema = `{
+  "title": "${topic} Quiz",
+  "description": "${count} questions from ${topic}",
+  "difficulty": "${diffMode}",
+  "timeLimit": 10,
+  "questions": [
+    {
+      "id": 1,
+      "difficulty": "Easy",
+      "question": "Question text in English?",
+      "choices": ["Plausible Option A", "Plausible Option B", "Plausible Option C", "Plausible Option D"],
+      "correctIndex": 1,
+      "reference": "Book Chapter:Verse (e.g. Mark 1:15)"
+    }
+  ]
+}`;
+      }
 
-Rules:
-1. Provide exactly 4 options per question.
-2. correct_answer is 0-indexed (0 for 1st option, 1 for 2nd option, 2 for 3rd option, 3 for 4th option).
-3. Return ONLY pure raw JSON code without markdown backticks.`;
+      let difficultyGuide = "";
+      if (diffMode === "Mixed" && count === 15) {
+        difficultyGuide = `Difficulty Progression: Exactly 5 Easy (Fundamental facts), 5 Medium (Moderate recall), and 5 Hard (Deeper biblical context).`;
+      } else if (diffMode === "Mixed") {
+        difficultyGuide = `Difficulty Progression: Evenly balanced progression from Easy to Medium to Hard questions.`;
+      } else {
+        difficultyGuide = `Difficulty Level: All questions calibrated specifically for ${diffMode} difficulty.`;
+      }
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(promptTemplate).then(() => {
-            const orig = chatGptPromptBtn.textContent;
-            chatGptPromptBtn.textContent = "✅ Prompt Copied to Clipboard!";
-            setTimeout(() => { chatGptPromptBtn.textContent = orig; }, 3000);
-          });
-        } else {
-          prompt("Copy this prompt to ChatGPT:", promptTemplate);
+      return `You are a Biblical scholar and quiz master for the "Bible Quiz Challenge" mobile & web application.
+Generate exactly ${count} engaging, biblically accurate quiz questions in strict JSON format.
+
+REQUIREMENTS:
+- Topic / Scripture Passage: ${topic}
+- Total Questions: ${count}
+- ${difficultyGuide}
+- ${langInstruction}
+
+CRITICAL QUESTION STYLE & PLAYABILITY GUIDELINES (PLEASE FOLLOW STRICTLY):
+1. Player Experience (Fast-Paced 10s Timer):
+   - Questions must be clear, crisp, and direct (maximum 1-2 concise sentences). Avoid long winded paragraphs.
+   - All 4 options must be concise so they fit cleanly inside touch buttons on mobile screens.
+2. Choices & Distractors (High Quality):
+   - Provide EXACTLY 4 choices per question.
+   - All 3 wrong choices (distractors) MUST be plausible Biblical names, places, numbers, or events from the same biblical era or book. DO NOT provide comical, absurd, or obviously fake options.
+   - Options must be balanced in length so the correct choice doesn't stand out simply by being longer.
+3. Unambiguous Correct Answer:
+   - Exactly ONE option must be indisputably true and backed directly by Scripture.
+   - "correct_answer" / "correctIndex" MUST be 0-indexed (0 for 1st choice, 1 for 2nd choice, 2 for 3rd choice, 3 for 4th choice).
+4. Scripture Citation:
+   - Every question MUST include an exact Scripture Reference (Book Chapter:Verse, e.g. "Mark 1:15" or "மாற்கு 1:15").
+${langMode === "bilingual" ? `5. Parallel Bilingual Alignment:
+   - English and Tamil questions must express the identical meaning.
+   - Option order must correspond 1:1 (Option 0 in English matches Option 0 in Tamil, etc.).
+` : ''}
+OUTPUT FORMAT:
+Return ONLY pure raw JSON code conforming exactly to the schema below. Do NOT wrap inside markdown backticks (no \`\`\`json), and do NOT provide any conversational greeting or explanations.
+
+JSON SCHEMA:
+${jsonSchema}`;
+    }
+
+    function refreshPromptPreview() {
+      if (promptPreviewArea) {
+        promptPreviewArea.value = buildAiQuizPrompt();
+      }
+    }
+
+    [promptTopicInput, promptCountSelect, promptLangSelect, promptDiffSelect].forEach(el => {
+      if (el) {
+        el.addEventListener("input", refreshPromptPreview);
+        el.addEventListener("change", refreshPromptPreview);
+      }
+    });
+
+    // Preset topic chips
+    document.querySelectorAll(".topic-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const topic = chip.dataset.topic;
+        if (topic && promptTopicInput) {
+          promptTopicInput.value = topic;
+          refreshPromptPreview();
         }
       });
+    });
+
+    const openPromptModal = () => {
+      refreshPromptPreview();
+      promptCopyStatus.style.display = "none";
+      promptModal.classList.remove("hidden");
+    };
+
+    const closePromptModal = () => {
+      promptModal.classList.add("hidden");
+      promptCopyStatus.style.display = "none";
+    };
+
+    document.getElementById("editor-ai-prompt-btn").addEventListener("click", openPromptModal);
+    document.getElementById("close-prompt-modal-btn").addEventListener("click", closePromptModal);
+
+    // Copy ChatGPT prompt helper button inside smart import modal opens generator
+    const chatGptPromptBtn = document.getElementById("copy-chatgpt-prompt-btn");
+    if (chatGptPromptBtn) {
+      chatGptPromptBtn.addEventListener("click", () => {
+        importModal.classList.add("hidden");
+        openPromptModal();
+      });
     }
+
+    // Copy to clipboard from prompt modal
+    promptCopyBtn.addEventListener("click", () => {
+      const promptText = promptPreviewArea.value;
+      if (!promptText) return;
+
+      const markCopied = () => {
+        promptCopyStatus.style.display = "inline";
+        const origText = promptCopyBtn.textContent;
+        promptCopyBtn.textContent = "✅ Copied!";
+        setTimeout(() => {
+          promptCopyBtn.textContent = origText;
+        }, 3000);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(promptText).then(markCopied).catch(() => {
+          promptPreviewArea.select();
+          document.execCommand("copy");
+          markCopied();
+        });
+      } else {
+        promptPreviewArea.select();
+        document.execCommand("copy");
+        markCopied();
+      }
+    });
+
+    // Switch from prompt modal to import modal
+    promptSwitchBtn.addEventListener("click", () => {
+      closePromptModal();
+      importTextarea.value = "";
+      importError.textContent = "";
+      fileInput.value = "";
+      importModal.classList.remove("hidden");
+      importTextarea.focus();
+    });
 
     document.getElementById("editor-import-json-btn").addEventListener("click", () => {
       importTextarea.value = "";
