@@ -2499,7 +2499,35 @@ function checkForSharedQuizInUrl() {
         return;
       }
     }
-    // No quiz parameter in URL: show Unauthorized Access screen
+    // If no quiz parameter in URL, check if an active shared quiz is saved in localStorage
+    try {
+      const activeShared = localStorage.getItem("BIBLE_QUIZ_ACTIVE_SHARED_QUIZ");
+      if (activeShared) {
+        const parsed = JSON.parse(activeShared);
+        const validation = validateQuizData(parsed);
+        if (validation && validation.valid) {
+          loadCustomQuizIntoGame(parsed);
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // Check custom quizzes collection as second fallback
+    try {
+      const storedQuizzes = localStorage.getItem(CONFIG.STORAGE_KEY_CUSTOM_QUIZZES);
+      if (storedQuizzes) {
+        const list = JSON.parse(storedQuizzes);
+        if (Array.isArray(list) && list.length > 0) {
+          const published = list.find(q => q.published) || list[list.length - 1];
+          if (published && published.questions && published.questions.length > 0) {
+            loadCustomQuizIntoGame(published);
+            return;
+          }
+        }
+      }
+    } catch (e) {}
+
+    // No quiz parameter and no local active quiz: show Unauthorized Access screen
     showScreen("unauthorized");
     return;
   }
