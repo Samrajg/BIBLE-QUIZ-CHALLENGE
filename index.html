@@ -72,7 +72,7 @@
       </div>
     </header>
 
-    <!-- Screen: Unauthorized Access Screen (Shown when visiting without a valid quiz link) -->
+    <!-- Screen: Unauthorized Access Screen (Legacy fallback) -->
     <section id="unauthorized-screen" class="screen">
       <div class="unauthorized-card card">
         <div class="unauthorized-icon-wrapper">
@@ -81,27 +81,13 @@
         <div class="unauthorized-badge">403 • Restricted Access</div>
         <h1 class="unauthorized-title">Unauthorized Access</h1>
         <p class="unauthorized-desc">
-          No quiz link detected. The default quiz has been disabled. You must open a valid shared quiz link provided by your quiz organizer, or sign in as an Admin to create and publish a quiz.
+          No quiz link detected. Please click the button below to start the official quiz or sign in as an Admin.
         </p>
 
-        <div class="unauthorized-box">
-          <div class="unauthorized-box-item">
-            <span class="box-icon">🔗</span>
-            <div>
-              <strong>Are you a player?</strong>
-              <p>Please click the official quiz link shared with you by your teacher or quiz administrator.</p>
-            </div>
-          </div>
-          <div class="unauthorized-box-item">
-            <span class="box-icon">⚙️</span>
-            <div>
-              <strong>Are you an administrator?</strong>
-              <p>Sign in to the Admin Portal to create, manage, and distribute new quizzes.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="unauthorized-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <div class="unauthorized-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+          <button type="button" class="btn btn-secondary btn-lg" onclick="revertToDefaultQuiz()">
+            🎮 Play Official Quiz
+          </button>
           <a href="login.html" id="unauthorized-admin-btn" class="btn btn-primary btn-lg" style="text-decoration:none;">
             🔐 Admin Login
           </a>
@@ -109,8 +95,8 @@
       </div>
     </section>
 
-    <!-- Screen A: Welcome Screen (Only shown when a valid shared quiz is loaded) -->
-    <section id="welcome-screen" class="screen">
+    <!-- Screen A: Welcome Screen (Default Active Screen) -->
+    <section id="welcome-screen" class="screen active">
       <div class="welcome-card card">
         <div class="welcome-hero-logo">
           <img src="logo.avif" alt="Bible Quiz Logo" class="hero-logo-avatar" />

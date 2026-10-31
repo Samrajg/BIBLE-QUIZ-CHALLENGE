@@ -1108,35 +1108,54 @@ function startQuiz(nickname) {
   gameState.currentStreak = 0;
   gameState.hasSharedResultCard = false;
 
-  if (!gameState.activeCustomQuiz) {
-    showScreen("unauthorized");
-    return;
+  let allQuestions = [];
+  let totalQ = 0;
+  let custom = gameState.activeCustomQuiz;
+
+  if (custom) {
+    const rawQuestions = getLocalizedQuizQuestions(custom, currentLang);
+    totalQ = rawQuestions.length;
+    allQuestions = rawQuestions.map((rawQ, idx) => {
+      const resolved = resolveBilingualQuestion(rawQ, currentLang);
+      const isTF = (rawQ.type === "true_false" || rawQ.type === "boolean" || (Array.isArray(resolved.choices) && resolved.choices.length === 2));
+      const choices = isTF ? resolved.choices.slice(0, 2) : resolved.choices;
+      const shuffled = isTF ? [...choices] : shuffleArray(choices);
+      const qTime = (rawQ.timeLimit && parseInt(rawQ.timeLimit, 10) > 0) ? parseInt(rawQ.timeLimit, 10) : null;
+      return {
+        id: rawQ.id || idx + 1,
+        type: isTF ? "true_false" : "mcq",
+        raw: rawQ,
+        question: resolved.text,
+        choices: choices,
+        correctAnswer: resolved.correctAnswer,
+        reference: resolved.reference,
+        timeLimit: qTime,
+        levelDisplay: getLocalizedQuizProp(custom, "difficulty", currentLang) || "Custom",
+        shuffledOptions: shuffled
+      };
+    });
+  } else {
+    // Built-in standard 15-question quiz (5 Easy, 5 Medium, 5 Hard)
+    const dict = QUIZ_DATA[currentLang];
+    dict.difficultyLevels.forEach((lvl) => {
+      const shuffledLvlQ = shuffleArray(lvl.questions);
+      shuffledLvlQ.forEach((q) => {
+        allQuestions.push({
+          id: q.id,
+          type: "mcq",
+          raw: q,
+          question: q.question,
+          choices: q.choices,
+          correctAnswer: q.correctAnswer,
+          reference: q.reference,
+          timeLimit: CONFIG.TIME_LIMIT_SECONDS,
+          levelDisplay: lvl.level,
+          shuffledOptions: shuffleArray(q.choices)
+        });
+      });
+    });
+    totalQ = allQuestions.length;
   }
-
-  const custom = gameState.activeCustomQuiz;
-  const rawQuestions = getLocalizedQuizQuestions(custom, currentLang);
-  const totalQ = rawQuestions.length;
-
-  const allQuestions = rawQuestions.map((rawQ, idx) => {
-    const resolved = resolveBilingualQuestion(rawQ, currentLang);
-    const isTF = (rawQ.type === "true_false" || rawQ.type === "boolean" || (Array.isArray(resolved.choices) && resolved.choices.length === 2));
-    const choices = isTF ? resolved.choices.slice(0, 2) : resolved.choices;
-    // Don't shuffle True/False; keep standard order True, False
-    const shuffled = isTF ? [...choices] : shuffleArray(choices);
-    const qTime = (rawQ.timeLimit && parseInt(rawQ.timeLimit, 10) > 0) ? parseInt(rawQ.timeLimit, 10) : null;
-    return {
-      id: rawQ.id || idx + 1,
-      type: isTF ? "true_false" : "mcq",
-      raw: rawQ, // Keep raw item so language switch mid-quiz can re-render if needed
-      question: resolved.text,
-      choices: choices,
-      correctAnswer: resolved.correctAnswer,
-      reference: resolved.reference,
-      timeLimit: qTime,
-      levelDisplay: getLocalizedQuizProp(custom, "difficulty", currentLang) || "Custom",
-      shuffledOptions: shuffled
-    };
-  });
 
   gameState.selectedQuestions = allQuestions;
 
@@ -2552,8 +2571,8 @@ function checkForSharedQuizInUrl() {
       }
     } catch (e) {}
 
-    // No quiz parameter and no local active quiz: show Unauthorized Access screen
-    showScreen("unauthorized");
+    // No quiz parameter and no local custom quiz: load standard default 15-question quiz directly
+    revertToDefaultQuiz();
     return;
   }
 
@@ -2563,15 +2582,15 @@ function checkForSharedQuizInUrl() {
 function handleEncodedQuizParam(encodedStr) {
   const decoded = decodeQuizFromUrl(encodedStr);
   if (!decoded) {
-    alert("⚠️ Could not load the shared quiz link. The link may be incomplete or corrupted.");
-    showScreen("unauthorized");
+    alert("⚠️ Could not load the shared quiz link. The link may be incomplete or corrupted. Loading default Bible Quiz instead.");
+    revertToDefaultQuiz();
     return;
   }
 
   const validation = validateQuizData(decoded);
   if (!validation.valid) {
-    alert("⚠️ Invalid quiz link: " + validation.error);
-    showScreen("unauthorized");
+    alert("⚠️ Invalid quiz link: " + validation.error + ". Loading default Bible Quiz instead.");
+    revertToDefaultQuiz();
     return;
   }
 
@@ -2740,7 +2759,18 @@ function loadCustomQuizIntoGame(quizData) {
 
 function revertToDefaultQuiz() {
   gameState.activeCustomQuiz = null;
-  showScreen("unauthorized");
+  const dict = QUIZ_DATA[currentLang];
+
+  // Hide custom quiz banner and restore default 15-question info
+  if (DOM.sharedQuizBanner) DOM.sharedQuizBanner.classList.add("hidden");
+  if (DOM.valPillCategory) DOM.valPillCategory.textContent = dict.categoryName;
+  if (DOM.valPillLevels) DOM.valPillLevels.textContent = dict.levelsName;
+  if (DOM.valPillQuestions) DOM.valPillQuestions.textContent = "15";
+  if (DOM.valPillTime) DOM.valPillTime.textContent = "10s/Q";
+  if (DOM.valPillScore) DOM.valPillScore.textContent = "15,000 pts";
+
+  showScreen("welcome");
+
   // Clear quiz param from URL without refreshing
   if (window.history.replaceState) {
     const cleanUrl = window.location.origin + window.location.pathname;
@@ -2929,7 +2959,7 @@ function initAdminModule() {
     if (gameState.activeCustomQuiz) {
       showScreen("welcome");
     } else {
-      showScreen("unauthorized");
+      revertToDefaultQuiz();
     }
   });
 
@@ -2937,7 +2967,7 @@ function initAdminModule() {
     if (gameState.activeCustomQuiz) {
       showScreen("welcome");
     } else {
-      showScreen("unauthorized");
+      revertToDefaultQuiz();
     }
   });
 
@@ -3203,10 +3233,8 @@ const LeaderboardClient = {
       DOM.lbBackBtn.addEventListener("click", () => {
         if (gameState.playerName) {
           showScreen("results");
-        } else if (gameState.activeCustomQuiz) {
-          showScreen("welcome");
         } else {
-          showScreen("unauthorized");
+          showScreen("welcome");
         }
       });
     }
