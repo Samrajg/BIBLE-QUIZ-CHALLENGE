@@ -246,6 +246,24 @@
         </button>
       </div>
 
+      <!-- QR Code Option with Embedded Quiz Title -->
+      <div id="share-qr-card" class="share-qr-card">
+        <div class="share-qr-header">
+          <span class="share-qr-badge">📱 Scan to Play</span>
+          <button type="button" id="download-qr-btn" class="btn btn-secondary btn-sm" title="Download QR code image">
+            📥 Save QR Image
+          </button>
+        </div>
+        <div class="share-qr-display-area">
+          <div id="share-qrcode-container" class="share-qrcode-container"></div>
+        </div>
+        <!-- Embedded Title Beneath the QR Code -->
+        <div class="share-qr-title-box">
+          <div class="share-qr-title-tag">📖 QUIZ TITLE</div>
+          <div id="share-qr-quiz-title" class="share-qr-quiz-title">Bible Quiz Challenge</div>
+        </div>
+      </div>
+
       <!-- Clean Hyperlink Format -->
       <div id="share-hyperlink-box" style="margin-top: 14px; padding: 12px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
         <div>
@@ -276,6 +294,8 @@
     </div>
   </div>
 
+  <script src="lz-quiz.js"></script>
+  <script src="qrcode.min.js"></script>
   <script>
     // Session Guard
     const CONFIG = {
@@ -444,12 +464,21 @@
       // Format clean Hyperlink with Quiz Title
       const quizTitleText = quiz.title || "Bible Quiz Challenge";
       hyperlinkEl.href = shareUrl;
-      hyperlinkEl.textContent = `🎮 Play "${quizTitleText}"`;
+      hyperlinkEl.textContent = `🎮 Play Quiz: ${quizTitleText}`;
+
+      // Update Embedded Quiz Title Underneath the QR Code
+      const qrTitleEl = document.getElementById("share-qr-quiz-title");
+      if (qrTitleEl) {
+        qrTitleEl.textContent = quizTitleText;
+      }
+
+      // Generate QR Code
+      renderShareQRCode(shareUrl, quizTitleText);
 
       if (copyHyperlinkBtn) {
         copyHyperlinkBtn.onclick = () => {
-          const htmlLink = `<a href="${shareUrl}">🎮 Play ${quizTitleText}</a>`;
-          const plainText = `🎮 Play ${quizTitleText}: ${shareUrl}`;
+          const htmlLink = `<a href="${shareUrl}">🎮 Play Quiz: ${quizTitleText}</a>`;
+          const plainText = `🎮 Play Quiz: ${quizTitleText}\n${shareUrl}`;
 
           if (navigator.clipboard && window.ClipboardItem) {
             const blobHtml = new Blob([htmlLink], { type: "text/html" });
@@ -474,6 +503,82 @@
       };
 
       document.getElementById("share-link-modal").classList.remove("hidden");
+    }
+
+    // Render QR Code inside the share modal
+    function renderShareQRCode(url, title) {
+      const container = document.getElementById("share-qrcode-container");
+      const downloadBtn = document.getElementById("download-qr-btn");
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      let qrSuccess = false;
+
+      // 1. Primary: Use client-side QRCode library
+      if (typeof QRCode !== "undefined") {
+        try {
+          const qrcodeObj = new QRCode(container, {
+            text: url,
+            width: 220,
+            height: 220,
+            colorDark: "#1e293b",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.L
+          });
+          qrSuccess = true;
+        } catch (err) {
+          console.warn("Client QRCode render error:", err);
+          qrSuccess = false;
+        }
+      }
+
+      // 2. Fallback: High-res QR image service with graceful fallback
+      if (!qrSuccess) {
+        container.innerHTML = "";
+        const img = document.createElement("img");
+        img.alt = `QR Code for ${title}`;
+        img.style.maxWidth = "220px";
+        img.style.maxHeight = "220px";
+        img.style.borderRadius = "8px";
+        img.style.display = "block";
+        img.style.margin = "0 auto";
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
+        container.appendChild(img);
+      }
+
+      // Download QR Code image button handler
+      if (downloadBtn) {
+        downloadBtn.onclick = () => {
+          try {
+            const canvas = container.querySelector("canvas");
+            const img = container.querySelector("img");
+            let dataUrl = "";
+
+            if (canvas) {
+              dataUrl = canvas.toDataURL("image/png");
+            } else if (img && img.src && img.src.startsWith("data:")) {
+              dataUrl = img.src;
+            }
+
+            if (dataUrl) {
+              const safeName = (title || "quiz").replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase();
+              const a = document.createElement("a");
+              a.href = dataUrl;
+              a.download = `${safeName}-qrcode.png`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            } else if (img && img.src) {
+              window.open(img.src, "_blank");
+            } else {
+              alert("QR code image is ready. You can right click or long press to save image.");
+            }
+          } catch (e) {
+            alert("Could not automatically download. Please right-click / long-press the QR code to save.");
+          }
+        };
+      }
     }
 
     function copyPlainShareText(text) {
@@ -964,6 +1069,5 @@ ${jsonSchema}`;
     // Initial render
     renderAdminDashboard();
   </script>
-  <script src="lz-quiz.js"></script>
 </body>
 </html>
