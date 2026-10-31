@@ -1,41 +1,3 @@
-
-function updateActiveQuestionLanguage(lang = currentLang) {
-  if (!gameState.selectedQuestions || gameState.selectedQuestions.length === 0) return;
-  const currIdx = gameState.currentQuestionIndex;
-  const qObj = gameState.selectedQuestions[currIdx];
-  if (!qObj) return;
-
-  const raw = qObj.raw || qObj.bilingual || qObj;
-  const resolved = resolveBilingualQuestion(raw, lang);
-
-  if (resolved.text) {
-    qObj.question = resolved.text;
-    DOM.questionText.textContent = resolved.text;
-  }
-  if (resolved.reference) qObj.reference = resolved.reference;
-  if (resolved.correctAnswer) qObj.correctAnswer = resolved.correctAnswer;
-
-  const dict = QUIZ_DATA[lang];
-  if (DOM.questionCategoryTag) {
-    const lvlName = qObj.levelDisplay || dict.levelsName;
-    DOM.questionCategoryTag.textContent = `${lvlName} • ${dict.hudQuestion} ${currIdx + 1}`;
-  }
-
-  if (Array.isArray(resolved.choices) && resolved.choices.length > 0) {
-    const isTF = (qObj.type === "true_false" || (Array.isArray(resolved.choices) && resolved.choices.length === 2));
-    qObj.choices = isTF ? resolved.choices.slice(0, 2) : resolved.choices;
-    qObj.shuffledOptions = isTF ? [...qObj.choices] : qObj.choices;
-    DOM.answerButtons.forEach((btn, bIdx) => {
-      if (bIdx < qObj.choices.length) {
-        btn.style.display = "";
-        const optSpan = btn.querySelector(".option-text");
-        if (optSpan) optSpan.textContent = qObj.choices[bIdx] || "";
-      } else {
-        btn.style.display = "none";
-      }
-    });
-  }
-}
 /**
  * BIBLE QUIZ CHALLENGE - script.js
  * Pure Vanilla JavaScript (ES6+)
@@ -4852,8 +4814,8 @@ function resolveBilingualQuestion(q, lang = currentLang) {
   const altLang = (lang === "ta") ? "en" : "ta";
 
   // Check language sub-object e.g. q.en / q.ta or q.rawBilingual.en / q.rawBilingual.ta
-  const langObj = q[lang] || (q.rawBilingual && q.rawBilingual[lang]);
-  const altObj = q[altLang] || (q.rawBilingual && q.rawBilingual[altLang]);
+  const langObj = q[lang] || (q.rawBilingual && q.rawBilingual[lang]) || (q.bilingual && q.bilingual[lang]);
+  const altObj = q[altLang] || (q.rawBilingual && q.rawBilingual[altLang]) || (q.bilingual && q.bilingual[altLang]);
 
   // Pick active sub-object: use preferred lang if it has question text/choices, else fallback to alt lang
   const activeSub = (langObj && (langObj.question || (Array.isArray(langObj.options) && langObj.options.length) || (Array.isArray(langObj.choices) && langObj.choices.length)))
@@ -4920,6 +4882,45 @@ function resolveBilingualQuestion(q, lang = currentLang) {
     reference: ref
   };
 }
+
+function updateActiveQuestionLanguage(lang = currentLang) {
+  if (!gameState.selectedQuestions || gameState.selectedQuestions.length === 0) return;
+  const currIdx = gameState.currentQuestionIndex;
+  const qObj = gameState.selectedQuestions[currIdx];
+  if (!qObj) return;
+
+  const raw = qObj.raw || qObj.bilingual || qObj;
+  const resolved = resolveBilingualQuestion(raw, lang);
+
+  if (resolved.text) {
+    qObj.question = resolved.text;
+    if (DOM.questionText) DOM.questionText.textContent = resolved.text;
+  }
+  if (resolved.reference) qObj.reference = resolved.reference;
+  if (resolved.correctAnswer) qObj.correctAnswer = resolved.correctAnswer;
+
+  const dict = QUIZ_DATA[lang];
+  if (DOM.questionCategoryTag && dict) {
+    const lvlName = qObj.levelDisplay || dict.levelsName;
+    DOM.questionCategoryTag.textContent = `${lvlName} • ${dict.hudQuestion} ${currIdx + 1}`;
+  }
+
+  if (Array.isArray(resolved.choices) && resolved.choices.length > 0) {
+    const isTF = (qObj.type === "true_false" || (Array.isArray(resolved.choices) && resolved.choices.length === 2));
+    qObj.choices = isTF ? resolved.choices.slice(0, 2) : resolved.choices;
+    qObj.shuffledOptions = isTF ? [...qObj.choices] : qObj.choices;
+    DOM.answerButtons.forEach((btn, bIdx) => {
+      if (bIdx < qObj.choices.length) {
+        btn.style.display = "";
+        const optSpan = btn.querySelector(".option-text");
+        if (optSpan) optSpan.textContent = qObj.choices[bIdx] || "";
+      } else {
+        btn.style.display = "none";
+      }
+    });
+  }
+}
+
 
 function getLocalizedQuizQuestions(quizData, lang = currentLang) {
   if (!quizData) return [];
