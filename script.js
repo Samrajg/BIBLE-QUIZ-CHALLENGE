@@ -2634,7 +2634,8 @@ const gameState = {
   currentStreak: 0,
   // Custom quiz support (Phase 2)
   activeCustomQuiz: null,
-  hasSharedResultCard: false
+  hasSharedResultCard: false,
+  fullscreenExitWarnings: 0
 };
 
 // ==========================================
@@ -2699,6 +2700,9 @@ const DOM = {
   hudScore: document.getElementById("hud-score"),
   hudScoreMax: document.getElementById("hud-score-max"),
   fullscreenToggleBtn: document.getElementById("fullscreen-toggle-btn"),
+  quizExitBtn: document.getElementById("quiz-exit-btn"),
+  fullscreenWarningBanner: document.getElementById("fullscreen-warning-banner"),
+  fullscreenWarningNum: document.getElementById("fullscreen-warning-num"),
   progressBar: document.getElementById("progress-bar"),
   streakIndicator: document.getElementById("streak-indicator"),
   streakCount: document.getElementById("streak-count"),
@@ -3221,6 +3225,68 @@ function toggleFullScreenMode() {
   }
 }
 
+function handleFullscreenExitWarning() {
+  // Only monitor fullscreen exit while actively inside the quiz screen
+  if (!DOM.screens.quiz || !DOM.screens.quiz.classList.contains("active")) return;
+  if (gameState.isExitingQuizEarly) return;
+
+  const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (!isFullscreen) {
+    gameState.fullscreenExitWarnings = (gameState.fullscreenExitWarnings || 0) + 1;
+    const count = gameState.fullscreenExitWarnings;
+
+    if (DOM.fullscreenWarningBanner && DOM.fullscreenWarningNum) {
+      DOM.fullscreenWarningNum.textContent = count;
+      DOM.fullscreenWarningBanner.classList.remove("hidden");
+    }
+
+    if (count >= 5) {
+      clearInterval(gameState.timerInterval);
+      const isTa = (currentLang === "ta");
+      alert(isTa 
+        ? "⚠️ நீங்கள் 5 முறை முழுத்திரை பயன்முறையிலிருந்து வெளியேறியதால், வினாடி வினா ஆரம்பத்திலிருந்தே மீண்டும் தொடங்குகிறது!" 
+        : "⚠️ You have exited fullscreen 5 times! Your quiz has been restarted from the beginning.");
+      if (DOM.fullscreenWarningBanner) DOM.fullscreenWarningBanner.classList.add("hidden");
+      gameState.fullscreenExitWarnings = 0;
+      startQuiz(gameState.playerName || "Player");
+      return;
+    }
+
+    const isTa = (currentLang === "ta");
+    const warnMsg = isTa
+      ? `⚠️ எச்சரிக்கை ${count}/5: முழுத்திரையிலிருந்து வெளியேறக் கூடாது! 5 முறை வெளியேறினால் வினாடி வினா முதலில் இருந்து தொடங்கும்.`
+      : `⚠️ Warning ${count}/5: Exiting fullscreen is not allowed! Reaching 5 warnings will restart the quiz from Question 1.`;
+    
+    // Automatically re-request fullscreen after alert
+    setTimeout(() => {
+      requestFullScreenMode();
+    }, 500);
+  }
+}
+
+function exitQuizEarly() {
+  const isTa = (currentLang === "ta");
+  const confirmMsg = isTa 
+    ? "நிச்சயமாக வினாடி வினாவிலிருந்து வெளியேற விரும்புகிறீர்களா? உங்கள் தற்போதைய முன்னேற்றம் சேமிக்கப்படாது." 
+    : "Are you sure you want to exit the quiz? Your current progress will not be saved.";
+  
+  if (confirm(confirmMsg)) {
+    gameState.isExitingQuizEarly = true;
+    clearInterval(gameState.timerInterval);
+    gameState.fullscreenExitWarnings = 0;
+    if (DOM.fullscreenWarningBanner) DOM.fullscreenWarningBanner.classList.add("hidden");
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      }
+    } catch (e) {}
+    showScreen("welcome");
+    setTimeout(() => {
+      gameState.isExitingQuizEarly = false;
+    }, 1000);
+  }
+}
+
 function updateResultsExitButtonsState() {
   const isUnlocked = gameState.hasSharedResultCard;
   if (DOM.backHomeBtn) {
@@ -3291,6 +3357,9 @@ function startQuiz(nickname) {
   gameState.isAnswerSubmitted = false;
   gameState.currentStreak = 0;
   gameState.hasSharedResultCard = false;
+  gameState.fullscreenExitWarnings = 0;
+  gameState.isExitingQuizEarly = false;
+  if (DOM.fullscreenWarningBanner) DOM.fullscreenWarningBanner.classList.add("hidden");
 
   let allQuestions = [];
   let totalQ = 0;
@@ -3971,6 +4040,17 @@ document.addEventListener("DOMContentLoaded", () => {
     DOM.fullscreenToggleBtn.addEventListener("click", toggleFullScreenMode);
   }
 
+  // Quiz Exit Button in HUD
+  if (DOM.quizExitBtn) {
+    DOM.quizExitBtn.addEventListener("click", exitQuizEarly);
+  }
+
+  // Monitor Fullscreen Exit Warnings (5 exits restarts quiz)
+  document.addEventListener("fullscreenchange", handleFullscreenExitWarning);
+  document.addEventListener("webkitfullscreenchange", handleFullscreenExitWarning);
+  document.addEventListener("mozfullscreenchange", handleFullscreenExitWarning);
+  document.addEventListener("MSFullscreenChange", handleFullscreenExitWarning);
+
   // Keyboard navigation
   window.addEventListener("keydown", (e) => {
     if (!DOM.screens.quiz.classList.contains("active")) return;
@@ -3989,10 +4069,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Threat 1 & Anti-Cheating: Window blur / tab switch detection during active quiz
   window.addEventListener("blur", () => {
     if (DOM.screens.quiz && DOM.screens.quiz.classList.contains("active") && !gameState.isAnswerSubmitted) {
-      // User switched away to inspect DevTools or search answers
-      if (DOM.feedbackPanel && DOM.feedbackPanel.classList.contains("hidden")) {
-        console.warn("Anti-cheat warning: focus lost during active question.");
-      }
+      // Also trigger warning if tab was switched or window minimized
+      handleFullscreenExitWarning();
     }
   });
 

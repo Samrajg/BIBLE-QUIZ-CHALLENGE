@@ -174,7 +174,7 @@
             <span id="hud-player-name" class="player-name">Player</span>
           </div>
           <div class="question-tracker">
-            <span id="lbl-q-tracker">Question</span> <span id="current-q-num">1</span> <span id="lbl-of-tracker">of</span> <span id="total-q-num">15</span>
+            <span id="lbl-q-tracker">Question</span> <span id="current-q-num">1</span> <span id="lbl-of-tracker">of</span> <span id="total-q-num">30</span>
           </div>
         </div>
 
@@ -191,10 +191,18 @@
         <div class="hud-right">
           <div class="score-display">
             <span class="score-label" id="lbl-score">Score</span>
-            <span class="score-val"><span id="hud-score">0</span> <span id="hud-score-max" class="hud-score-sub">/ 15,000</span></span>
+            <span class="score-val"><span id="hud-score">0</span> <span id="hud-score-max" class="hud-score-sub">/ 30,000</span></span>
           </div>
+          <button type="button" id="quiz-exit-btn" class="hud-exit-btn" title="Exit Quiz" aria-label="Exit Quiz">
+            🚪 Exit
+          </button>
         </div>
       </header>
+
+      <!-- Fullscreen Warning Count Banner -->
+      <div id="fullscreen-warning-banner" class="fullscreen-warning-banner hidden">
+        ⚠️ Warning <span id="fullscreen-warning-num">0</span>/5: Exiting fullscreen is not allowed! Reaching 5 warnings will restart the quiz.
+      </div>
 
       <!-- Progress Bar -->
       <div class="progress-bar-container">
