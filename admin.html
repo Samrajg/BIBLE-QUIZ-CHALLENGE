@@ -235,39 +235,12 @@
       
       <p class="modal-subtext">Anyone with this link can play your custom quiz on GitHub Pages without logging in!</p>
 
-      <div id="share-url-warning" class="url-length-warning hidden">
-        ⚠️ <strong>Notice:</strong> This quiz link is <span id="share-url-char-count">0</span> characters long. We strongly recommend downloading the JSON file as a reliable backup.
-      </div>
-
-      <!-- Option 1: Clean Normal Link (Short & Friendly) -->
-      <div class="share-link-section" style="margin-bottom: 16px; padding: 14px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: var(--radius-md);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-size: 0.82rem; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">✨ Normal Short Link (Clean & Direct)</span>
-          <span style="font-size: 0.75rem; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">Recommended</span>
-        </div>
-        <p style="font-size: 0.8rem; color: #166534; margin: 0 0 10px 0; line-height: 1.4;">
-          Clean, normal website URL without any long encrypted codes. Plays this active quiz directly!
-        </p>
-        <div class="share-url-box" style="margin-bottom: 0;">
-          <input type="text" id="share-clean-url-input" readonly style="background: #ffffff;" />
-          <button type="button" id="copy-clean-url-btn" class="btn btn-primary" style="background: #16a34a; border-color: #16a34a;">
-            📋 Copy Normal Link
-          </button>
-        </div>
-      </div>
-
-      <!-- Option 2: Full Data Link (Encoded for External / Offline Devices) -->
-      <div class="share-link-section" style="margin-bottom: 16px; padding: 14px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-size: 0.82rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">📦 Full Data Link (Includes All 30 Qs in URL)</span>
-          <span style="font-size: 0.72rem; color: #64748b;"><span id="share-url-char-count">0</span> chars</span>
-        </div>
-        <div class="share-url-box" style="margin-bottom: 0;">
-          <input type="text" id="share-url-input" readonly />
-          <button type="button" id="copy-share-url-btn" class="btn btn-secondary">
-            📋 Copy Full Link
-          </button>
-        </div>
+      <!-- Clean Normal Quiz Link -->
+      <div class="share-url-box" style="margin-bottom: 16px;">
+        <input type="text" id="share-clean-url-input" readonly style="background: #ffffff; font-size: 0.95rem; font-weight: 600;" />
+        <button type="button" id="copy-clean-url-btn" class="btn btn-primary">
+          📋 Copy Link
+        </button>
       </div>
 
       <!-- QR Code Option with Embedded Quiz Title -->
@@ -486,24 +459,15 @@
       const copyCleanBtn = document.getElementById("copy-clean-url-btn");
       if (cleanInput) cleanInput.value = normalCleanUrl;
 
-      const shareInput = document.getElementById("share-url-input");
-      const charCount = document.getElementById("share-url-char-count");
-      const warning = document.getElementById("share-url-warning");
       const hyperlinkEl = document.getElementById("share-title-hyperlink");
       const copyHyperlinkBtn = document.getElementById("copy-hyperlink-btn");
 
-      shareInput.value = shareUrl;
-      charCount.textContent = shareUrl.length;
-      if (shareUrl.length > 2000) {
-        warning.classList.remove("hidden");
-      } else {
-        warning.classList.add("hidden");
-      }
-
-      // Format clean Hyperlink with Quiz Title (linking to the normal direct URL)
+      // Format clean Hyperlink with Quiz Title (linking to normal direct URL)
       const quizTitleText = quiz.title || "Bible Quiz Challenge";
-      hyperlinkEl.href = normalCleanUrl;
-      hyperlinkEl.textContent = `🎮 Play Quiz: ${quizTitleText}`;
+      if (hyperlinkEl) {
+        hyperlinkEl.href = normalCleanUrl;
+        hyperlinkEl.textContent = `🎮 Play Quiz: ${quizTitleText}`;
+      }
 
       // Update Embedded Quiz Title Underneath the QR Code
       const qrTitleEl = document.getElementById("share-qr-quiz-title");
@@ -511,16 +475,16 @@
         qrTitleEl.textContent = quizTitleText;
       }
 
-      // Generate QR Code with Full Data Link so scanning works everywhere
-      renderShareQRCode(shareUrl, quizTitleText);
+      // Generate QR Code directly with normalCleanUrl
+      renderShareQRCode(normalCleanUrl, quizTitleText);
 
-      // Copy Normal Link Button
+      // Copy Link Button
       if (copyCleanBtn) {
         copyCleanBtn.onclick = () => {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(normalCleanUrl).then(() => {
               const orig = copyCleanBtn.textContent;
-              copyCleanBtn.textContent = "✅ Copied Normal Link!";
+              copyCleanBtn.textContent = "✅ Copied Link!";
               setTimeout(() => { copyCleanBtn.textContent = orig; }, 2500);
             }).catch(() => {
               prompt("Copy normal link:", normalCleanUrl);
