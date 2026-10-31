@@ -301,7 +301,7 @@ const LZString = (() => {
   };
 })();
 
-// Minify quiz object schema to compact representation
+// Minify quiz object schema to compact representation (supports bilingual EN & TA)
 function compressQuizPayload(quiz) {
   try {
     const compact = {
@@ -310,12 +310,37 @@ function compressQuizPayload(quiz) {
       d: quiz.description || "",
       l: quiz.difficulty || "Medium",
       s: quiz.timeLimit || 10,
-      q: (quiz.questions || []).map(q => [
-        q.question || "",
-        q.choices || [],
-        typeof q.correctIndex === "number" ? q.correctIndex : 0,
-        q.reference || ""
-      ])
+      q: (quiz.questions || []).map(q => {
+        const item = [
+          q.question || "",
+          q.choices || [],
+          typeof q.correctIndex === "number" ? q.correctIndex : 0,
+          q.reference || ""
+        ];
+        // If question has bilingual translations (en/ta), preserve them in index 4 & 5
+        const enData = q.en || (q.rawBilingual && q.rawBilingual.en);
+        const taData = q.ta || (q.rawBilingual && q.rawBilingual.ta);
+        if (enData || taData) {
+          item[4] = enData ? [
+            enData.question || "",
+            enData.choices || enData.options || [],
+            enData.reference || ""
+          ] : null;
+          item[5] = taData ? [
+            taData.question || "",
+            taData.choices || taData.options || [],
+            taData.reference || ""
+          ] : null;
+          if (q.type) item[6] = q.type;
+          if (q.timeLimit) item[7] = q.timeLimit;
+        } else if (q.type || q.timeLimit) {
+          item[4] = null;
+          item[5] = null;
+          item[6] = q.type || null;
+          item[7] = q.timeLimit || null;
+        }
+        return item;
+      })
     };
     return "z:" + LZString.compressToEncodedURIComponent(JSON.stringify(compact));
   } catch (e) {
@@ -340,14 +365,38 @@ function decompressQuizPayload(encodedStr) {
         description: c.d,
         difficulty: c.l,
         timeLimit: c.s,
-        questions: (c.q || []).map((item, idx) => ({
-          id: idx + 1,
-          question: item[0],
-          choices: item[1],
-          correctIndex: item[2],
-          correctAnswer: item[1] ? item[1][item[2]] : "",
-          reference: item[3] || "Bible Reference"
-        }))
+        questions: (c.q || []).map((item, idx) => {
+          const baseQ = {
+            id: idx + 1,
+            question: item[0],
+            choices: item[1] || [],
+            correctIndex: typeof item[2] === "number" ? item[2] : 0,
+            correctAnswer: item[1] ? (item[1][item[2]] || "") : "",
+            reference: item[3] || "Bible Reference"
+          };
+          if (item[4]) {
+            baseQ.en = {
+              question: item[4][0] || "",
+              options: item[4][1] || [],
+              choices: item[4][1] || [],
+              reference: item[4][2] || ""
+            };
+          }
+          if (item[5]) {
+            baseQ.ta = {
+              question: item[5][0] || "",
+              options: item[5][1] || [],
+              choices: item[5][1] || [],
+              reference: item[5][2] || ""
+            };
+          }
+          if (baseQ.en || baseQ.ta) {
+            baseQ.rawBilingual = { en: baseQ.en, ta: baseQ.ta };
+          }
+          if (item[6]) baseQ.type = item[6];
+          if (item[7]) baseQ.timeLimit = item[7];
+          return baseQ;
+        })
       };
     }
 

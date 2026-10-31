@@ -956,7 +956,7 @@ function setLanguage(lang) {
     if (DOM.valPillCategory) DOM.valPillCategory.textContent = title;
     if (DOM.valPillLevels) DOM.valPillLevels.textContent = diff;
 
-    // If quiz is currently active on screen, refresh the current question in the newly selected language
+    // If quiz is currently active on screen, refresh question text and answer choices in the newly selected language
     if (DOM.screens.quiz && DOM.screens.quiz.classList.contains("active") && gameState.selectedQuestions.length > 0) {
       const currIdx = gameState.currentQuestionIndex;
       const qObj = gameState.selectedQuestions[currIdx];
@@ -964,9 +964,29 @@ function setLanguage(lang) {
         const resolved = resolveBilingualQuestion(qObj.raw, lang);
         qObj.question = resolved.text;
         qObj.reference = resolved.reference;
+        qObj.correctAnswer = resolved.correctAnswer;
+        
         // Re-display question text
         DOM.questionText.textContent = resolved.text;
+
+        // If choices are available in newly chosen language, update active answer button labels
+        if (Array.isArray(resolved.choices) && resolved.choices.length > 0) {
+          const isTF = (qObj.type === "true_false" || (Array.isArray(resolved.choices) && resolved.choices.length === 2));
+          qObj.choices = isTF ? resolved.choices.slice(0, 2) : resolved.choices;
+          qObj.shuffledOptions = isTF ? [...qObj.choices] : qObj.choices;
+          DOM.answerButtons.forEach((btn, bIdx) => {
+            if (bIdx < qObj.choices.length) {
+              const optSpan = btn.querySelector(".option-text");
+              if (optSpan) optSpan.textContent = qObj.choices[bIdx] || "";
+            }
+          });
+        }
       }
+    } else if (DOM.screens.welcome && DOM.screens.welcome.classList.contains("active")) {
+      // Re-populate localized questions count and welcome banner
+      const qList = getLocalizedQuizQuestions(custom, lang);
+      if (DOM.sharedQuizQCount) DOM.sharedQuizQCount.textContent = `${qList.length} ${lang === "ta" ? "கேள்விகள்" : "Questions"}`;
+      if (DOM.valPillQuestions) DOM.valPillQuestions.textContent = qList.length;
     }
   }
 }
@@ -2310,7 +2330,7 @@ const AdminModule = {
 
     // Prepare shareable payload (strip private admin metadata)
     const payload = {
-      v: 1,
+      v: 2,
       id: quiz.id,
       title: quiz.title,
       description: quiz.description,
@@ -2321,7 +2341,12 @@ const AdminModule = {
         question: q.question,
         choices: q.choices,
         correctIndex: q.correctIndex,
-        reference: q.reference
+        reference: q.reference,
+        type: q.type || null,
+        timeLimit: q.timeLimit || null,
+        en: q.en || (q.rawBilingual && q.rawBilingual.en) || null,
+        ta: q.ta || (q.rawBilingual && q.rawBilingual.ta) || null,
+        rawBilingual: q.rawBilingual || null
       }))
     };
 

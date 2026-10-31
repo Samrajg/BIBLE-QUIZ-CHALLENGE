@@ -463,7 +463,12 @@
           question: q.question,
           choices: q.choices,
           correctIndex: q.correctIndex,
-          reference: q.reference
+          reference: q.reference,
+          type: q.type || null,
+          timeLimit: q.timeLimit || null,
+          en: q.en || (q.rawBilingual && q.rawBilingual.en) || null,
+          ta: q.ta || (q.rawBilingual && q.rawBilingual.ta) || null,
+          rawBilingual: q.rawBilingual || null
         }))
       };
 
